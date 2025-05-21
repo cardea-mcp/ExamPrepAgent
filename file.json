@@ -1,0 +1,42 @@
+[
+    {
+        "question": "What is the capital of France?",
+        "answer": "Paris"
+    },
+    {
+        "question": "Which planet is known as the Red Planet?",
+        "answer": "Mars"
+    },
+    {
+        "question": "What is the largest mammal?",
+        "answer": "Blue whale"
+    },
+    {
+        "question": "Who wrote 'Romeo and Juliet'?",
+        "answer": "William Shakespeare"
+    },
+    {
+        "question": "What is the chemical symbol for gold?",
+        "answer": "Au"
+    },
+    {
+        "question": "What is the square root of 144?",
+        "answer": "12"
+    },
+    {
+        "question": "Which country has the largest population?",
+        "answer": "China"
+    },
+    {
+        "question": "What year did the Titanic sink?",
+        "answer": "1912"
+    },
+    {
+        "question": "What is the main ingredient in guacamole?",
+        "answer": "Avocado"
+    },
+    {
+        "question": "How many sides does a hexagon have?",
+        "answer": "Six"
+    }
+]

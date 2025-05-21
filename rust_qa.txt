@@ -1,0 +1,1073 @@
+What are the different types of comments in Rust?
+Rust supports a few different varieties of comments: Regular comments which are ignored by the compiler: // Line comments which go to the end of the line. /* Block comments which go to the closing delimiter. */ Doc comments which are parsed into HTML library documentation: /// Generate library docs for the following item. //! Generate library docs for the enclosing item.
+
+What are the different macros for printing in Rust?
+Printing is handled by a series of macros defined in std::fmt some of which include: format!: write formatted text to String print!: same as format! but the text is printed to the console (io::stdout). println!: same as print! but a newline is appended. eprint!: same as print! but the text is printed to the standard error (io::stderr). eprintln!: same as eprint! but a newline is appended.
+
+What are the fmt::Debug and fmt::Display traits in Rust?
+fmt::Debug: Uses the {:?} marker. Format text for debugging purposes. fmt::Display: Uses the {} marker. Format text in a more elegant, user friendly fashion.
+
+What does the #[allow(dead_code)] attribute do in Rust?
+In line 43, #[allow(dead_code)] is an attribute which only applies to the module after it.
+
+What is the difference between fmt::Debug and fmt::Display in Rust?
+fmt::Debug makes all types printable in a straightforward manner and can be derived for all types. fmt::Display, which must be manually implemented, is used for more elegant, user-friendly output.
+
+What is the derive attribute in Rust?
+The derive attribute in Rust automatically creates the necessary implementation to make a struct printable with fmt::Debug.
+
+What is the purpose of the fmt::Display trait in Rust?
+fmt::Display trait in Rust is used for customizing the output appearance. It uses the {} print marker and must be manually implemented for each type.
+
+Why is fmt::Display not implemented for Vec<T> in Rust?
+fmt::Display is not implemented for Vec<T> or for any other generic containers in Rust because there is no ideal style for all types and the std library doesn't presume to dictate one. For these generic cases, fmt::Debug must be used.
+
+What is the ? operator in Rust?
+The ? operator in Rust is used for error handling. It returns the error if the operation fails, allowing for easier handling of multiple fmt::Results.
+
+How is formatting specified in Rust?
+Formatting in Rust is specified via a format string, with different traits for each argument type. The most common formatting trait is Display, which handles cases where the argument type is left unspecified.
+
+What are the scalar types in Rust?
+Scalar types in Rust include signed integers (i8, i16, i32, i64, i128, isize), unsigned integers (u8, u16, u32, u64, u128, usize), floating point numbers (f32, f64), char (Unicode scalar values), bool (either true or false), and the unit type ().
+
+What are the compound types in Rust?
+Compound types in Rust include arrays (like [1, 2, 3]) and tuples (like (1, true)).
+
+How can integers be expressed in Rust?
+Integers in Rust can be expressed using hexadecimal, octal or binary notation using these prefixes respectively: 0x, 0o or 0b. Underscores can be inserted in numeric literals to improve readability.
+
+What is a tuple in Rust?
+A tuple in Rust is a collection of values of different types. Tuples are constructed using parentheses (), and each tuple itself is a value with type signature (T1, T2, ...), where T1, T2 are the types of its members.
+
+What is an array in Rust?
+An array in Rust is a collection of objects of the same type T, stored in contiguous memory. Arrays are created using brackets [], and their length, which is known at compile time, is part of their type signature [T; length].
+
+What is a slice in Rust?
+A slice in Rust is similar to an array, but their length is not known at compile time. Instead, a slice is a two-word object; the first word is a pointer to the data, the second word is the length of the slice. Slices can be used to borrow a section of an array and have the type signature &[T].
+
+What is the purpose of the main function in Rust?
+The main function in Rust is the entry point of the program. It is the first code that runs in every executable Rust program.
+
+How can you define a function in Rust?
+In Rust, you can define a function using the fn keyword followed by the name of the function, parentheses (), and a block of code enclosed in curly braces {}.
+
+What is the return type of the main function in Rust?
+The main function in Rust does not return a value; it is always declared with an empty tuple (). If the function needs to return a value, it can use the -> keyword followed by the type of the returned value.
+
+How can you declare a variable in Rust?
+In Rust, you can declare a variable using the let keyword followed by the name of the variable and its value. For example: let x = 5.
+
+What is the difference between mutable and immutable variables in Rust?
+In Rust, variables are immutable by default, meaning their value cannot be changed once they are bound. To make a variable mutable, you can use the mut keyword. For example: let mut x = 5.
+
+What is the shadowing feature in Rust?
+Shadowing in Rust allows you to declare a new variable with the same name as a previous variable, effectively creating a new variable that shadows the previous one. This is done using the let keyword.
+
+What are the different data types in Rust?
+Rust has several data types, including integers, floating-point numbers, booleans, characters, tuples, arrays, and slices.
+
+What is the difference between a tuple and an array in Rust?
+In Rust, a tuple is a collection of values of different types, while an array is a collection of values of the same type. The size of a tuple is known at compile time, while the size of an array can be dynamic.
+
+How can you access elements in a tuple or an array in Rust?
+In Rust, you can access elements in a tuple using a period (.) followed by the index of the value, and elements in an array using brackets [] with the index of the value inside.
+
+What is the panic! macro in Rust?
+The panic! macro in Rust is used to generate an error and stop the program when the code encounters a situation it doesn't know how to handle.
+
+What is the difference between signed and unsigned integers in Rust?
+In Rust, signed integers can store both positive and negative numbers, while unsigned integers can only store positive numbers. The 'i' in types like i8, i32, etc. stands for signed, and the 'u' in types like u8, u32, etc. stands for unsigned.
+
+What is the difference between isize and usize in Rust?
+isize and usize in Rust are types of integers that are used when indexing collections. The size of these types is determined by the architecture of the machine the program is running on: 64 bits on a 64-bit machine and 32 bits on a 32-bit machine.
+
+What is the range of values for the i8 and u8 types in Rust?
+In Rust, the i8 type can store values from -128 to 127, while the u8 type can store values from 0 to 255.
+
+What is the default numeric type in Rust?
+In Rust, the default numeric type is i32. This is generally the fastest, even on 64-bit systems.
+
+What is the char type in Rust?
+The char type in Rust represents a Unicode Scalar Value, which means it can represent a lot more than just ASCII. char literals are specified with single quotes, as in 'a'.
+
+What is the bool type in Rust?
+The bool type in Rust represents a boolean, which can be either true or false.
+
+What is the unit type in Rust?
+The unit type in Rust is specified as (). It's a type that has exactly one value (), and is used when there is no other meaningful value that a function could return.
+
+What is the difference between a tuple and a struct in Rust?
+In Rust, a tuple groups together a number of values with different types into one compound type. Structs, on the other hand, are similar but they have named fields.
+
+How can you create a tuple in Rust?
+In Rust, you can create a tuple by writing a comma-separated list of values inside parentheses. For example: let tup = (1, true, 'a').
+
+How can you create an array in Rust?
+In Rust, you can create an array by writing a comma-separated list of values inside square brackets. For example: let arr = [1, 2, 3].
+
+What is the difference between an array and a vector in Rust?
+In Rust, an array has a fixed size, while a vector can grow or shrink at runtime.
+
+How can you create a slice in Rust?
+In Rust, you can create a slice by specifying a range of elements to borrow from an array. For example: let slice = &arr[1..3].
+
+What are the three types of structures in Rust?
+There are three types of structures ('structs') that can be created using the struct keyword: Tuple structs, which are, basically, named tuples. The classic C structs. Unit structs, which are field-less, are useful for generics.
+
+What is a unit struct in Rust?
+A unit struct in Rust is a struct without any fields. It is defined using the struct keyword followed by the name of the struct and a semicolon. For example: struct Unit;
+
+What is a tuple struct in Rust?
+A tuple struct in Rust is a struct where the fields do not have names, but they have types. Tuple structs are defined using the struct keyword, followed by the name of the struct, and then the types of the fields in parentheses. For example: struct Pair(i32, f32);
+
+What is a classic C struct in Rust?
+A classic C struct in Rust is a struct where the fields have names and types. It is defined using the struct keyword, followed by the name of the struct, and then the fields in curly braces. Each field has a name and a type, separated by a colon. For example: struct Point { x: f32, y: f32, };
+
+How can structs be used in Rust?
+Structs can be reused as fields of another struct. For example, a Rectangle struct can be defined with two Point structs as its fields.
+
+How to instantiate a struct in Rust?
+A struct can be instantiated by specifying the values for its fields. For example: let point: Point = Point { x: 10.3, y: 0.4 };
+
+What is struct update syntax in Rust?
+Struct update syntax in Rust allows you to create a new instance of a struct, while reusing some fields from an existing instance. For example: let bottom_right = Point { x: 5.2, ..another_point };
+
+How to destructure a struct in Rust?
+A struct can be destructured using a let binding. For example: let Point { x: left_edge, y: top_edge } = point;
+
+What is a unit struct in Rust?
+A unit struct in Rust is a struct without any fields. It is defined using the struct keyword followed by the name of the struct and a semicolon. For example: let _unit = Unit;
+
+What is a tuple struct in Rust?
+A tuple struct in Rust is a struct where the fields do not have names, but they have types. Tuple structs are defined using the struct keyword, followed by the name of the struct, and then the types of the fields in parentheses. For example: let pair = Pair(1, 0.1);
+
+How to destructure a tuple struct in Rust?
+A tuple struct can be destructured using a let binding. For example: let Pair(integer, decimal) = pair;
+
+What is an enum in Rust?
+The enum keyword in Rust allows the creation of a type which may be one of a few different variants. Any variant which is valid as a struct is also valid in an enum.
+
+What is the use of inspect function in the provided code?
+The inspect function takes a 'WebEvent' enum as an argument and uses a match statement to perform different actions based on the variant of 'WebEvent'.
+
+What are type aliases in Rust?
+In Rust, if you use a type alias, you can refer to each enum variant via its alias. This might be useful if the enum's name is too long or too generic, and you want to rename it.
+
+What is the Self alias in Rust?
+In Rust, the Self alias is most commonly seen in impl blocks. It refers to the type that the impl block is associated with.
+
+What are the different variants of the 'WebEvent' enum in the provided code?
+The 'WebEvent' enum in the provided code has five variants: 'PageLoad', 'PageUnload', 'KeyPress(char)', 'Paste(String)', and 'Click { x: i64, y: i64 }'.
+
+How is the 'WebEvent' enum used in the provided code?
+In the provided code, instances of the 'WebEvent' enum are created with different variants. These instances are then passed to the 'inspect' function which performs different actions based on the variant of the 'WebEvent' instance.
+
+How to create an enum in Rust?
+An enum in Rust can be created using the 'enum' keyword followed by the name of the enum and its variants enclosed in curly braces. Each variant can be unit-like, tuple-like, or struct-like.
+
+How to use a match statement with an enum in Rust?
+A match statement can be used with an enum in Rust to perform different actions based on the variant of the enum. Each arm of the match statement corresponds to a variant of the enum.
+
+What is the use declaration in Rust?
+The use declaration in Rust can be used so manual scoping isn't needed.
+
+How can enums be used as C-like enums in Rust?
+In Rust, the enum keyword can also be used to create C-like enums, where each variant is just a name, without any associated data.
+
+How to implement a linked-list in Rust?
+A common way to implement a linked-list in Rust is via enums, where each variant of the enum represents a node or the end of the list.
+
+What are the two types of constants in Rust?
+Rust has two different types of constants which can be declared in any scope including global. These are 'const', an unchangeable value, and 'static', a possibly mutable variable with 'static lifetime.
+
+What is a const in Rust?
+In Rust, a 'const' is an unchangeable value. It requires explicit type annotation.
+
+What is a static in Rust?
+In Rust, a 'static' is a possibly mutable variable with 'static lifetime. The static lifetime is inferred and does not have to be specified. Accessing or modifying a mutable static variable is unsafe.
+
+What does Rust provide via static typing?
+Rust provides type safety via static typing. Variable bindings can be type annotated when declared. However, in most cases, the compiler will be able to infer the type of the variable from the context, heavily reducing the annotation burden.
+
+How can values be bound to variables in Rust?
+Values (like literals) can be bound to variables in Rust, using the let binding.
+
+Are variable bindings mutable or immutable by default in Rust?
+Variable bindings are immutable by default in Rust, but this can be overridden using the mut modifier.
+
+What is the scope of variable bindings in Rust?
+Variable bindings in Rust have a scope, and are constrained to live in a block. A block is a collection of statements enclosed by braces {}.
+
+Is variable shadowing allowed in Rust?
+Yes, variable shadowing is allowed in Rust.
+
+Is it possible to declare variable bindings first, and initialize them later in Rust?
+Yes, it's possible to declare variable bindings first, and initialize them later in Rust. However, this form is seldom used, as it may lead to the use of uninitialized variables.
+
+Does the compiler allow the use of uninitialized variables in Rust?
+No, the compiler forbids the use of uninitialized variables in Rust, as this would lead to undefined behavior.
+
+What happens when data is bound by the same name immutably in Rust?
+When data is bound by the same name immutably in Rust, it also freezes. Frozen data can't be modified until the immutable binding goes out of scope.
+
+What mechanisms does Rust provide to change or define the type of primitive and user defined types?
+Rust provides several mechanisms to change or define the type of primitive and user defined types. These include casting between primitive types, specifying the desired type of literals, using type inference, and aliasing types.
+
+Does Rust provide implicit type conversion between primitive types?
+No, Rust provides no implicit type conversion (coercion) between primitive types. But, explicit type conversion (casting) can be performed using the as keyword.
+
+What are the rules for converting between integral types in Rust?
+Rules for converting between integral types in Rust follow C conventions generally, except in cases where C has undefined behavior. The behavior of all casts between integral types is well defined in Rust.
+
+How can the type of numeric literals be specified in Rust?
+Numeric literals can be type annotated in Rust by adding the type as a suffix. For example, to specify that the literal 42 should have the type i32, write 42i32.
+
+What is the default type of unsuffixed numeric literals in Rust?
+The type of unsuffixed numeric literals in Rust will depend on how they are used. If no constraint exists, the compiler will use i32 for integers, and f64 for floating-point numbers.
+
+What is type inference in Rust?
+The type inference engine in Rust is smart. It does more than looking at the type of the value expression during an initialization. It also looks at how the variable is used afterwards to infer its type.
+
+What is the type statement in Rust?
+The type statement in Rust can be used to give a new name to an existing type. Types must have UpperCamelCase names, or the compiler will raise a warning. The exception to this rule are the primitive types.
+
+What is the main use of aliases in Rust?
+The main use of aliases in Rust is to reduce boilerplate. For example, the io::Result<T> type is an alias for the Result<T, io::Error> type.
+
+How can primitive types be converted to each other in Rust?
+Primitive types can be converted to each other in Rust through casting.
+
+How does Rust handle conversion between custom types?
+Rust addresses conversion between custom types (i.e., struct and enum) by the use of traits. The generic conversions will use the From and Into traits.
+
+What are the From and Into traits in Rust?
+The From and Into traits are inherently linked in Rust. If you are able to convert type A from type B, then it should be easy to believe that we should be able to convert type B to type A.
+
+What is the From trait in Rust?
+The From trait in Rust allows for a type to define how to create itself from another type, hence providing a very simple mechanism for converting between several types.
+
+What is the Into trait in Rust?
+The Into trait in Rust is the reciprocal of the From trait. That is, if you have implemented the From trait for your type, Into will call it when necessary.
+
+What are the TryFrom and TryInto traits in Rust?
+Similar to From and Into, TryFrom and TryInto are generic traits for converting between types in Rust. Unlike From/Into, the TryFrom/TryInto traits are used for fallible conversions, and as such, return Results.
+
+How to convert any type to a String in Rust?
+To convert any type to a String in Rust is as simple as implementing the ToString trait for the type. Rather than doing so directly, you should implement the fmt::Display trait which automagically provides ToString and also allows printing the type.
+
+How to parse a String in Rust?
+In Rust, it's useful to convert strings into many types, but one of the more common string operations is to convert them from string to number. The idiomatic approach to this is to use the parse function and either to arrange for type inference or to specify the type to parse using the 'turbofish' syntax.
+
+What is a statement in Rust?
+A Rust program is (mostly) made up of a series of statements.
+
+What are the common types of statements in Rust?
+The most common two types of statements in Rust are declaring a variable binding, and using a ; with an expression.
+
+Can blocks be used as values in assignments in Rust?
+Yes, blocks are expressions too, so they can be used as values in assignments in Rust. The last expression in the block will be assigned to the place expression such as a local variable.
+
+What happens if the last expression of the block ends with a semicolon in Rust?
+If the last expression of the block ends with a semicolon in Rust, the return value will be ().
+
+What is the output of the provided Rust code?
+The provided Rust code prints the values of x, y, and z. x is 5, y is the result of the expression x_cube + x_squared + x, and z is ().
+
+How is branching with if-else done in Rust?
+Branching with if-else in Rust is similar to other languages. Unlike many of them, the boolean condition doesn't need to be surrounded by parentheses, and each condition is followed by a block.
+
+Are if-else conditionals expressions in Rust?
+Yes, if-else conditionals are expressions in Rust, and all branches must return the same type.
+
+How is an infinite loop indicated in Rust?
+Rust provides a loop keyword to indicate an infinite loop.
+
+What is the use of break and continue statements in Rust?
+The break statement can be used to exit a loop at anytime, whereas the continue statement can be used to skip the rest of the iteration and start a new one in Rust.
+
+How can you break or continue outer loops when dealing with nested loops in Rust?
+When dealing with nested loops in Rust, the loops must be annotated with some 'label, and the label must be passed to the break/continue statement to break or continue outer loops.
+
+How can you retry an operation until it succeeds in Rust?
+One of the uses of a loop in Rust is to retry an operation until it succeeds. If the operation returns a value, you might need to pass it to the rest of the code: put it after the break, and it will be returned by the loop expression.
+
+How can a loop be run while a condition is true in Rust?
+The while keyword can be used to run a loop while a condition is true in Rust.
+
+How can you iterate through an Iterator in Rust?
+The for in construct can be used to iterate through an Iterator in Rust. One of the easiest ways to create an iterator is to use the range notation a..b.
+
+What is the difference between a..b and a..=b in Rust?
+a..b yields values from a (inclusive) to b (exclusive) in steps of one, while a..=b can be used for a range that is inclusive on both ends in Rust.
+
+What are the different ways to convert collections into iterators in Rust?
+into_iter, iter and iter_mut all handle the conversion of a collection into an iterator in different ways in Rust. iter borrows each element of the collection, into_iter consumes the collection, and iter_mut mutably borrows each element of the collection.
+
+How does pattern matching work in Rust?
+Rust provides pattern matching via the match keyword, which can be used like a C switch. The first matching arm is evaluated and all possible values must be covered.
+
+How can a match block destructure items in Rust?
+A match block can destructure items in a variety of ways in Rust, including destructuring tuples, arrays and slices, enums, pointers, and structures.
+
+How can tuples be destructured in a match in Rust?
+Tuples can be destructured in a match in Rust by specifying the tuple in the match arm.
+
+How can arrays and slices be destructured in a match in Rust?
+Like tuples, arrays and slices can be destructured in a match in Rust by specifying the array or slice in the match arm.
+
+How can enums be destructured in a match in Rust?
+Enums can be destructured in a match in Rust by specifying the enum variant in the match arm.
+
+What is the difference between destructuring and dereferencing in Rust?
+For pointers, a distinction needs to be made between destructuring and dereferencing as they are different concepts which are used differently from languages like C/C++. Dereferencing uses *, Destructuring uses &, ref, and ref mut.
+
+How can you destructure structs in Rust?
+You can destructure structs in Rust by specifying the struct in the match arm. You can also ignore some variables by using .., and rename variables for convenience.
+
+Can you destructure structs without a match block in Rust?
+Yes, you do not need a match block to destructure structs in Rust. You can directly assign the struct to a new variable with the same structure.
+
+How does destructuring work with nested structs in Rust?
+Destructuring works with nested structs in Rust by specifying the nested structure in the match arm.
+
+What is a match guard in Rust?
+A match guard in Rust can be added to filter the arm. The compiler won't take guard conditions into account when checking if all patterns are covered by the match expression.
+
+How can you bind values to names in a match in Rust?
+In Rust, the match provides the @ sigil for binding values to names. This is useful for indirectly accessing a variable.
+
+How can you destructure enum variants in Rust?
+You can destructure enum variants in Rust by specifying the enum variant in the match arm. This is particularly useful with enums like Option.
+
+How is branching with if-else done in Rust?
+Branching with if-else in Rust is similar to other languages. Unlike many of them, the boolean condition doesn't need to be surrounded by parentheses, and each condition is followed by a block.
+
+Are if-else conditionals expressions in Rust?
+Yes, if-else conditionals are expressions in Rust, and all branches must return the same type.
+
+How is an infinite loop indicated in Rust?
+Rust provides a loop keyword to indicate an infinite loop.
+
+What is the use of break and continue statements in Rust?
+The break statement can be used to exit a loop at anytime, whereas the continue statement can be used to skip the rest of the iteration and start a new one in Rust.
+
+How can you break or continue outer loops when dealing with nested loops in Rust?
+When dealing with nested loops in Rust, the loops must be annotated with some 'label, and the label must be passed to the break/continue statement to break or continue outer loops.
+
+How can you retry an operation until it succeeds in Rust?
+One of the uses of a loop in Rust is to retry an operation until it succeeds. If the operation returns a value, you might need to pass it to the rest of the code: put it after the break, and it will be returned by the loop expression.
+
+How can a loop be run while a condition is true in Rust?
+The while keyword can be used to run a loop while a condition is true in Rust.
+
+How can you iterate through an Iterator in Rust?
+The for in construct can be used to iterate through an Iterator in Rust. One of the easiest ways to create an iterator is to use the range notation a..b.
+
+What is the difference between a..b and a..=b in Rust?
+a..b yields values from a (inclusive) to b (exclusive) in steps of one, while a..=b can be used for a range that is inclusive on both ends in Rust.
+
+What are the different ways to convert collections into iterators in Rust?
+into_iter, iter and iter_mut all handle the conversion of a collection into an iterator in different ways in Rust. iter borrows each element of the collection, into_iter consumes the collection, and iter_mut mutably borrows each element of the collection.
+
+How does pattern matching work in Rust?
+Rust provides pattern matching via the match keyword, which can be used like a C switch. The first matching arm is evaluated and all possible values must be covered.
+
+How can a match block destructure items in Rust?
+A match block can destructure items in a variety of ways in Rust, including destructuring tuples, arrays and slices, enums, pointers, and structures.
+
+How can tuples be destructured in a match in Rust?
+Tuples can be destructured in a match in Rust by specifying the tuple in the match arm.
+
+How can arrays and slices be destructured in a match in Rust?
+Like tuples, arrays and slices can be destructured in a match in Rust by specifying the array or slice in the match arm.
+
+How can enums be destructured in a match in Rust?
+Enums can be destructured in a match in Rust by specifying the enum variant in the match arm.
+
+What is the difference between destructuring and dereferencing in Rust?
+For pointers, a distinction needs to be made between destructuring and dereferencing as they are different concepts which are used differently from languages like C/C++. Dereferencing uses *, Destructuring uses &, ref, and ref mut.
+
+How can you destructure structs in Rust?
+You can destructure structs in Rust by specifying the struct in the match arm. You can also ignore some variables by using .., and rename variables for convenience.
+
+Can you destructure structs without a match block in Rust?
+Yes, you do not need a match block to destructure structs in Rust. You can directly assign the struct to a new variable with the same structure.
+
+How does destructuring work with nested structs in Rust?
+Destructuring works with nested structs in Rust by specifying the nested structure in the match arm.
+
+What is a match guard in Rust?
+A match guard in Rust can be added to filter the arm. The compiler won't take guard conditions into account when checking if all patterns are covered by the match expression.
+
+How can you bind values to names in a match in Rust?
+In Rust, the match provides the @ sigil for binding values to names. This is useful for indirectly accessing a variable.
+
+How can you destructure enum variants in Rust?
+You can destructure enum variants in Rust by specifying the enum variant in the match arm. This is particularly useful with enums like Option.
+
+println!({subject} {verb} {object}, subject=the lazy dog, verb=jumps over, object=quick brown fox);
+Prints a sentence with named arguments, improving readability.
+
+let logical: bool = true;
+Declares a boolean variable named 'logical' and initializes it with the value 'true'.
+
+let a_float: f64 = 1.0;
+Declares a floating-point variable named 'a_float' and initializes it with the value '1.0'. The type 'f64' represents a 64-bit floating-point number.
+
+let an_integer = 5i32;
+Declares an integer variable named 'an_integer' and initializes it with the value '5'. The suffix 'i32' indicates that this is a 32-bit signed integer.
+
+let default_float = 3.0;
+Declares a floating-point variable named 'default_float' and initializes it with the value '3.0'. In the absence of a suffix, Rust defaults to 'f64' for floating-point numbers.
+
+let default_integer = 7;
+Declares an integer variable named 'default_integer' and initializes it with the value '7'. In the absence of a suffix, Rust defaults to 'i32' for integers.
+
+let mut inferred_type = 12; inferred_type = 4294967296i64;
+Declares a mutable variable named 'inferred_type' and initializes it with the value '12'. On the next line, 'inferred_type' is assigned a 64-bit integer, which changes its inferred type to 'i64'.
+
+let mut mutable = 12; mutable = 21;
+Declares a mutable integer variable named 'mutable' and initializes it with the value '12'. On the next line, the value of 'mutable' is changed to '21'.
+
+let mutable = true;
+Declares a boolean variable named 'mutable' and initializes it with the value 'true'. This is an example of variable shadowing, where a new variable with the same name is declared, effectively overwriting the previous 'mutable' variable.
+
+let cloned = matrix.clone();
+Clones the 'matrix' variable into a new variable 'cloned'.
+
+let copied = matrix;
+Copies the 'matrix' variable into a new variable 'copied'.
+
+let array = [1, 2, 3, 4, 5];
+Declares an array 'array' with five elements.
+
+let xs: [i32; 5] = [1, 2, 3, 4, 5];
+Declares a fixed-size array 'xs' of type i32 with 5 elements.
+
+let ys: [i32; 500] = [0; 500];
+Declares a fixed-size array 'ys' of type i32 with 500 elements, all initialized to 0.
+
+analyze_slice(&xs);
+Calls the function 'analyze_slice' with a slice of the whole array 'xs'.
+
+analyze_slice(&ys[1 .. 4]);
+Calls the function 'analyze_slice' with a slice of the array 'ys' from index 1 to 3.
+
+let empty_array: [u32; 0] = [];
+Declares an empty array 'empty_array' of type u32.
+
+assert_eq!(&empty_array, &[]);
+Asserts that the 'empty_array' is equal to an empty slice.
+
+struct Person { name: String, age: u8, }
+Defines a struct 'Person' with fields 'name' of type String and 'age' of type u8.
+
+struct Unit;
+Defines a unit struct 'Unit'.
+
+println!({} days, 31);
+Prints 31 days using {} as a placeholder for the value (31).
+
+println!({0}, this is {1}. {1}, this is {0}, Alice, Bob);
+Prints Alice, this is Bob. Bob, this is Alice using positional arguments ({0}, {1}). Order matters!
+
+println!({subject} {verb} {object}, subject=the lazy dog, verb=jumps over, object=quick brown fox);
+Prints a sentence with named arguments, improving readability.
+
+let logical: bool = true;
+Declares a boolean variable named 'logical' and initializes it with the value 'true'.
+
+let a_float: f64 = 1.0;
+Declares a floating-point variable named 'a_float' and initializes it with the value '1.0'. The type 'f64' represents a 64-bit floating-point number.
+
+let an_integer = 5i32;
+Declares an integer variable named 'an_integer' and initializes it with the value '5'. The suffix 'i32' indicates that this is a 32-bit signed integer.
+
+let default_float = 3.0;
+Declares a floating-point variable named 'default_float' and initializes it with the value '3.0'. In the absence of a suffix, Rust defaults to 'f64' for floating-point numbers.
+
+let default_integer = 7;
+Declares an integer variable named 'default_integer' and initializes it with the value '7'. In the absence of a suffix, Rust defaults to 'i32' for integers.
+
+let mut inferred_type = 12; inferred_type = 4294967296i64;
+Declares a mutable variable named 'inferred_type' and initializes it with the value '12'. On the next line, 'inferred_type' is assigned a 64-bit integer, which changes its inferred type to 'i64'.
+
+let mut mutable = 12; mutable = 21;
+Declares a mutable integer variable named 'mutable' and initializes it with the value '12'. On the next line, the value of 'mutable' is changed to '21'.
+
+let mutable = true;
+Declares a boolean variable named 'mutable' and initializes it with the value 'true'. This is an example of variable shadowing, where a new variable with the same name is declared, effectively overwriting the previous 'mutable' variable.
+
+let cloned = matrix.clone();
+Clones the 'matrix' variable into a new variable 'cloned'.
+
+let copied = matrix;
+Copies the 'matrix' variable into a new variable 'copied'.
+
+let array = [1, 2, 3, 4, 5];
+Declares an array 'array' with five elements.
+
+let xs: [i32; 5] = [1, 2, 3, 4, 5];
+Declares a fixed-size array 'xs' of type i32 with 5 elements.
+
+let ys: [i32; 500] = [0; 500];
+Declares a fixed-size array 'ys' of type i32 with 500 elements, all initialized to 0.
+
+analyze_slice(&xs);
+Calls the function 'analyze_slice' with a slice of the whole array 'xs'.
+
+analyze_slice(&ys[1 .. 4]);
+Calls the function 'analyze_slice' with a slice of the array 'ys' from index 1 to 3.
+
+let empty_array: [u32; 0] = [];
+Declares an empty array 'empty_array' of type u32.
+
+assert_eq!(&empty_array, &[]);
+Asserts that the 'empty_array' is equal to an empty slice.
+
+struct Person { name: String, age: u8, }
+Defines a struct 'Person' with fields 'name' of type String and 'age' of type u8.
+
+struct Unit;
+Defines a unit struct 'Unit'.
+
+struct Pair(i32, f32);
+Defines a tuple struct 'Pair' with fields of type i32 and f32.
+
+struct Point { x: f32, y: f32, }
+Defines a struct 'Point' with fields 'x' and 'y' of type f32.
+
+struct Rectangle { top_left: Point, bottom_right: Point, }
+Defines a struct 'Rectangle' with fields 'top_left' and 'bottom_right' of type 'Point'.
+
+let peter = Person { name, age };
+Creates an instance 'peter' of struct 'Person'.
+
+enum WebEvent { PageLoad, PageUnload, KeyPress(char), Paste(String), Click { x: i64, y: i64 }, }
+Defines an enum 'WebEvent' with various variants.
+
+fn inspect(event: WebEvent) { ... }
+Defines a function 'inspect' that takes a 'WebEvent' enum as an argument and prints a message based on the variant of the enum.
+
+let pressed = WebEvent::KeyPress('x');
+Creates an instance 'pressed' of 'WebEvent' with the 'KeyPress' variant.
+
+let pasted  = WebEvent::Paste(\my text\".to_owned());"
+Creates an instance 'pasted' of 'WebEvent' with the 'Paste' variant.
+
+let click   = WebEvent::Click { x: 20, y: 80 };
+Creates an instance 'click' of 'WebEvent' with the 'Click' variant.
+
+let load    = WebEvent::PageLoad;
+Creates an instance 'load' of 'WebEvent' with the 'PageLoad' variant.
+
+let unload  = WebEvent::PageUnload;
+Creates an instance 'unload' of 'WebEvent' with the 'PageUnload' variant.
+
+inspect(pressed);
+Calls the 'inspect' function with the 'pressed' instance.
+
+enum VeryVerboseEnumOfThingsToDoWithNumbers { Add, Subtract, }
+Defines an enum 'VeryVerboseEnumOfThingsToDoWithNumbers' with 'Add' and 'Subtract' variants.
+
+type Operations = VeryVerboseEnumOfThingsToDoWithNumbers;
+Creates a type alias 'Operations' for the 'VeryVerboseEnumOfThingsToDoWithNumbers' enum.
+
+let x = Operations::Add;
+Creates an instance 'x' of 'Operations' with the 'Add' variant.
+
+impl VeryVerboseEnumOfThingsToDoWithNumbers { fn run(&self, x: i32, y: i32) -> i32 { ... } }
+Implements a method 'run' for the 'VeryVerboseEnumOfThingsToDoWithNumbers' enum that performs the operation represented by the enum variant.
+
+let result = x.run(5, 6);
+Calls the 'run' method on the 'x' instance with arguments 5 and 6.
+
+static LANGUAGE: &str = \Rust\"; const THRESHOLD: i32 = 10;"
+Defines a static string 'LANGUAGE' and a constant 'THRESHOLD'.
+
+fn is_big(n: i32) -> bool { n > THRESHOLD }
+Defines a function 'is_big' that checks if a number 'n' is greater than the constant 'THRESHOLD'.
+
+let n = 16;
+Creates a variable 'n' with a value of 16.
+
+fn add_one(x: i32) -> i32 { x + 1 }
+Defines a function 'add_one' that takes an integer 'x' and returns 'x + 1'.
+
+let x: i32 = 1;
+Declares a variable 'x' of type i32 and initializes it with the value 1.
+
+let x = add_one(x);
+Calls the 'add_one' function with 'x' as an argument and assigns the result back to 'x'.
+
+assert_eq!(x, 2);
+Asserts that the value of 'x' is equal to 2.
+
+fn diverges() -> ! { panic!(\This function never returns!\"); }"
+Defines a function 'diverges' that panics with a message. The return type '!' indicates that the function does not return.
+
+let x: i32 = diverges();
+Attempts to call the 'diverges' function and assign its result to 'x'. This will not compile because 'diverges' does not return a value.
+
+let x: i32 = 5;
+Creates a variable 'x' of type i32 and initializes it with the value 5.
+
+let y: i32 = { let x_squared = x * x; x_squared + x };
+Creates a variable 'y' and uses a block to calculate its value based on 'x'.
+
+let z: i32 = { 2 * x; };
+Creates a variable 'z' and uses a block to calculate its value. This will not compile because the block does not return a value.
+
+let x = 5;
+Creates a variable 'x' and initializes it with the value 5. The type of 'x' will be inferred as i32.
+
+let y = { let x_squared = x * x; x_squared + x };
+Creates a variable 'y' and uses a block to calculate its value based on 'x'. The type of 'y' will be inferred based on the block's return value.
+
+let z = { 2 * x };
+Creates a variable 'z' and uses a block to calculate its value. The type of 'z' will be inferred based on the block's return value.
+
+let y = if x == 5 { 10 } else { 15 };
+Creates a variable 'y' and uses an if expression to assign a value based on the condition.
+
+let y = if x == 5 { 10 } else { \hello\" };"
+Creates a variable 'y' and uses an if expression with different types in the branches. This will not compile because the types must match.
+
+let y = loop { x += x; if x > 100 { break x; } };
+Creates a variable 'y' and uses a loop to calculate its value based on 'x'.
+
+let x = 5;
+Creates a variable 'x' and initializes it with the value 5. The type of 'x' will be inferred as i32.
+
+let y = while x < 10 { x += 1; };
+Creates a variable 'y' and uses a while loop to increment 'x' until it reaches 10.
+
+// Basic Euclidean Algorithm pub fn gcd_basic(mut a: i32, mut b: i32) -> i32 { while b != 0 { let temp = b; b = a % b; a = temp; } a.abs() } // Extended Euclidean Algorithm pub fn gcd_extended(a: i32, b: i32) -> (i32, i32, i32) { if b == 0 { (a, 1, 0) } else { let (g, x, y) = gcd_extended(b, a % b); (g, y, x - (a / b) * y) } } 
+Implements the basic and extended Euclidean algorithms for finding the greatest common divisor (GCD). Arguments: a, b
+
+let a = 252; let b = 105;
+Declares two variables 'a' and 'b', and assigns them the values 252 and 105, respectively.
+
+let result = gcd_basic(a, b);
+Invokes the 'gcd_basic' function with arguments 'a' and 'b', and stores the result in the variable 'result'.
+
+let (gcd, x, y) = gcd_extended(a, b);
+Invokes the 'gcd_extended' function with arguments 'a' and 'b', and destructures the returned tuple into variables 'gcd', 'x', and 'y'.
+
+fn is_power_of(x: i32, y: i32) -> bool { if y == 1 || (x != 0 && y != 0 && y % x == 0 && is_power_of(x, y / x)) { return true; } else { return false; } } 
+Checks if 'y' is a power of 'x' using recursion. Arguments: x, y
+
+pub fn is_divisible_by_13(num: i32) -> bool { num % 13 == 0 } 
+Checks if a given number 'num' is divisible by 13. Argument: num
+
+fn check_line_passes_origin(x1: i32, y1: i32, x2: i32, y2: i32) -> bool { // Calculate the slope let slope = (y2 - y1).abs() / (x2 - x1).abs(); // Calculate the y-intercept let y_intercept = y1 - slope * x1; // Check if the line passes through the origin y_intercept == 0 } 
+Checks if a line, defined by two points (x1, y1) and (x2, y2), passes through the origin. Arguments: x1, y1, x2, y2
+
+fn is_perfect_square(n: i64) -> bool { let mut i = 1; let mut sum = 0; loop { sum += i; if sum == n { return true; } if sum > n { return false; } i += 2; } } 
+Checks if a number 'n' is a perfect square using an addition/subtraction method. Argument: n
+
+pub fn count_ways(n: usize) -> usize { let mut dp = vec![0; n + 1]; dp[0] = 1; for i in 1..=n { let mut j: usize = 1; while j <= 4 && j <= i { dp[i] += dp[i - j]; j += 1; } } dp[n] } 
+Counts the different ways to express 'n' as the sum of 1, 3, and 4 using dynamic programming. Argument: n
+
+fn count_pairs(a: &[i32], b: &[i32]) -> usize { a.iter().zip(b.iter()).filter(|&&x, &&y| x < y).count() } 
+Counts the number of pairs (x, y) where x is from array 'a' and y is from array 'b' and x < y. Arguments: a, b
+
+use std::collections::HashMap; fn count_pairs_difference(arr: &Vec<i32>, n: usize, k: i32) -> i32 { let mut count = 0; let mut map = HashMap::new(); for &num in arr { let entry = map.entry(num).or_insert(0); *entry += 1; } for &num in arr { if map.contains_key(&(num + k)) { count += *map.get(&(num + k)).unwrap() * map.get(&num).unwrap(); } } count } 
+Counts the number of pairs in array 'arr' of size 'n' that have a difference equal to 'k'. Arguments: arr, n, k
+
+fn count_product_pairs(arr: &[i32], n: usize) -> i32 { let mut count = 0; for i in 0..n { for j in (i+1)..n { if arr.contains(&(arr[i] * arr[j])) { count += 1; } } } count } 
+This function takes an array and its length as input. It counts the number of pairs in the array whose product is also present in the array. It does this by iterating over each pair of elements in the array and checking if their product is in the array. If it is, it increments a counter. The function finally returns this count.
+
+use std::collections::HashSet; fn count_pairs(arr: &[i32], n: usize) -> i32 { let set: HashSet<i32> = arr.iter().cloned().collect(); let mut count = 0; for i in 0..n { for j in (i + 1)..n { if set.contains(&(arr[i] * arr[j])) { count += 1; } } } count } 
+This function also counts the number of pairs in the array whose product is present in the array. However, it uses a HashSet for faster lookup of the product of pairs. It first creates a HashSet from the array, then iterates over each pair of elements in the array. If their product is in the HashSet, it increments a counter. The function finally returns this count.
+
+pub fn count_palindrome_substrings(s: &str) -> i32 { let s = s.as_bytes(); let n = s.len(); let mut dp = vec![vec![false; n + 1]; n + 1]; let mut count = 0; // Single character substrings are always palindromic for i in 0..n { dp[i][i] = true; count += 1; } // Check for two character substrings for i in 0..n - 1 { if s[i] == s[i + 1] { dp[i][i + 1] = true; count += 1; } } // Check for substrings of length 3 to n for len in 3..=n { for i in 0..=n - len { let j = i + len - 1; if s[i] == s[j] && dp[i + 1][j - 1] { dp[i][j] = true; count += 1; } } } count } 
+This function counts the number of palindromic substrings in a given string. It uses dynamic programming to store whether a substring is palindromic or not.
+
+pub fn average(a: i32, b: i32) -> Option<i32> { a.checked_add(b).and_then(|sum| sum.checked_div(2)) } 
+ This function calculates the average of two integers without causing overflow. It uses the checked_add and checked_div methods to prevent overflow.
+
+pub fn average(a: u32, b: u32) -> u32 { (a / 2) + (b / 2) + ((a % 2 + b % 2) / 2) } 
+This is another version of the average function that works with unsigned integers. It calculates the average in a way that prevents overflow.
+
+pub fn count_ways(n: u32) -> u32 { match n { 0 => 1, 1 => 1, _ => count_ways(n - 1) + count_ways(n - 2), } } 
+This function counts the number of ways to construct buildings given a number. It uses recursion and the concept of Fibonacci numbers.
+
+fn count_pcount palindrome sub strings string arguments: str,naths(n: usize, m: usize) -> usize { let mut paths = vec![vec![0; n]; m]; for i in 0..m { for j in 0..n { if i == 0 || j == 0 { paths[i][j] = 1; } else { paths[i][j] = paths[i-1][j] + paths[i][j-1]; } } } paths[m-1][n-1] } 
+This function counts the number of possible paths from the top-left to the bottom-right of a matrix. It uses dynamic programming to store the number of paths to each cell.
+
+fn count_possible_groups(arr: &[i32], n: usize) -> i32 { let mut count = 0; for i in 0..n { for j in (i+1)..n { let sum = arr[i] + arr[j]; if sum % 3 == 0 { count += 1; } } } for i in 0..n { for j in (i+1)..n { for k in (j+1)..n { let sum = arr[i] + arr[j] + arr[k]; if sum % 3 == 0 { count += 1; } } } } count } 
+This function counts the number of groups of size 2 or 3 in an array whose sum is a multiple of 3.
+
+fn count_palindromic_subsequence(s: &str) -> i32 { let n = s.len(); let mut dp = vec![vec![0; n]; n]; for gap in 0..n { for j in gap..n { let i = j - gap; if gap == 0 { dp[i][j] = 1; } else if gap == 1 { dp[i][j] = 2; } else { dp[i][j] = dp[i][j - 1] + dp[i + 1][j] - dp[i + 1][j - 1]; if s.chars().nth(i) == s.chars().nth(j) { dp[i][j] += 1 + dp[i + 1][j - 1]; } } } } dp[0][n - 1] }
+This function counts the number of palindromic subsequences in a given string. It uses dynamic programming to store the number of palindromic subsequences for each possible substring.
+
+pub fn count_set_bits(n: usize) -> usize { let mut count = 0; let mut n = n; while n > 0 { count += n & 1; n >>= 1; } count } 
+This function counts the number of set bits (bits that are 1) in an integer. It uses bitwise operations to count the set bits.
+
+use num_integer::Integer; fn counting_bits(n: i32) -> usize { n.popcount() } 
+count set bits in an integer 1 arguments: n
+
+pub fn count_set_bits(n: i32) -> i32 { let mut count = 0; let mut n = n; while n > 0 { count += n & 1; n >>= 1; } count } 
+count set bits in an integer 3 arguments: n
+
+fn count_adjacent_diff_one(s: &str) -> usize { let s: Vec<char> = s.chars().collect(); let n = s.len(); let mut count = 0; for i in 0..n-1 { if (s[i+1] as u8 - s[i] as u8).abs() == 1 { count += 1; } } count } 
+count strings adjacent characters difference one arguments: n
+
+pub fn count_strings(n: i32) -> i32 { let mut dp = vec![0; (n + 1) as usize]; dp[0] = 1; for i in 1..=n { dp[i as usize] = dp[(i - 1) as usize]; if i > 1 { dp[i as usize] += dp[(i - 2) as usize]; } } dp[n as usize] } 
+count strings can formed using b c given constraints 1 arguments: n
+
+use std::collections::HashMap; fn count_subarrays(arr: &Vec<i32>, n: usize) -> i32 { let mut cnt_0 = 0; let mut cnt_1 = 0; let mut cnt_map: HashMap<i32, i32> = HashMap::new(); cnt_map.insert(0, 1); let mut result = 0; for i in 0..n { if arr[i] == 0 { cnt_0 += 1; } else { cnt_1 += 1; } let diff = cnt_0 - cnt_1; if cnt_map.contains_key(&diff) { result += cnt_map[&diff]; } *cnt_map.entry(diff).or_insert(0) += 1; } result } 
+count subarrays equal number 1s 0s 1 arguments: arr,n
+
+pub fn count_subarrays(arr: &Vec<i32>, n: usize) -> Vec<Vec<i32>> { let mut count = [0; 100005]; let mut total = 0; let mut j = 0; let mut distinct_count = 0; let mut answer = Vec::new(); for i in 0..n { while j < n && count[arr[j] as usize] == 0 { count[arr[j] as usize] += 1; total += j - i + 1; distinct_count += 1; j += 1; } answer.push(total); count[arr[i] as usize] -= 1; distinct_count -= 1; } answer } 
+count subarrays total distinct elements original array arguments: arr,n
+
+pub fn count_same_even_odd(arr: &[i32], n: usize) -> i32 { let mut odd = 0; let mut even = 0; let mut difference = 0; let mut count = 0; let mut prefix_count = [0; 2 * n + 1]; prefix_count[n] = 1; for &value in arr { if value % 2 == 0 { even += 1; } else { odd += 1; } difference = even - odd; count += prefix_count[(difference as usize) + n]; prefix_count[(difference as usize) + n] += 1; } count } 
+count subarrays with same even and odd elements arguments: arr,n
+
+fn count_substrings(s: &str) -> i32 { let mut count = 0; for i in 0..s.len() { for j in i..s.len() { if s.chars().nth(i) == s.chars().nth(j) { count += 1; } } } count } 
+count substrings with same first and last characters arguments: s
+
+pub fn sum_of_digits(n: u32) -> u32 { (1..=n).map(|i| i.to_string().chars().filter_map(|c| c.to_digit(10)).sum::<u32>()).sum() } 
+count sum of digits in numbers from 1 to n arguments: n
+
+fn count_set_bits(n: i32) -> i32 { let mut total_set_bits = 0; for i in 1..=n { let mut num = i; while num > 0 { total_set_bits += num & 1; num >>= 1; } } total_set_bits } 
+count total set bits in all numbers from 1 to n arguments: n
+
+pub fn count_trailing_zeroes(n: u64) -> u64 { let mut count = 0; let mut i = 5; while n / i >= 1 { count += n / i; i *= 5; } count } 
+count trailing zeroes factorial number arguments: n
+
+fn count_ways_recursive(n: i32) -> i32 { if n <= 0 { return 1; } if n == 1 { return 2; } let prev = count_ways_recursive(n - 1); let prev_prev = count_ways_recursive(n - 2); return prev + prev_prev; } fn count_ways_dp(n: i32) -> i32 { if n <= 0 { return 1; } if n == 1 { return 2; } let mut dp = vec![0; (n + 1) as usize]; dp[0] = 1; dp[1] = 2; for i in 2..=n as usize { dp[i] = dp[i - 1] + dp[i - 2]; } return dp[n as usize]; } 
+count ways build street given constraints arguments: n
+
+pub fn count_ways_to_divide_circle(n: usize) -> u64 { if n < 2 { return 1; } let mut dp = vec![0; n + 1]; dp[0] = 1; dp[1] = 1; for i in 2..=n { for j in 0..=i-1 { dp[i] += dp[j] * dp[i - 1 - j]; } } dp[n] } 
+count ways divide circle using n non intersecting chords arguments: a
+
+pub fn count_exactly_two(arr: &[String]) -> usize { use std::collections::HashMap; let mut map = HashMap::new(); for word in arr { let counter = map.entry(word).or_insert(0); *counter += 1; } map.into_iter().filter(|(_k, v)| *v == 2).count() } 
+count words appear exactly two times array words arguments: stri,n
+
+pub fn factorial(n: i32) -> i32 { if n == 0 { 1 } else { n * factorial(n - 1) } } 
+c program factorial number arguments: n
+
+pub fn factorial(n: u64) -> u64 { match n { 0 | 1 => 1, _ => n * factorial(n - 1), } } 
+c program factorial number 1 arguments: n
+
+pub fn factorial(n: u32) -> u32 { (1..=n).product() } 
+c program factorial number 2 arguments: n
+
+pub fn factorial(n: i32) -> i32 { if n == 0 { 1 } else { n * factorial(n - 1) } } 
+c program factorial number arguments: n
+
+pub fn factorial(n: u64) -> u64 { match n { 0 | 1 => 1, _ => n * factorial(n - 1), } } 
+c program factorial number 1 arguments: n
+
+fn fibonacci_modulo(p: u32) -> u32 { let mut fib = (0, 1); return fib.0; } 
+fibonacci modulo p arguments: p
+
+pub fn prime_power(n: i32, p: i32) -> i32 { let mut result = 1; for _ in 0..n { result *= p; } result } 
+finding power prime number p n 1 arguments: n,p
+
+pub fn find_fixed_point(arr: &[i32]) -> Option<usize> { let n = arr.len(); for i in 0..n { if arr[i] == i as i32 { return Some(i); } } None } 
+find a fixed point in a given array arguments: arr,n
+
+pub fn max_hamming_distance<T>(arr: &[T], n: usize) -> usize where T: Eq, { let mut rot_arr = vec![0; arr.len()]; let mut max_hamming = 0; for i in 1..n { max_hamming = std::cmp::max(max_hamming, hamming(&arr, &rotate(&mut rot_arr.clone(), arr, i))); } max_hamming } fn rotate<T>(rot_arr: &mut [T], arr: &[T], rot: usize) -> &[T] where T: Clone, { for i in 0..arr.len() { rot_arr[i] = arr[(i + rot) % arr.len()].clone(); } rot_arr } fn hamming<T>(arr1: &[T], arr2: &[T]) -> usize where T: Eq, { arr1.iter().zip(arr2.iter()).filter(|(a, b)| *a != *b).count() } 
+find a rotation with maximum hamming distance arguments: arr,n
+
+pub fn find_triplet(a: &[i32], arr_size: usize, sum: i32) -> Option<(i32, i32, i32)> { for i in 0..arr_size-2 { for j in i+1..arr_size-1 { for k in j+1..arr_size { if a[i] + a[j] + a[k] == sum { return Some((a[i], a[j], a[k])); } } } } None } 
+find a triplet that sum to a given value arguments: a,arr_size,sum
+
+pub fn find_triplet(a: &mut [i32], arr_size: usize, sum: i32) -> Option<(i32, i32, i32)> { for i in 0..arr_size-2 { for j in i+1..arr_size-1 { for k in j+1..arr_size { if a[i] + a[j] + a[k] == sum { return Some((a[i], a[j], a[k])); } } } } None } 
+find a triplet that sum to a given value 1 arguments: a,arr_size,sum
+
+fn triplet_sum(a: &[i32], arr_size: usize, sum: i32) -> Option<(i32, i32, i32)> { for i in 0..arr_size-2 { for j in (i+1)..arr_size-1 { for k in (j+1)..arr_size { if a[i] + a[j] + a[k] == sum { return Some((a[i], a[j], a[k])); } } } } None } 
+find a triplet that sum to a given value 2 arguments: a,arr_size,sum
+
+pub fn has_duplicate_parentheses(string_arg0: &str) -> bool { let mut stack = Vec::new(); for ch in string_arg0.chars() { if ch == '(' { stack.push(ch); } else if ch == ')' { if stack.is_empty() || stack.pop().unwrap() != '(' { return true; } } } return !stack.is_empty(); } 
+find expression duplicate parenthesis not arguments: string_arg0
+
+pub fn harmonic_mean(a: f64, b: f64) -> f64 { 2.0 / ((1.0 / a) + (1.0 / b)) } pub fn arithmetic_mean(a: f64, b: f64) -> f64 { (a + b) / 2.0 } pub fn geometric_mean(a: f64, b: f64) -> f64 { (a * b).sqrt() } 
+find harmonic mean using arithmetic mean geometric mean arguments: a,b
+
+const SQRT_5: f64 = 2.23606797749979; const PHI: f64 = (1.0 + SQRT_5) / 2.0; pub fn find_fibonacci_index(n: f64) -> f64 { (n * SQRT_5 + SQRT_5 / 2.0).log(PHI) } 
+find index given fibonacci number constant time arguments: n
+
+pub fn find_fibonacci_index(n: i32) -> i32 { let sqrt_five = (5 as f64).sqrt(); let mut ans = ((n * sqrt_five).ln() / 2.302585092994046 as f64).floor() as i32; while get_fibonacci(ans) < n { ans += 1; } if get_fibonacci(ans) == n { return ans; } else { return -1; } } fn get_fibonacci(n: i32) -> i32 { let sqrt_five = (5 as f64).sqrt(); let ans = ((((1 + sqrt_five) / 2) as f64).powi(n) - (((1 - sqrt_five) / 2) as f64).powi(n)) / sqrt_five; (ans + 0.5) as i32 // Rounding to the nearest whole number } 
+find index given fibonacci number constant time 1 arguments: n
+
+fn find_extra_element(arr1: &[i32], arr2: &[i32], n: usize) -> Option<usize> { let mut left = 0; let mut right = n - 1; while left <= right { let mid = (left + right) / 2; if arr1.get(mid) != arr2.get(mid) { return Some(mid); } if arr1[mid] > arr2[mid] { right = mid - 1; } else { left = mid + 1; } } None } 
+find index of an extra element present in one sorted array 1 arguments: arr1,arr2,n
+
+fn find_largest_d(arr: &mut [i32], n: usize) -> i32 { arr.sort_by(|a, b| b.cmp(a)); arr[0] } 
+find largest d in array such that a b c d arguments: s,n
+
+// Box structure #[derive(Debug, Clone)] pub struct Box { width: i32, depth: i32, height: i32, } impl Box { // Construct Box pub fn new(width: i32, depth: i32, height: i32) -> Self { Self { width, depth, height, } } // Can this box be placed on the top of the other one pub fn can_be_above(&self, other: &Self) -> bool { self.width < other.width && self.depth < other.depth } // Sorting boxes by height (Descending) pub fn height_ascending(first: &Self, second: &Self) -> std::cmp::Ordering { second.height.cmp(&first.height) } } // Vector of Boxes type BoxStack = Vec<Box>; // Function to get maximum height stack pub fn create_stack(boxes: &mut BoxStack) -> i32 { if boxes.is_empty() { return 0; } // sorting boxes by height (Descending) boxes.sort_by(Box::height_ascending); let mut max_height = vec![0; boxes.len()]; (0..boxes.len()).for_each(|i| { max_height[i] = boxes[i].height; (0..i).for_each(|j| { if boxes[i].can_be_above(&boxes[j]) && max_height[j] + boxes[i].height > max_height[i] { max_height[i] = max_height[j] + boxes[i].height; } }); }); *max_height.iter().max().unwrap() } 
+find maximum height pyramid from the given array of objects arguments: boxes,n
+
+pub fn max_product(arr: &[i32], n: usize) -> i32 { // To store minimum and second minimum element in the array let (mut min, mut second_min) = (i32::MAX, i32::MAX); // To store maximum, second maximum and third maximum element in the array let (mut max, mut second_max, mut third_max) = (i32::MIN, i32::MIN, i32::MIN); for &num in arr.iter() { if num < min { second_min = min; min = num; } else if num < second_min { second_min = num; } if num > max { third_max = second_max; second_max = max; max = num; } else if num > second_max { third_max = second_max; second_max = num; } else if num > third_max { third_max = num; } } i32::max((min * second_min * max), (max * second_max * third_max)) } 
+find maximum product of a triplet in array arguments: arr,n
+
+fn find_max_product(arr: &mut [i32; 3], n: usize) -> i32 { arr.sort(); let max_product = arr[n - 1] * arr[n - 2] * arr[n - 3]; max_product } 
+find maximum product of a triplet in array 1 arguments: arr,n
+
+pub fn max_sum(stack1: &[i32], stack2: &[i32], stack3: &[i32]) -> i32 { let (mut sum1, mut sum2, mut sum3) = (stack1.iter().sum::<i32>(), stack2.iter().sum::<i32>(), stack3.iter().sum::<i32>()); let mut top1: usize = 0; let mut top2: usize = 0; let mut top3: usize = 0; while (sum1 != sum2 && sum2 != sum3 && sum3 != sum1) { if sum1 > sum2 && sum1 > sum3 { sum1 -= stack1[top1]; top1 += 1; } else if sum2 > sum1 && sum2 > sum3 { sum2 -= stack2[top2]; top2 += 1; } else if sum3 > sum1 && sum3 > sum2 { sum3 -= stack3[top3]; top3 += 1; } } return sum1; } 
+find maximum sum possible equal sum three stacks arguments: stack1,stack2,stack3,n1,n2,n3
+
+fn find_min_diff_pair(arr: &mut [i32], n: usize) -> (i32, i32) { arr.sort_unstable(); let mut min_diff = i32::MAX; let mut res = (0, 0); for i in 1..n { if arr[i] - arr[i - 1] < min_diff { min_diff = arr[i] - arr[i - 1]; res = (arr[i - 1], arr[i]); } } res } 
+find minimum difference pair arguments: arr,n
+
+pub fn find_minimum_difference_pair(arr: &mut Vec<i32>, n: usize) -> Option<(i32, i32)> { let mut min_diff = i32::MAX; let mut result = None; arr.sort(); // Sort the array for i in 0..n-1 { if arr[i+1] - arr[i] < min_diff { min_diff = arr[i+1] - arr[i]; result = Some((arr[i], arr[i+1])); } } result } 
+find minimum difference pair 1 arguments: arr,n
+
+fn add(a: i32, b: i32) -> i32 { a + b }
+This code defines a function that adds two numbers and returns the result.
+
+fn sum_of_squares(n: i32) -> i32 { (1..=n).map(|x| x * x).sum() } 
+Calculates the sum of the squares of the first 'n' natural numbers. Arguments: n
+
+fn factorial(n: u32) -> u32 { (1..=n).product() } 
+Calculates the factorial of a given number 'n'. Arguments: n
+
+fn is_prime(n: u32) -> bool { if n <= 1 { return false; } for i in 2..=((n as f64).sqrt() as u32) { if n % i == 0 { return false; } } true } 
+Checks if a number 'n' is a prime number. Arguments: n
+
+fn gcd(a: u32, b: u32) -> u32 { if b == 0 { a } else { gcd(b, a % b) } } 
+Calculates the greatest common divisor (GCD) of two numbers using the Euclidean algorithm. Arguments: a, b
+
+fn fibonacci(n: u32) -> u32 { match n { 0 => 0, 1 => 1, _ => fibonacci(n - 1) + fibonacci(n - 2), } } 
+Calculates the 'n'th Fibonacci number using recursion. Arguments: n
+
+fn reverse_string(s: &str) -> String { s.chars().rev().collect() } 
+Reverses a given string. Arguments: s
+
+fn is_palindrome(s: &str) -> bool { let s: String = s.chars().filter(|c| c.is_alphanumeric()).collect(); let s = s.to_lowercase(); s == s.chars().rev().collect::<String>() } 
+Checks if a given string is a palindrome, ignoring non-alphanumeric characters and case. Arguments: s
+
+fn binary_search(arr: &[i32], target: i32) -> Option<usize> { let mut low = 0; let mut high = arr.len(); while low < high { let mid = (low + high) / 2; if arr[mid] == target { return Some(mid); } else if arr[mid] < target { low = mid + 1; } else { high = mid; } } None } 
+Performs binary search on a sorted array 'arr' to find the target element. Returns the index of the target if found, otherwise returns None. Arguments: arr, target
+
+fn merge_sort(arr: &mut [i32]) { if arr.len() > 1 { let mid = arr.len() / 2; merge_sort(&mut arr[..mid]); merge_sort(&mut arr[mid..]); let mut left = arr[..mid].to_vec(); let mut right = arr[mid..].to_vec(); let mut i = 0; let mut j = 0; for k in arr { if i >= left.len() { *k = right[j]; j += 1; } else if j >= right.len() { *k = left[i]; i += 1; } else if left[i] < right[j] { *k = left[i]; i += 1; } else { *k = right[j]; j += 1; } } } } 
+Implements the merge sort algorithm to sort an array in place. Arguments: arr
+
+fn quicksort(arr: &mut [i32]) { if arr.len() <= 1 { return; } let pivot_index = partition(arr); let (left, right) = arr.split_at_mut(pivot_index); quicksort(left); quicksort(&mut right[1..]); } fn partition(arr: &mut [i32]) -> usize { let pivot = arr[arr.len() / 2]; let mut i = 0; let mut j = arr.len() - 1; loop { while arr[i] < pivot { i += 1; } while arr[j] > pivot { if j == 0 { break; } j -= 1; } if i >= j { break; } arr.swap(i, j); i += 1; if j > 0 { j -= 1; } } j } 
+Implements the quicksort algorithm to sort an array in place. Arguments: arr
+
+fn transpose(matrix: &mut Vec<Vec<i32>>) { let n = matrix.len(); for i in 0..n { for j in i+1..n { let temp = matrix[i][j]; matrix[i][j] = matrix[j][i]; matrix[j][i] = temp; } } } 
+Transposes a square matrix in place. Arguments: matrix
+
+fn dot_product(vec1: &[i32], vec2: &[i32]) -> i32 { vec1.iter().zip(vec2.iter()).map(|(x, y)| x * y).sum() } 
+Calculates the dot product of two vectors. Arguments: vec1, vec2
+
+fn find_max(arr: &[i32]) -> Option<i32> { arr.iter().cloned().max() } 
+Finds the maximum value in a given array. Returns None if the array is empty. Arguments: arr
+
+fn find_min(arr: &[i32]) -> Option<i32> { arr.iter().cloned().min() } 
+Finds the minimum value in a given array. Returns None if the array is empty. Arguments: arr
+
+fn sum_elements(arr: &[i32]) -> i32 { arr.iter().sum() } 
+Calculates the sum of all elements in an array. Arguments: arr
+
+fn count_occurrences(arr: &[i32], target: i32) -> usize { arr.iter().filter(|&&x| x == target).count() } 
+Counts the number of times a target element appears in an array. Arguments: arr, target
+
+fn unique_elements(arr: &[i32]) -> Vec<i32> { let mut unique = Vec::new(); for &item in arr { if !unique.contains(&item) { unique.push(item); } } unique } 
+Returns a vector containing only the unique elements of the input array. Arguments: arr
+
+fn remove_duplicates(arr: &mut Vec<i32>) { arr.sort(); arr.dedup(); } 
+Removes duplicate elements from a vector in place. Arguments: arr
+
+fn common_elements(arr1: &[i32], arr2: &[i32]) -> Vec<i32> { let mut common = Vec::new(); for &item in arr1 { if arr2.contains(&item) && !common.contains(&item) { common.push(item); } } common } 
+Returns a vector containing the common elements of two input arrays. Arguments: arr1, arr2
+
+fn rotate_left(arr: &mut [i32], k: usize) { let len = arr.len(); let k = k % len; arr.reverse(); arr[..len-k].reverse(); arr[len-k..].reverse(); } 
+Rotates an array to the left by 'k' positions. Arguments: arr, k
+
+fn rotate_right(arr: &mut [i32], k: usize) { let len = arr.len(); let k = k % len; arr.reverse(); arr[..k].reverse(); arr[k..].reverse(); } 
+Rotates an array to the right by 'k' positions. Arguments: arr, k
+
+fn power(base: i32, exp: u32) -> i32 { (0..exp).fold(1, |acc, _| acc * base) } 
+Calculates the power of a base number raised to an exponent using iterative multiplication. Arguments: base, exp
+
+fn bubble_sort(arr: &mut [i32]) { let mut n = arr.len(); while n > 0 { let mut new_n = 0; for i in 1..n { if arr[i-1] > arr[i] { arr.swap(i-1, i); new_n = i; } } n = new_n; } } 
+Implements the bubble sort algorithm to sort an array in place. Arguments: arr
+
+fn selection_sort(arr: &mut [i32]) { let n = arr.len(); for i in 0..n { let mut min_index = i; for j in (i+1)..n { if arr[j] < arr[min_index] { min_index = j; } } arr.swap(i, min_index); } } 
+Implements the selection sort algorithm to sort an array in place. Arguments: arr
+
+fn insertion_sort(arr: &mut [i32]) { let n = arr.len(); for i in 1..n { let key = arr[i]; let mut j = i; while j > 0 && arr[j-1] > key { arr[j] = arr[j-1]; j -= 1; } arr[j] = key; } } 
+Implements the insertion sort algorithm to sort an array in place. Arguments: arr
+
+fn find_median(arr: &mut [i32]) -> f64 { arr.sort(); let len = arr.len(); if len % 2 == 0 { (arr[len/2 - 1] + arr[len/2]) as f64 / 2.0 } else { arr[len/2] as f64 } } 
+Finds the median value of a given array. Arguments: arr
+
+fn mode(arr: &[i32]) -> i32 { let mut occurrences = std::collections::HashMap::new(); for &value in arr { *occurrences.entry(value).or_insert(0) += 1; } *occurrences.iter().max_by_key(|&(_, count)| count).unwrap().0 } 
+Finds the mode (the most frequently occurring element) in an array. Arguments: arr
+
+fn flatten<T: Clone>(v: &Vec<Vec<T>>) -> Vec<T> { v.iter().flat_map(|inner| inner.iter().cloned()).collect() } 
+Flattens a two-dimensional vector into a one-dimensional vector. Arguments: v
+
+fn transpose_matrix(matrix: Vec<Vec<i32>>) -> Vec<Vec<i32>> { let mut transposed = vec![vec![0; matrix.len()]; matrix[0].len()]; for i in 0..matrix.len() { for j in 0..matrix[0].len() { transposed[j][i] = matrix[i][j]; } } transposed } 
+Transposes a two-dimensional matrix and returns the result. Arguments: matrix
+
+fn is_even(n: i32) -> bool { n % 2 == 0 } 
+Checks if a number is even. Arguments: n
+
+fn is_odd(n: i32) -> bool { n % 2 != 0 } 
+Checks if a number is odd. Arguments: n
+
+fn swap(a: &mut i32, b: &mut i32) { let temp = *a; *a = *b; *b = temp; } 
+Swaps the values of two integers. Arguments: a, b
+
+fn to_uppercase(s: &str) -> String { s.chars().map(|c| c.to_ascii_uppercase()).collect() } 
+Converts a string to uppercase. Arguments: s
+
+fn to_lowercase(s: &str) -> String { s.chars().map(|c| c.to_ascii_lowercase()).collect() } 
+Converts a string to lowercase. Arguments: s
+
+fn factorial_recursive(n: u32) -> u32 { if n == 0 { 1 } else { n * factorial_recursive(n - 1) } } 
+Calculates the factorial of a number using recursion. Arguments: n
+
+fn count_vowels(s: &str) -> usize { s.chars().filter(|&c| \aeiouAEIOU\".contains(c)).count() } "
+Counts the number of vowels in a string. Arguments: s
+
+fn reverse_vector<T: Clone>(v: &[T]) -> Vec<T> { v.iter().cloned().rev().collect() } 
+Reverses a vector. Arguments: v
+
+fn is_anagram(s1: &str, s2: &str) -> bool { let mut v1: Vec<char> = s1.chars().collect(); let mut v2: Vec<char> = s2.chars().collect(); v1.sort_unstable(); v2.sort_unstable(); v1 == v2 } 
+Checks if two strings are anagrams. Arguments: s1, s2
+
+fn binary_to_decimal(binary: &str) -> Result<u32, std::num::ParseIntError> { u32::from_str_radix(binary, 2) } 
+Converts a binary string to a decimal number. Arguments: binary
+
+fn decimal_to_binary(mut num: u32) -> String { let mut binary = String::new(); while num > 0 { binary.push_str(&(num % 2).to_string()); num /= 2; } binary.chars().rev().collect() } 
+Converts a decimal number to a binary string. Arguments: num
+
+fn nth_fibonacci(n: u32) -> u32 { if n == 0 { 0 } else if n == 1 { 1 } else { let mut a = 0; let mut b = 1; for _ in 2..=n { let temp = a + b; a = b; b = temp; } b } } 
+Calculates the 'n'th Fibonacci number using iteration. Arguments: n
+
+fn is_armstrong_number(num: u32) -> bool { let digits: Vec<u32> = num.to_string().chars().map(|d| d.to_digit(10).unwrap()).collect(); let len = digits.len() as u32; num == digits.iter().map(|&d| d.pow(len)).sum::<u32>() } 
+Checks if a number is an Armstrong number. Arguments: num
+
+fn is_perfect_square(num: i32) -> bool { if num < 0 { return false; } let root = (num as f64).sqrt() as i32; root * root == num } 
+Checks if a number is a perfect square. Arguments: num
+
+fn is_power_of_two(num: u32) -> bool { num > 0 && (num & (num - 1)) == 0 } 
+Checks if a number is a power of two. Arguments: num
+
+fn gcd_iterative(mut a: u32, mut b: u32) -> u32 { while b != 0 { let temp = b; b = a % b; a = temp; } a } 
+Calculates the greatest common divisor (GCD) of two numbers using an iterative approach. Arguments: a, b
+
+fn lcm(a: u32, b: u32) -> u32 { a * b / gcd(a, b) } 
+Calculates the least common multiple (LCM) of two numbers using their GCD. Arguments: a, b
+
+fn nth_prime(n: usize) -> u32 { let mut count = 0; let mut candidate = 2; while count < n { if (2..=candidate/2).all(|i| candidate % i != 0) { count += 1; } if count < n { candidate += 1; } } candidate } 
+Finds the 'n'th prime number. Arguments: n
+
+fn sum_of_cubes(n: i32) -> i32 { (1..=n).map(|x| x * x * x).sum() } 
+Calculates the sum of the cubes of the first 'n' natural numbers. Arguments: n
+
+fn is_palindromic_number(num: i32) -> bool { let s = num.to_string(); s == s.chars().rev().collect::<String>() } 
+Checks if a number is palindromic. Arguments: num
+
+fn longest_common_prefix(strs: Vec<&str>) -> String { if strs.is_empty() { return String::new(); } let mut prefix = strs[0].to_string(); for s in strs.iter().skip(1) { while !s.starts_with(&prefix) { prefix.pop(); if prefix.is_empty() { return String::new(); } } } prefix } 
+Finds the longest common prefix string amongst an array of strings. Arguments: strs
+
+fn two_sum(nums: Vec<i32>, target: i32) -> Option<(usize, usize)> { let mut map = std::collections::HashMap::new(); for (i, num) in nums.iter().enumerate() { if let Some(&index) = map.get(&(target - num)) { return Some((index, i)); } map.insert(num, i); } None } 
+Finds two numbers in an array that add up to a specific target and returns their indices. Arguments: nums, target
+
+fn reverse_words(s: &str) -> String { s.split_whitespace().rev().collect::<Vec<&str>>().join(\ \") } "
+Reverses the words in a string. Arguments: s
+
+fn count_primes(n: u32) -> u32 { let mut is_prime = vec![true; (n + 1) as usize]; is_prime[0] = false; if n > 0 { is_prime[1] = false; } for i in 2..=((n as f64).sqrt() as u32) { if is_prime[i as usize] { for j in ((i * i)..=n).step_by(i as usize) { is_prime[j as usize] = false; } } } is_prime.iter().filter(|&&x| x).count() as u32 } 
+Counts the number of prime numbers less than or equal to 'n'. Arguments: n
+
+fn flatten_nested_list(nested: &[Vec<i32>]) -> Vec<i32> { nested.iter().flat_map(|v| v.iter().cloned()).collect() } 
+Flattens a nested list (vector of vectors) into a single vector. Arguments: nested
+
+fn spiral_order(matrix: Vec<Vec<i32>>) -> Vec<i32> { let mut result = vec![]; if matrix.is_empty() { return result; } let mut top = 0; let mut bottom = matrix.len() as i32 - 1; let mut left = 0; let mut right = matrix[0].len() as i32 - 1; while top <= bottom && left <= right { for i in left..=right { result.push(matrix[top as usize][i as usize]); } top += 1; for i in top..=bottom { result.push(matrix[i as usize][right as usize]); } right -= 1; if top <= bottom { for i in (left..=right).rev() { result.push(matrix[bottom as usize][i as usize]); } bottom -= 1; } if left <= right { for i in (top..=bottom).rev() { result.push(matrix[i as usize][left as usize]); } left += 1; } } result } 
+Returns all elements of a matrix in spiral order. Arguments: matrix
+
+fn transpose_non_square(matrix: Vec<Vec<i32>>) -> Vec<Vec<i32>> { let mut transposed = vec![vec![0; matrix.len()]; matrix[0].len()]; for i in 0..matrix.len() { for j in 0..matrix[0].len() { transposed[j][i] = matrix[i][j]; } } transposed } 
+Transposes a non-square matrix and returns the result. Arguments: matrix
+
+fn find_missing_number(arr: &[i32], n: i32) -> i32 { let expected_sum: i32 = (n * (n + 1)) / 2; let actual_sum: i32 = arr.iter().sum(); expected_sum - actual_sum } 
+Finds the missing number in an array containing numbers from 1 to 'n'. Arguments: arr, n
+
+fn merge_sorted_arrays(arr1: &[i32], arr2: &[i32]) -> Vec<i32> { let mut merged = Vec::with_capacity(arr1.len() + arr2.len()); let mut i = 0; let mut j = 0; while i < arr1.len() && j < arr2.len() { if arr1[i] < arr2[j] { merged.push(arr1[i]); i += 1; } else { merged.push(arr2[j]); j += 1; } } merged.extend_from_slice(&arr1[i..]); merged.extend_from_slice(&arr2[j..]); merged } 
+Merges two sorted arrays into one sorted array. Arguments: arr1, arr2
+
+fn is_valid_parentheses(s: &str) -> bool { let mut stack = Vec::new(); for c in s.chars() { match c { '(' => stack.push(')'), '{' => stack.push('}'), '[' => stack.push(']'), ')' | '}' | ']' => if stack.pop() != Some(c) { return false; }, _ => () } } stack.is_empty() } 
+Checks if a string of parentheses is valid. Arguments: s
+
+fn remove_element(arr: &mut Vec<i32>, val: i32) -> usize { arr.retain(|&x| x != val); arr.len() } 
+Removes all instances of a value in place and returns the new length. Arguments: arr, val
+
+fn find_single_number(nums: Vec<i32>) -> i32 { nums.iter().fold(0, |acc, &num| acc ^ num) } 
+Finds the single number in an array where every element appears twice except for one. Arguments: nums
+
+fn max_subarray_sum(nums: Vec<i32>) -> i32 { let mut max_sum = nums[0]; let mut current_sum = nums[0]; for &num in &nums[1..] { current_sum = std::cmp::max(num, current_sum + num); max_sum = std::cmp::max(max_sum, current_sum); } max_sum } 
+Finds the maximum sum of a contiguous subarray. Arguments: nums
+
+fn find_majority_element(nums: Vec<i32>) -> i32 { let mut count = 0; let mut candidate = 0; for &num in &nums { if count == 0 { candidate = num; } count += if num == candidate { 1 } else { -1 }; } candidate } 
+Finds the majority element in an array (element that appears more than half the time). Arguments: nums
+
+fn min_path_sum(grid: Vec<Vec<i32>>) -> i32 { let mut grid = grid; let rows = grid.len(); let cols = grid[0].len(); for i in 1..rows { grid[i][0] += grid[i-1][0]; } for j in 1..cols { grid[0][j] += grid[0][j-1]; } for i in 1..rows { for j in 1..cols { grid[i][j] += std::cmp::min(grid[i-1][j], grid[i][j-1]); } } grid[rows-1][cols-1] } 
+Finds the minimum path sum from the top left to the bottom right in a grid. Arguments: grid
+
+fn gcd(mut a: i32, mut b: i32) -> i32 { while b != 0 { let temp = b; b = a % b; a = temp; } a } 
+Calculates the greatest common divisor (GCD) of two integers using the Euclidean algorithm. Arguments: a, b
+
+fn lcm(a: i32, b: i32) -> i32 { (a * b) / gcd(a, b) } 
+Calculates the least common multiple (LCM) of two integers. Arguments: a, b
+
+fn count_vowels(s: &str) -> usize { s.chars().filter(|c| \aeiouAEIOU\".contains(*c)).count() } "
+Counts the number of vowels in a string. Arguments: s
+
+fn reverse_string(s: &str) -> String { s.chars().rev().collect() } 
+Reverses a string. Arguments: s
+
+fn are_anagrams(s1: &str, s2: &str) -> bool { let mut chars1: Vec<char> = s1.chars().collect(); let mut chars2: Vec<char> = s2.chars().collect(); chars1.sort_unstable(); chars2.sort_unstable(); chars1 == chars2 } 
+Checks if two strings are anagrams. Arguments: s1, s2
+
+fn pascal_triangle_row(row: usize) -> Vec<i32> { let mut row_vec = vec![1]; for k in 1..=row { row_vec.push(row_vec[k - 1] * (row - k + 1) as i32 / k as i32); } row_vec } 
+Generates a specific row of Pascal's Triangle. Arguments: row
+
+fn sieve_of_eratosthenes(n: usize) -> Vec<usize> { let mut is_prime = vec![true; n + 1]; is_prime[0] = false; if n > 0 { is_prime[1] = false; } for i in 2..=((n as f64).sqrt() as usize) { if is_prime[i] { for j in (i*i..=n).step_by(i) { is_prime[j] = false; } } } (2..=n).filter(|&x| is_prime[x]).collect() } 
+Generates a list of prime numbers up to 'n' using the Sieve of Eratosthenes. Arguments: n
+
+fn rotate_array(arr: &mut [i32], k: usize) { let len = arr.len(); arr.reverse(); arr[..k % len].reverse(); arr[k % len..].reverse(); } 
+Rotates an array to the right by 'k' steps. Arguments: arr, k
+
+fn count_bits(n: u32) -> u32 { let mut count = 0; let mut num = n; while num != 0 { count += num & 1; num >>= 1; } count } 
+Counts the number of 1 bits in the binary representation of a number. Arguments: n
+
+fn find_peak_element(arr: &[i32]) -> Option<usize> { for i in 1..arr.len() - 1 { if arr[i] > arr[i - 1] && arr[i] > arr[i + 1] { return Some(i); } } None } 
+Finds a peak element in the array (an element that is greater than its neighbors). Arguments: arr
+
+fn zigzag_conversion(s: &str, num_rows: usize) -> String { if num_rows == 1 { return s.to_string(); } let mut rows = vec![String::new(); num_rows.min(s.len())]; let mut cur_row = 0; let mut going_down = false; for c in s.chars() { rows[cur_row].push(c); if cur_row == 0 || cur_row == num_rows - 1 { going_down = !going_down; } cur_row = if going_down { cur_row + 1 } else { cur_row.saturating_sub(1) }; } rows.concat() } 
+Converts a string into a zigzag pattern on a given number of rows. Arguments: s, num_rows
+
+fn longest_palindromic_substring(s: &str) -> String { let s = s.as_bytes(); let n = s.len(); if n == 0 { return String::new(); } let mut start = 0; let mut end = 0; for i in 0..n { let (mut l, mut r) = (i, i); while r < n && s[l] == s[r] { if r - l > end - start { start = l; end = r; } if l == 0 { break; } l -= 1; r += 1; } let (mut l, mut r) = (i, i + 1); while r < n && s[l] == s[r] { if r - l > end - start { start = l; end = r; } if l == 0 { break; } l -= 1; r += 1; } } s[start..=end].iter().map(|&c| c as char).collect() } 
+Finds the longest palindromic substring in a given string. Arguments: s
+
+fn roman_to_integer(s: &str) -> i32 { let mut roman_map = std::collections::HashMap::new(); roman_map.insert('I', 1); roman_map.insert('V', 5); roman_map.insert('X', 10); roman_map.insert('L', 50); roman_map.insert('C', 100); roman_map.insert('D', 500); roman_map.insert('M', 1000); let chars: Vec<char> = s.chars().collect(); let mut total = 0; for i in 0..chars.len() { let value = roman_map[&chars[i]]; if i < chars.len() - 1 && value < roman_map[&chars[i + 1]] { total -= value; } else { total += value; } } total } 
+Converts a Roman numeral to its integer representation. Arguments: s
+
+fn title_to_number(s: &str) -> i32 { s.chars().rev().enumerate().map(|(i, c)| (c as i32 - 'A' as i32 + 1) * 26_i32.pow(i as u32)).sum() } 
+Converts an Excel sheet column title to its corresponding column number. Arguments: s
+
+fn number_to_title(mut n: i32) -> String { let mut title = String::new(); while n > 0 { n -= 1; title.push((b'A' + (n % 26) as u8) as char); n /= 26; } title.chars().rev().collect() } 
+Converts a column number to its corresponding Excel sheet column title. Arguments: n
+
+fn is_happy_number(mut n: i32) -> bool { let mut seen = std::collections::HashSet::new(); while n != 1 && !seen.contains(&n) { seen.insert(n); n = n.to_string().chars().map(|c| c.to_digit(10).unwrap().pow(2)).sum::<u32>() as i32; } n == 1 } 
+Determines if a number is a happy number. Arguments: n
+
+fn add_binary(a: String, b: String) -> String { let mut a = a.chars().rev().peekable(); let mut b = b.chars().rev().peekable(); let mut carry = 0; let mut result = String::new(); while a.peek().is_some() || b.peek().is_some() || carry != 0 { let mut sum = carry; if let Some(ch) = a.next() { sum += ch.to_digit(2).unwrap(); } if let Some(ch) = b.next() { sum += ch.to_digit(2).unwrap(); } result.push(std::char::from_digit(sum % 2, 2).unwrap()); carry = sum / 2; } result.chars().rev().collect() } 
+Adds two binary numbers represented as strings. Arguments: a, b
+
+fn add_two_numbers(l1: Option<Box<ListNode>>, l2: Option<Box<ListNode>>) -> Option<Box<ListNode>> { let mut l1 = l1; let mut l2 = l2; let mut head = None; let mut tail = &mut head; let mut carry = 0; while l1.is_some() || l2.is_some() || carry != 0 { let sum = carry + l1.as_ref().map_or(0, |node| node.val) + l2.as_ref().map_or(0, |node| node.val); carry = sum / 10; let node = Box::new(ListNode { val: sum % 10, next: None }); if let Some(ref mut tail_node) = tail { tail_node.next = Some(node); tail = &mut tail_node.next; } else { head = Some(node); tail = &mut head; } l1 = l1.and_then(|node| node.next); l2 = l2.and_then(|node| node.next); } head } 
+Adds two numbers represented by linked lists. Arguments: l1, l2
+
+fn is_valid_sudoku(board: Vec<Vec<char>>) -> bool { let mut rows = vec![vec![false; 9]; 9]; let mut cols = vec![vec![false; 9]; 9]; let mut boxes = vec![vec![false; 9]; 9]; for i in 0..9 { for j in 0..9 { if board[i][j] == '.' { continue; } let num = board[i][j] as usize - '1' as usize; if rows[i][num] || cols[j][num] || boxes[(i / 3) * 3 + j / 3][num] { return false; } rows[i][num] = true; cols[j][num] = true; boxes[(i / 3) * 3 + j / 3][num] = true; } } true } 
+Checks if a Sudoku board is valid. Arguments: board
