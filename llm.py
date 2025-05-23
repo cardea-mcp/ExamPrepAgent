@@ -39,8 +39,8 @@ def send_message(message):
 
 def receive_message():
     print("Reading from server...")
-    # server_output = server.stdout.readline()
-    # print("server_output---- \n",server_output)
+    # serveroutput = server.stdout.readline()
+    # print("serveroutput---- \n",serveroutput)
     server_output = json.loads(server.stdout.readline())
     # print("server_output---- \n",server_output)
     if "result" in server_output:
@@ -120,9 +120,18 @@ def handle_tool_calls(tool_calls):
         
         send_message(tool_call_message)
         tool_result = receive_message()
-        
+        # print("tool_result -----\n",tool_result)
+        result_text = " "
         # Extract the result text
-        result_text = tool_result["content"][0]["text"] if tool_result.get("content") else "No result"
+        if tool_result.get("content"):
+            for content in tool_result["content"]:
+                result_text += content["text"]
+
+        else:
+            result_text += ("No result")
+
+            
+        # result_text = tool_result["content"][0]["text"] if tool_result.get("content") else "No result"
         
         tool_responses.append({
             "tool_call_id": tool_call.id,
@@ -159,12 +168,14 @@ def chat_with_exam_bot():
         )
         # print("completion -----\n",completion)
         assistant_message = completion.choices[0].message
-        
+        # print("assistant_message -----\n",assistant_message)
         # Check if the model wants to call a tool
+        # print("assistant_message.tool_calls -----\n",assistant_message.tool_calls)
         if assistant_message.tool_calls:
             # Handle tool calls
-            tool_responses = handle_tool_calls(assistant_message.tool_calls)
             
+            tool_responses = handle_tool_calls(assistant_message.tool_calls)
+            # print("tool_responses -----\n",tool_responses)
             # Add assistant message to conversation
             messages.append({
                 "role": "assistant",

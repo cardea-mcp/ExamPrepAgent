@@ -28,7 +28,7 @@ def search_pair(query_text):
     
     # Search in Qdrant
     search_results = client.search(
-        collection_name="rust_qa",
+        collection_name="mining_qa",
         query_vector=query_embedding,
         limit=3  # Return top 3 matches
     )
