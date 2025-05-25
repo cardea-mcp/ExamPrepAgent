@@ -661,3 +661,562 @@ Q: What is a finger raise and how does it work?
 A: A finger raise is a vertical or near-vertical opening used to transfer bulk material from a stope to a drawpoint.  Often, finger raises are interconnected.
 
 
+Q: What is the primary method of support shown in the image for the mining operation?
+A: Bolting is the primary support method shown, where rock bolts are inserted into the rock face to reinforce it and prevent collapse.
+
+Q: What is the purpose of the rock bolts in this mining context?
+A: The rock bolts reinforce the rock mass, strengthening it and controlling potential rock bulking (the expansion of rock volume after excavation), which helps to maintain the stability of the mine walls.
+
+Q: How does the mining process proceed in relation to the support system?
+A: Mining continues in slices, with support (bolting) implemented to maintain stability as each slice of ore is extracted.  The mining continues until the entire ore slice is removed.
+
+Q:  What are the key functions of the support system as illustrated in the diagram?
+A: The support system, primarily through bolting, works to retain the rock mass in place, hold back rock loads and stresses that might cause instability, and reinforce the rock to control bulking and maintain stability.
+
+Q: What does the diagram (i) illustrate about the interaction between the support system and the rock mass?
+A: Diagram (i) shows how the rock bolts both retain the loosened rock and reinforce the rock mass by controlling stresses and preventing excessive movement or collapse.
+
+
+Q: What are the two main categories of mining methods shown?
+A: The two main categories are Surface mining and Underground mining.
+
+Q:  List three examples of surface mining techniques.
+A: Three examples are Quarrying, Augering, and Open Cast Mining.
+
+Q: What are the three types of underground mining methods mentioned?
+A: The three types are Unsupported, Supported, and Caving.
+
+Q: What is one primary factor considered when selecting a mining method?
+A: One primary factor is optimizing the rate of production.
+
+Q: Besides production rate, what are two other key economic considerations when choosing a mining method?
+A: Two other key economic considerations are optimizing net present value and generating the maximum internal rate of return.
+
+
+Q: What is the focus of the Conceptual Study phase in mine planning?
+A: The Conceptual Study assesses the physical characteristics of the mine site and the output quantities achievable using various mining methods.
+
+Q: What is the primary goal of the Engineering Study phase?
+A: The Engineering Study quantifies and compares different concepts, leading to firm designs and cost estimations for the mine project.
+
+Q: What deliverables are produced during the Detailed Design Study?
+A: The Detailed Design Study generates the drawings and specifications necessary for the construction and mineral exploitation phases of the mine.
+
+Q: How do the three stages of mine planning relate to each other?
+A: The three stages are sequential. The Conceptual Study provides the foundation, the Engineering Study refines the concepts into designs and costs, and the Detailed Design Study provides the blueprints for construction and operation.
+
+Q:  What is the overall purpose of the mine planning process illustrated?
+A: The purpose is to systematically plan a mine from initial concept to detailed design, ensuring efficient and feasible mineral extraction.
+
+Q: What are the three main variations of Room and Pillar mining shown in the image?
+A: The image depicts Classic Room and Pillar, Post Room and Pillar, and Step Room and Pillar mining methods.
+
+Q:  What is the difference between Classic and Post Room and Pillar methods?
+A: In Classic Room and Pillar, pillars are left throughout the mining area in a regular pattern. In Post Room and Pillar,  pillars are placed strategically after initial extraction of ore, allowing for larger extraction areas.
+
+Q: What mining method is depicted as suitable for a narrow vein with a steep dip?
+A: The image shows Narrow Vein mining with a steep dip, utilizing longhole drilling, charging, blasting, and mucking-out techniques.
+
+Q: What are the stages shown in the VCR (Vertical Crater Retreat) Mining method?
+A: The VCR method is illustrated in two stages: Primary Stopes (initial extraction) and Secondary Stopes (subsequent extraction after backfilling the primary stopes).
+
+Q: What is the purpose of backfilling in VCR Mining – Secondary Stopes?
+A: Backfilling in the VCR method's secondary stope stage provides ground support and stability, making it possible to safely extract additional ore from beneath the primary stope which has been filled.
+
+
+Q: What is the process depicted in the image?
+A: The image shows mining in subsequent levels, illustrating how mining operations progress from one level to another, with backfilling used to support the upper levels.
+
+Q: What is the purpose of the backfilled stope?
+A: The backfilled stope provides support and stability to the upper levels of the mine after extraction is complete at that level, preventing collapses.
+
+Q: How are the different mining levels accessed in this diagram?
+A: The image shows inclined ramps or tunnels (the purple structures) providing access to different levels of the mine.
+
+
+Q: What is indicated by the yellow vehicles in the image?
+A: The yellow vehicles represent mining equipment operating at the different levels within the mine.  These are likely involved in the excavation and transportation of mined material.
+
+Q: What is the significance of "Development at a Lower Level"?
+A: "Development at a Lower Level" indicates the preparatory work (tunneling, etc.) being undertaken to access and prepare for mining operations at a new, lower level below the level already mined.
+
+Q: What is the purpose of long grouted cables in the shown rock support method?
+A: Long grouted cables provide support to the stope back and help to prevent rockfalls from the next lift after blasting.  They resist tensile forces.
+
+Q: What role does backfill play in the depicted rock support systems?
+A: Backfill provides support to the hangingwall and helps to distribute the load, preventing failure surfaces from developing.
+
+Q: How do rockbolts contribute to rock support in these examples?
+A: Rockbolts are installed into the rock mass to reinforce it, providing shear resistance and helping to prevent horizontal cracking and overall roof failure.
+
+Q:  What are the different types of stresses indicated in the diagram showing a cable under load?
+A: The diagram shows that cables are subject to confining pressure (pressure from surrounding rock), radial displacement (rock movement around the cable), and the cable itself resists these forces by developing a tensile force.
+
+Q: What is the significance of the joint set parallel to the hangingwall in the final diagram showing support?
+A: The parallel joint set indicates the orientation of natural fractures in the rock.  The cable placement is specifically designed to intersect and support the rock along this potentially unstable plane, thus preventing failure along the hangingwall.
+
+
+Q: What is the primary focus of the presentation?
+A: Performance monitoring in steel, concrete, and rock mass structures.
+
+Q: What key parameters are of interest to engineers when monitoring these structures?
+A:  Displacement, load stress, strain, seepage/water pressure, vibration and air overpressure (due to blasting and earthquakes), seismicity, uplift pressure, temperature, environmental conditions, and alignment and tilt.
+
+Q: What is the main challenge in performance monitoring of rock mass structures?
+A:  The presence of numerous unknown parameters, some of which require laboratory or in-situ determination, making assumptions necessary.
+
+Q: In steel and concrete structures, what behavioral characteristics are typically known to designers?
+A: Strength, deformation, and thermal properties.
+
+Q:  What is illustrated by the diagrams of the layers of earth moving in opposite directions and a weight?
+A:  The concepts of displacement and load, which are key aspects of performance monitoring.
+
+
+Q: What are the three defining characteristics of a mineral?
+A: A mineral is a naturally occurring substance with a definite chemical composition and distinct physical characteristics.
+
+Q: What are some examples of base metals?
+A: Base metals include copper, lead, zinc, and tin.
+
+Q: What are some examples of industrial minerals?
+A: Industrial minerals include phosphate, potash, stone, sand, gravel, sulfur, salt, and industrial diamond.
+
+Q: Besides coal and oil, what are some examples of marginal sources of mineral/fossil fuels?
+A: Marginal sources include lignite, oil shale, tar sand, and coalbed methane.
+
+Q: What is a metalliferous mine, according to the MMR (1961) definition?
+A: A metalliferous mine includes every mine other than a coal or an oil mine.
+
+Q: What is the process depicted in the image called?
+A: The process is called shotcreting, which is also referred to as concrete spraying.
+
+Q: What is the purpose of shotcreting as shown in the image?
+A: The image shows shotcreting being used to apply a layer of concrete to a rock face, likely for stabilization and support.
+
+Q: What type of equipment is used in shotcreting?
+A: The image shows two types of equipment: a large machine on tracks that sprays the concrete (a shotcrete machine), and a smaller, hand-held nozzle for more precise application in tight areas.
+
+Q: What is the material being sprayed in the image?
+A: The material being sprayed is concrete.  The image highlights the application of wet-mix shotcrete.
+
+Q: What appears to be the purpose of the diamond-shaped pattern on the sprayed concrete in the main image?
+A:  The diamond-shaped pattern likely represents reinforcement or anchors embedded in the wet concrete to improve its adhesion and overall stability to the rock face.
+
+Q: What is the process illustrated in the image?
+A: The image illustrates the process of blasting, a method used to break up a material (like rock) using explosives.
+
+Q: What is the "muck" in the context of this image?
+A: The "muck" refers to the fragmented material, or debris, resulting from the blasting operation.
+
+Q: What is the direction of the blast indicated in the image?
+A: The arrow indicates that the throw direction of the blasted material is to the right, away from the source of the explosion.
+
+Q: What is the purpose of blasting as shown in the image?
+A:  The purpose is to fracture and remove a section of material (the dark-colored section), creating fragmented pieces (the muck).
+
+Q:  What does the pattern of small diamonds on the yellowish material represent?
+A: The small diamonds likely represent the placement of explosives or boreholes in the material prior to blasting.  They show a relatively uniform distribution.
+
+Q: What spatial characteristics of a deposit are considered in planning mining methods?
+A:  Size (dimensions) and shape (tabular, lenticular, massive, or irregular) of the deposit, as well as its attitude (inclination and dip) and depth (mean, extreme values, and stripping ratio) are all important considerations.
+
+Q:  What geologic and hydrologic conditions influence mining method selection?
+A:  Mineralogy, petrography, and chemical composition (primary and by-product minerals) of the deposit, its structure (folds, faults, discontinuities, and intrusions), planes of weakness (joints, fractures, and cleavage), uniformity, alteration, weathering, and groundwater conditions (occurrence, flow rate, and water table) all play significant roles.
+
+Q: How do geotechnical properties of soil and rock affect mining method selection?
+A:  The elastic properties (strength, modulus of elasticity, and Poisson's ratio), plastic or viscoelastic behavior (flow and creep), state of stress (original and modified), consolidation, compaction, competence, and physical properties (specific gravity, voids, porosity, permeability, and moisture content) all need to be considered.
+
+Q: What is the importance of groundwater in mining planning?
+A: Groundwater's occurrence, flow rate, and the location of the water table are crucial for planning because they can significantly impact mining operations, potentially leading to issues like flooding or the need for dewatering systems (as shown in the diagram).
+
+
+Q:  What are some examples of deposit structures that affect mining planning?
+A: Folds, faults, discontinuities, and intrusions within the deposit are structural features that influence mining method selection.  These features can affect stability, access, and the overall feasibility of different mining approaches.
+
+Q: What is the primary purpose of instrumentation in engineering projects?
+A: Instrumentation provides data that assists engineers throughout every stage of a project, from initial site investigation to final performance evaluation.  A successful program defines the purpose of installing instruments and implements decisions based on data interpretations.
+
+Q:  What are the four main stages of how an instrument works?
+A: An instrument works in four stages: 1) A sensor/detector responds to changes in the monitored variable; 2) a transmitter sends this data to a read-out location; 3) a processor converts the data into usable form; and 4) a data acquisition system/read-out unit presents this data to the engineer.
+
+
+Q: What are some examples of technologies or working principles used in instrumentation?
+A:  Instrumentation utilizes various technologies, including mechanical, optical, hydraulic & pneumatic, and electrical principles.
+
+Q:  At what stages of a project is instrumentation data utilized?
+A:  Instrumentation data is used in all project phases: site investigation, design verification, construction control, quality control, safety assessments, legal protection considerations, and final performance evaluation.
+
+Q: What key specifications are considered when evaluating the quality and reliability of instrumentation?
+A: Key specifications include sensor type, range, resolution, accuracy, precision, conformance, robustness, and reliability.
+
+Q: What is the name of the transportation system depicted in the image?
+A: The image shows a transportation system used in mining, specifically within a backfilled stope.  The specific name isn't explicitly given but it appears to be a ramp-based system.
+
+Q: What is the role of the LHD (Load-Haul-Dump) in this system?
+A: The LHD is responsible for mucking, which is the process of loading and transporting the extracted material (ore) from the backfilled stope.
+
+Q: What is the purpose of the backfilled stope?
+A: The backfilled stope is the area where mining is occurring.  The backfilling likely refers to a method of filling the void created after ore extraction to maintain mine stability.
+
+Q: What is the function of the ramp in this mining operation?
+A: The ramp serves as an inclined roadway or passageway for the LHD to transport material up or down levels within the mine.
+
+Q: What does "LPDT" likely stand for in the context of this image, and what is its purpose?
+A: While not explicitly defined, LPDT likely represents a type of equipment or system related to drilling or transportation within the mine. Its exact function in the depicted system isn’t fully specified within the image. It appears to be part of the larger transportation infrastructure.
+
+
+Q: How are ore bodies mined using the "Ore Slices" method?
+A: Mining is carried out in horizontal slices along the ore body, starting from the bottom slice and progressing upwards.
+
+Q: What is the mining sequence in the "Ore Slices" method?
+A: It follows a bottom-up sequence, meaning the bottom slice is mined first, and then subsequent levels are mined in ascending order.
+
+Q: What happens to the excavated area in the "Ore Slices" method?
+A: The excavated area is backfilled, which means it is filled with material after mining is completed at that level.
+
+Q:  Does the "Ore Slices" method involve continuous production?
+A: Yes, production continues upwards as each level is mined and backfilled.
+
+Q: What is a variation of the "Ore Slices" method mentioned?
+A: A variation is the underhand cut and fill method.
+
+
+Q: What material is used for backfilling in the depicted mining method?
+A: Mine waste, such as mill tailings or waste rock from development, can be effectively utilized as backfill material.
+
+Q: What is the purpose of the fill pipes in this backfilling process?
+A: The fill pipes deliver the fill material into the void left after blasting.
+
+Q: What is the role of the "Fill Wall" in the diagram?
+A: The fill wall forms a stable platform for mining operations at the next level.
+
+Q:  What happens to the void left after blasting rock in this slice mining technique?
+A: The void created by blasting is maintained and filled using fill material.
+
+Q: What is the overall result of this backfilling technique regarding the mining operation?
+A:  The backfilled slice becomes a stable working platform for mining at the next level.
+
+
+Q: What significant development in mining technology occurred in the middle of the 19th century?
+A: The search for and development of mechanical mining equipment began, along with new drilling techniques.
+
+Q: What advancements are depicted regarding rock tools and materials in the image?
+A: The image shows improvements in the design and composition of rock tools, suggesting enhanced durability and efficiency.
+
+Q: What type of equipment became prevalent in the early 20th century in mining?
+A: Electro-hydraulic equipment became prominent in mining during the early 20th century.
+
+Q: What technological advancements are characterizing the 21st-century mining industry?
+A: The use of Artificial Intelligence and automation is booming in the 21st century's mining operations.
+
+Q: What is illustrated in the image representing the middle of the 19th century?
+A: A photograph shows an early mechanical drilling rig, representing the beginning of the shift towards mechanized mining.
+
+
+Q: What is the process depicted in the image?
+A: The image shows the blasting and removal of material from upper slices in an underground mining operation.  Production continues until the stope is complete.
+
+Q: What is the purpose of blasting in this context?
+A: Blasting is used to break up and loosen the rock material in the upper slices of the mine, allowing for its removal and transportation.
+
+Q: How does production continue after the initial blasting?
+A:  A new access drive is created from the ramp to allow continued production from the upper stopes after the initial section is blasted and removed.
+
+Q:  Until when does production from the slices continue?
+A: Production from the slices continues until the entire stope (the area being mined) is completed.
+
+Q: What is the role of the ramp in this mining operation?
+A: The ramp serves as an initial access point and a starting point for creating new access drives to continue production from upper stopes.
+
+
+Q: How many major commodity minerals are being mined worldwide, according to the data from 2019?
+A: Over 70 major commodity minerals are being mined worldwide (WMP@2019).
+
+Q: What is the total value of India's mineral production for the fiscal year 2021-22?
+A: The total value of India's mineral production for FY 2021-22 was approximately Rs. 1,90,389 crores (MoM AR21).
+
+Q: How many minerals does India produce, and what are their classifications?
+A: India produces 95 minerals, categorized as 4 fuel, 10 metallic, 23 non-metallic, 3 atomic, and 55 minor minerals.
+
+Q: What percentage of the world's mineral production does India contribute, based on the provided Gigatons data?
+A: India contributes 7.14% of the world's mineral production based on the Gigatons data presented.
+
+
+Q:  What is the projected development length (in km) by Fiscal Year 2027?
+A: The projected development length by FY 2027 is 326.94 km.
+
+
+Q: What is the process depicted in the image?
+A: The image depicts the process of scaling, which involves removing loose or unstable rock from a surface, such as a mine wall or tunnel.
+
+Q: What type of equipment is used in the scaling process shown?
+A: A specialized scaling machine, a type of remotely operated vehicle (ROV), equipped with a long arm and a breaking mechanism is used to dislodge unstable rock from a distance.
+
+Q: What is the purpose of the yellow material on the wall?
+A: The yellow material appears to be a protective layer or a support structure installed on the rock wall.  Its purpose is likely to prevent rock falls or to reinforce the overall stability of the rockface.
+
+Q: What does the colorful pattern on the large rock indicate?
+A: The multicolored sections on the large rock likely represent different levels of stress or structural weakness within the rock. This helps identify areas requiring scaling.
+
+Q: Why is scaling important in the context of this image (likely mining)?
+A: Scaling is crucial for mine safety.  Removing loose rock prevents potentially dangerous rockfalls and collapses, protecting workers and equipment.
+
+
+Q: What is the main topic illustrated in the diagram?
+A: The diagram shows a post-mining scenario, specifically illustrating the arrangement of pillars and backfilled stopes after mining operations.
+
+Q: What are the two types of pillars shown in the post-mining scenario?
+A: The image shows Crown Pillars and Sill Pillars.
+
+Q: What material fills the spaces between the pillars in the diagram?
+A: The spaces between the pillars are backfilled with stopes (likely a mixture of waste rock, tailings, and/or other materials).
+
+Q: What are the primary concerns highlighted in the post-mining scenario?
+A: The main concerns are the stability of the pillars and potential surface subsidence.
+
+Q:  What is a stope in the context of this mining scenario?
+A: In this context, a stope refers to an area where ore has been extracted, and in this post-mining scenario, it is the area that is filled with backfill material.
+
+
+Q: What are some key economic considerations in mining method selection?
+A: Economic considerations include reserves (tonnages and grades), production rate (output per unit time), mine life (operating period for development and exploitation), productivity (output per unit of labor and time), and comparative mining costs of suitable methods.
+
+Q: How do technological factors influence mining method selection?
+A:  Technological factors include mine recovery (portion of deposit actually extracted), dilution (amount of waste produced with ore), the selectivity of the method to distinguish ore and waste, concentration or dispersion of workings, and the flexibility of the method to adapt to changing conditions.  Capital, labor, and mechanization intensities are also important technological considerations.
+
+Q: What environmental concerns must be addressed when choosing a mining method?
+A: Environmental concerns encompass physical, social-political-economic climate impacts, ground control measures, subsidence or caving effects on the surface, and atmospheric control (ventilation, quality control, heat and humidity control).  Workforce considerations (recruitment, training, health and safety, living conditions, and community impact) are also crucial environmental factors.
+
+Q:  What is "mine recovery" in the context of mining method selection?
+A: Mine recovery refers to the portion of the ore deposit that is actually extracted during the mining process.
+
+Q: What is meant by "dilution" in mining operations?
+A: Dilution is the amount of waste material (such as barren rock) that is extracted along with the desired ore.
+
+
+Q: What is the process depicted in the image?
+A: The image shows the loading (or mucking) stage of underground mining, where broken ore is collected and transported.
+
+Q: What type of equipment is used for loading the blasted ore?
+A: A Load-Haul-Dump (LHD) machine is used to load the broken ore.
+
+Q: What is the term used to describe the process of removing broken ore?
+A: The process of removing the broken ore is called "mucking".
+
+Q: What is the "blasted face" in the context of this image?
+A: The "blasted face" refers to the freshly exposed rock surface after a blasting operation in the mine.
+
+Q: Where is the broken ore transported after it is loaded?
+A: The loaded ore is transported to either trucks or an ore pass for further processing or transport out of the mine.
+
+
+Q: What is the method shown for extracting ore from the depicted level?
+A: The image shows a slice-by-slice method.  Ore is extracted from horizontal slices or levels using blasting, progressing from one slice to the next.
+
+Q: What is the purpose of the "cross cut" shown in the image?
+A: The cross cut provides access for blasting and ore removal within a specific level or slice.
+
+Q: What is indicated by the yellow lines in the image?
+A: The yellow lines represent the boundaries of a level or slice being mined.
+
+Q: What does the term "Mined out Slice-1" signify?
+A: This indicates that the first slice (or level) has been completely mined, with all the ore removed.
+
+Q: What is the role of blasting in this mining operation?
+A: Blasting is used to fracture and break up the ore within each slice, allowing for its extraction.
+
+
+Q: What is the purpose of the backfilled stopes in the diagram?
+A: The backfilled stopes represent areas in a mine that have been filled after mining operations, providing support and preventing ground instability.
+
+Q: Where do rock stresses increase significantly, according to the diagram?
+A: Rock stresses increase significantly in the crown pillar (the pillar of rock above the mined area).
+
+Q: What is the area labeled "Zones of Stress Redistribution"?
+A: This area shows where the stresses in the rock mass are being redistributed due to the mining and backfilling operations.
+
+Q: How are the stresses represented visually in the diagram?
+A: The stresses are visually represented by the color intensity; darker/redder colors indicate areas of higher stress, while lighter/cooler colors indicate areas of lower stress.
+
+Q: What is a crown pillar in the context of this image?
+A: A crown pillar is the remaining pillar of rock left above a mined-out area to support the overlying rock and prevent collapse.
+
+
+Q: What is the purpose of back slashing in the context of the image?
+A: Back slashing provides access to upper slices within the stope (likely a mining operation).
+
+Q: What does the red arrow in the image indicate?
+A: The red arrow shows the direction and location of the back slashing cut, creating access to higher levels of the stope.
+
+Q: What appears to be depicted in the image?
+A: The image seems to be a cross-section or schematic representation of a mining stope, showing a method of access (back slashing) to upper levels.
+
+Q: What type of mining method is likely being illustrated?
+A:  The image suggests some form of underground mining, where the ore body is extracted in horizontal or sub-horizontal slices (layers).
+
+Q:  What is a stope in mining?
+A: A stope is an underground excavation where ore is extracted.  The image shows a method of accessing different levels (slices) within a single stope.
+
+
+Q: What are the two main categories of underground mining methods shown in the table?
+A: The two main categories are Unsupported and Supported methods.
+
+Q: Which unsupported mining method is best suited for strong ore and strong rock strength?
+A:  Stope and Pillar is best suited for strong ore and strong rock strength among unsupported methods.
+
+Q:  What is the preferred deposit shape for the Longwall mining method?
+A: The preferred deposit shape for the Longwall method is Tabular.
+
+Q: Which method is most suitable for deposits that are shallow to moderate in depth and have a moderate to high ore grade?
+A: Several methods could be suitable, but Cut and Fill is explicitly mentioned in the table as having a moderate depth and a fairly high ore grade.
+
+Q: What is a key difference in deposit size requirements between Sublevel Caving and Block Caving?
+A: Sublevel Caving prefers large, thick deposits, while Block Caving requires very large, thick deposits.
+
+
+Q: What are the two main categories of underground metal mining methods shown in the diagram?
+A: The diagram shows "Open Stope" and "Filled Stope" methods as primary categories, with further sub-categories under each.  There is also a "Shrinkage Stope" and "Caving" method shown.
+
+Q: What are some examples of open stope mining methods?
+A: Examples of open stope mining methods include breast stoping (with variations like herringbone and scattered pile), room and pillar, and underhand methods (like Cornish and glory hole).  Overhand methods like sublevel stoping are also included.
+
+Q:  What is the difference between narrow vein and wide vein methods within the context of filled stope mining?
+A:  The filled stope method adapts to the ore body's width. "Narrow vein" methods are used for thinner ore deposits, while "wide vein" methods are employed for thicker ones. Specific techniques like cut and fill are adapted accordingly.
+
+
+Q: What are the primary timbering methods illustrated for filled stopes?
+A:  The diagram shows "Square Set" and "Creep Set Timbered" as timbering methods used to support the excavation in filled stope mining.  There is also a "Rill Face" method shown.
+
+Q: What are the different types of caving methods depicted?
+A: The image shows three types of caving methods: top slicing, sub-level caving, and block caving.  These methods involve controlled collapse of the ore body for extraction.
+
+
+Q: What was the primary mining technique used in the Stone Age?
+A:  Prehistoric hominids primarily used loose rock for digging, and practiced thermal-stress methods.
+
+Q: What significant technological advancement occurred in the Iron Age (2nd Millennium BC)?
+A: The introduction of iron tools allowed for the digging of deeper holes, extending beyond natural cracks.
+
+Q:  For how long was the pick and wedge method the dominant mining technique?
+A: The pick and wedge method was the primary mining technique for three centuries.
+
+Q:  What era of mining technology preceded the widespread use of machinery?
+A: The era of hand-labour, characterized by manual hammering, lasted until the early 19th century.
+
+Q:  What period marked the end of the late Iron Age mining techniques?
+A: The Late Iron Age mining techniques lasted until the beginning of the Industrial Revolution.
+
+
+Q: What is the purpose of the ventilation duct shown in the image?
+A: The ventilation duct is designed to remove toxic fumes generated during mining operations, ensuring a safer environment for workers.
+
+Q: What are the toxic fumes shown in the image emanating from?
+A: The toxic fumes are shown emanating from the muck pile (broken rock and ore)  resulting from the mining process.
+
+Q: What is the material labeled "muck" in the image?
+A: "Muck" refers to the broken rock and ore that is extracted during mining activities.
+
+Q: How does the ventilation system work according to the image?
+A: The ventilation system uses a duct to draw air from the mine face, removing the toxic fumes generated by the mining process and directing them away from the workers.
+
+Q: What is the potential hazard depicted in this diagram?
+A: The potential hazard is the presence of toxic fumes generated from the muck pile, posing a health risk to miners if not properly ventilated.
+
+
+Q: What are the two main processes depicted in the image?
+A: The image shows the drilling and charging processes in what appears to be a mining or excavation operation.
+
+Q: What type of equipment is used for the drilling process?
+A: A large, yellow, specialized drilling machine mounted on a tracked chassis is used for drilling.  It appears to be a boom-type drill.
+
+Q: What is the purpose of the drilling process shown?
+A: The drilling process creates holes in the rock face to prepare it for the next stage, which is charging (likely with explosives).
+
+Q: What is depicted in the lower right section of the image?
+A: The lower right shows the charging process, where explosives or other blasting agents are likely being placed into the pre-drilled holes.  A smaller vehicle with an elevated platform is involved, suggesting manual placement of the charge.
+
+
+Q: What protective measure is visible in the image?
+A:  A protective lining or support system (the yellow material with diamond-shaped patterns) is present on the tunnel walls, presumably to enhance safety and stability during the drilling and blasting operations.
+
+
+Q: What are the three underground metal mining methods depicted in the image?
+A: The image shows Sublevel Open Stoping, Big Hole Open Stoping, and Cut and Fill mining methods.
+
+Q:  Describe the process of Sublevel Open Stoping as shown in the diagram.
+A: In Sublevel Open Stoping, long-hole drilling and blasting are used to create a stope.  Undercut fan blasting further loosens the ore, which is then loaded into a transport drift via a loading crosscut at the draw point.
+
+Q: How does Big Hole Open Stoping differ from Sublevel Open Stoping in terms of ore extraction?
+A:  Both methods use long-hole drilling and blasting, but Big Hole Open Stoping typically involves a larger, single stope, whereas Sublevel Open Stoping uses multiple levels and smaller stopes for a more controlled extraction process.
+
+Q: What is the role of hydraulic sandfill in the Cut and Fill method?
+A:  Hydraulic sandfill is used to fill the mined-out void in the Cut and Fill method, providing support for the surrounding rock and allowing for the creation of subsequent levels.
+
+Q: What is the purpose of the ventilation tube in the Cut and Fill method diagram?
+A: The ventilation tube provides fresh air and removes exhaust fumes from the underground workings, ensuring the safety of the miners.
+
+
+Q: What is the typical range of ore body width for this type of deposit?
+A: The width is typically narrow to moderate, ranging from 2 meters to 40 meters.
+
+Q: How would you characterize the strength of the ore itself in this context?
+A: The ore strength is moderate to strong, but less competent than what unsupported mining methods could handle.
+
+Q: Describe the typical shape and continuity of ore deposits under these conditions.
+A:  The deposits are typically tabular, irregular, and discontinuous in shape.
+
+Q: What is the range of depth at which these ore bodies are typically found?
+A: These ore bodies are found at moderate to deep depths, ranging from less than 1.2 kilometers to 2.4 kilometers.
+
+Q: How steep is the typical dip angle of these ore deposits, and are there any exceptions?
+A: The typical dip angle is moderate to fairly steep (35° to 90°).  However, flatter deposits can occur if the ore passes are steeper than the angle of repose.
+
+
+Q: What are two methods shown for accessing an ore body?
+A:  The image depicts access via a shaft and a ramp.
+
+Q: What is the term used to describe the horizontal sections or layers shown within the ore body?
+A: The horizontal sections within the ore body are referred to as Levels/Slices.
+
+Q: What is the purpose of the cross-cut shown in the image?
+A: The cross-cut provides a method of horizontal access through the ore body, allowing for extraction from multiple levels.
+
+Q: What is the term for the overall mass of ore being depicted?
+A: The overall mass of ore is referred to as the Ore Body.
+
+Q: What is the structural difference between a shaft and a ramp used to access the ore?
+A: A shaft is a vertical passage, while a ramp is an inclined or sloped passage.
+
+
+Q: What is a key advantage of this mining method in terms of production?
+A: It offers moderate productivity (10 to 20 tons per employee per shift) and a moderate production rate suitable for moderate-scale operations.
+
+Q:  How does this method handle waste materials?
+A:  The method permits good selectivity and sorting, and waste materials can be used as fill.  Surface waste can also be disposed of underground as fill.
+
+Q: What is a significant cost disadvantage associated with this mining method?
+A:  A fairly high mining cost is a disadvantage, compounded by the costly handling of waste (approximately 50% of the total mining cost).
+
+Q: What are some challenges related to the operational aspects of this method?
+A: Filling complicates the production cycle, causing discontinuous production.  The method also tends to be labor-intensive, requiring skilled miners and close supervision, and necessitates providing stope access for mechanized equipment.
+
+Q:  What is a potential risk associated with the fill material used in this mining method?
+A: The compressibility of the fill material poses a risk of ground settlement and instability.
+
+
+Q: What are some locations where copper mining takes place?
+A: Copper mining is mentioned in Magma, Arizona; Surda Mine, HCL, India; and Mt. Isa, Australia.
+
+Q: Where is a significant gold mine located, according to this list?
+A: The Homestake mine in South Dakota is listed as a location for gold mining.
+
+Q:  In which Canadian province are nickel mines mentioned?
+A: Nickel mines are located in Sudbury, Ontario, Canada.
+
+Q:  What is the location of a silver mine listed in the applications section?
+A: A silver mine is located in Star, Idaho (ID).
+
+Q: Besides the locations listed for other minerals, in which country does this slide list uranium mining?
+A: The slide mentions uranium mining in India, specifically at UCIL.
+
+
