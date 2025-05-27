@@ -1,9 +1,11 @@
-# 🧠 MCP-Based AI Agent for LF Certificate Prep
+# 🧠 Exam-BOT (MCP-Based AI Agent for LF Certificate Prep)
 
 A prototype AI agent built using the **Model Context Protocol (MCP)** to assist students preparing for **Linux Foundation (LF) certifications** through interactive practice questions and intelligent Q&A responses.
 
 ---
 
+Here is the demo video of bot in action: 
+https://www.loom.com/share/7043e129098745d6a7f57e56cca11863?sid=c7a57e18-3779-48ce-8ecd-ad8938f08489
 ## 🚀 Project Overview
 
 This project serves as an intelligent study companion leveraging **open-source Large Language Models (LLMs)** and **MCP servers** to provide an engaging and interactive learning experience. The agent supports:
