@@ -5,16 +5,16 @@ from dotenv import load_dotenv
 load_dotenv()
 from openai import OpenAI
 
-# Set up your OpenRouter API key
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-# Initialize the OpenAI client with OpenRouter base URL
+
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=OPENAI_API_KEY,
 )
 
-# Start the MCP server
+
 server = subprocess.Popen(
     ['python3', 'main.py'],
     stdout=subprocess.PIPE,
@@ -111,8 +111,7 @@ def handle_tool_calls(tool_calls):
         
         print(f"Calling tool: {function_name} with args: {function_args}")
         
-        # Call the MCP tool
-        id = tool_call.id  # Use the OpenAI tool call ID
+        id = tool_call.id  
         tool_call_message = create_message("tools/call", {
             "name": function_name,
             "arguments": function_args,
@@ -157,8 +156,7 @@ def chat_with_exam_bot():
             
         # Add user message to conversation
         messages.append({"role": "user", "content": user_input})
-        
-        # Call OpenAI API with client
+
         completion = client.chat.completions.create(
            
             model="openai/gpt-4.1-nano",
@@ -217,11 +215,9 @@ def chat_with_exam_bot():
             messages.append({"role": "assistant", "content": assistant_message.content})
             print(f"\nAssistant: {assistant_message.content}")
 
-# Run the chat interaction
 if __name__ == "__main__":
     try:
         chat_with_exam_bot()
     finally:
-        # Clean up the subprocess when done
         server.terminate()
         print("\nServer terminated.")
