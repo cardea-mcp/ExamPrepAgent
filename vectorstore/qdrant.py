@@ -1,6 +1,6 @@
-from data import qa_pairs
-from encoder import model
-from encoder import create_embedding
+from utils.data import qa_pairs
+from encoder.encoder import model
+from encoder.encoder import create_embedding
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
 import numpy as np

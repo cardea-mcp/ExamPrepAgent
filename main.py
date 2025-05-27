@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from ques_select import get_random_qa, search_pair
+from utils.ques_select import get_random_qa, search_pair
 import json
 with open('file.json','r') as f:
     q_list = json.load(f)

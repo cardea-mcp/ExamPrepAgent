@@ -1,7 +1,7 @@
 import random
 import json
-from qdrant import client
-from encoder import create_embedding
+from vectorstore.qdrant import client
+from encoder.encoder import create_embedding
 
 
 
