@@ -1,5 +1,5 @@
 qa_pairs = []
-with open("/home/kayden/Desktop/python_projects/ExamBOT/metal-mining/all_qa_pairs.txt", "r") as f:
+with open("/home/kayden/Desktop/python_projects/ExamBOT/rust_qa.txt", "r") as f:
     content = f.read()
     
 # Split by double newlines to separate QA pairs

@@ -1,7 +1,7 @@
 from mcp.server.fastmcp import FastMCP
 from utils.ques_select import get_random_qa, search_pair
 import json
-with open('file.json','r') as f:
+with open('/home/kayden/Desktop/python_projects/ExamBOT/dataset/file.json','r') as f:
     q_list = json.load(f)
 mcp = FastMCP("Exam-Bot")
 

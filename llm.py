@@ -6,12 +6,12 @@ load_dotenv()
 from openai import OpenAI
 
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 
 client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENAI_API_KEY,
+    base_url= "http://127.0.0.1:8080/v1",
+    api_key="gaia",
 )
 
 
@@ -42,7 +42,7 @@ def receive_message():
     # serveroutput = server.stdout.readline()
     # print("serveroutput---- \n",serveroutput)
     server_output = json.loads(server.stdout.readline())
-    # print("server_output---- \n",server_output)
+    print("server_output---- \n",server_output)
     if "result" in server_output:
         return server_output["result"]
     else:
@@ -159,7 +159,7 @@ def chat_with_exam_bot():
 
         completion = client.chat.completions.create(
            
-            model="openai/gpt-4.1-nano",
+            model="llama3",
             messages=messages,
             tools=available_functions,
             tool_choice="auto"
@@ -200,7 +200,7 @@ def chat_with_exam_bot():
                 #     "HTTP-Referer": "https://example.com",
                 #     "X-Title": "MCP Tool Example",
                 # },
-                model="openai/gpt-4.1-nano",
+                model="llama3",
                 messages=messages,
                 tools=available_functions,
                 tool_choice="none"  # Don't use tools for this response
