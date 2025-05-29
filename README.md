@@ -58,20 +58,50 @@ The system is composed of several core components:
 - **FastMCP** – MCP server framework
 - **Qdrant** – Vector database for semantic search
 - **SentenceTransformers** – Text embedding generation
-- **OpenAI API** (via gaianet node)
+- **LLama3** Run the LLAMAEDGE api server locally. 
+    
+    for running the model that i have used for this project.
+    ```bash
+    curl -LO https://huggingface.co/tensorblock/Llama-3-Groq-8B-Tool-Use-GGUF/resolve/main/Llama-3-Groq-8B-Tool-Use-Q5_K_M.gguf
+   ```
+   then run 
+   ```bash
+   wasmedge --dir .:. --nn-preload default:GGML:AUTO:Llama-3-Groq-8B-Tool-Use-Q5_K_M.gguf \
+   llama-api-server.wasm \
+   --prompt-template groq-llama3-tool  --log-all \
+   --ctx-size 2048 \
+   --model-name llama3
+   ```
+
+  
 - **JSON** – Data storage format
 
 ---
 ## 📁 Project Structure
 ```
-├── main.py              # MCP server with tool definitions
-├── llm.py               # LLM integration and chat loop
-├── data.py              # Data loading from text files
-├── encoder.py           # Text embedding creation
-├── qdrant.py            # Vector database setup and indexing
-├── ques_select.py       # Question selection and search functions
-├── file.json            # Sample Q&A dataset
-└── README.md           
+.
+├── .gitignore
+├── README.md
+├── database
+│ └── monogodb.py
+├── dataset
+│ ├── dataPrep.py # logic for extracting mining dataset
+│ ├── file.json
+│ ├── kubernetes_basic.json
+│ ├── kubernetes_qa.csv # kubernetes dataset
+│ ├── mining_qa_pairs.csv # metal mining dataset
+│ ├── url_data_fit.py
+│ └── url_scrap.py # scrap data from url
+├── encoder
+│ └── encoder.py # encoder model
+├── utils
+│ ├── data.py
+│ └── ques_select.py # logic to search questions from the vector database
+├── vectorstore
+│ └── qdrant.py # used for converting q&a pairs to vector embeddings.
+├── llm.py # It contains the logic of LLM and tools
+├── main.py # contains the mcp tools and their descriptions.
+├── rust_qa.txt        
 ```
 ---
 ## 🚀 Setup Instructions
