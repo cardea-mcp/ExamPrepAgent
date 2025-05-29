@@ -135,8 +135,7 @@ OPENAI_API_KEY = "" # you can keep it empty
 
 ## 🔮 Future Enhancements
 
-- **WasmEdge Integration**: Migrate to CNCF WasmEdge runtime  
-- **LlamaEdge Framework**: Implement agent using LlamaEdge  
+ 
 - **Expanded Datasets**: Add more LF certification topics  
 - **Advanced Analytics**: Track learning progress and weak areas  
 - **Multi-modal Support**: Include diagrams and visual aids  
@@ -154,6 +153,4 @@ OPENAI_API_KEY = "" # you can keep it empty
 4. Test your changes with the MCP server
 5. Submit a pull request
 ---
-## 📝 License
-This project is part of the Linux Foundation certification preparation initiative.
-Please ensure compliance with LF guidelines when using certification materials.
+
