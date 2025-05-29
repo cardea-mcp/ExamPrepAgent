@@ -4,16 +4,15 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from openai import OpenAI
+from database.monogodb import MongoDB
 
-
-# OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
+# Initialize MongoDB
+mongo_db = MongoDB()
 
 client = OpenAI(
     base_url= "http://127.0.0.1:8080/v1",
-    api_key="gaia",
+    api_key= "gaia",
 )
-
 
 server = subprocess.Popen(
     ['python3', 'main.py'],
@@ -39,10 +38,8 @@ def send_message(message):
 
 def receive_message():
     print("Reading from server...")
-    # serveroutput = server.stdout.readline()
-    # print("serveroutput---- \n",serveroutput)
     server_output = json.loads(server.stdout.readline())
-    print("server_output---- \n",server_output)
+    # print("server_output---- \n",server_output)
     if "result" in server_output:
         return server_output["result"]
     else:
@@ -119,19 +116,15 @@ def handle_tool_calls(tool_calls):
         
         send_message(tool_call_message)
         tool_result = receive_message()
-        # print("tool_result -----\n",tool_result)
+        
         result_text = " "
         # Extract the result text
         if tool_result.get("content"):
             for content in tool_result["content"]:
                 result_text += content["text"]
-
         else:
             result_text += ("No result")
-
             
-        # result_text = tool_result["content"][0]["text"] if tool_result.get("content") else "No result"
-        
         tool_responses.append({
             "tool_call_id": tool_call.id,
             "role": "tool",
@@ -139,42 +132,75 @@ def handle_tool_calls(tool_calls):
             "content": result_text
         })
         
-        print(f"Tool response: {tool_responses}")
+        # print(f"Tool response: {tool_responses}")
     
     return tool_responses
 
-# Main interaction loop
+def format_context_for_llm(context):
+    """Convert context list to formatted string for LLM"""
+    if not context or (len(context) == 1 and not context[0]["user_query"]):
+        return "No previous conversation history."
+    
+    formatted_context = "Previous conversation history:\n"
+    for entry in context:
+        if entry["user_query"]:
+            formatted_context += f"User: {entry['user_query']}\n"
+        if entry["agent_response"]:
+            formatted_context += f"Assistant: {entry['agent_response']}\n"
+        if entry["tool_response"]:
+            formatted_context += f"Tool Result: {entry['tool_response']}\n"
+        formatted_context += "\n"
+    
+    return formatted_context
+
+
 def chat_with_exam_bot():
+    user_id = input("Enter your user ID: ")
+
+    user_context = mongo_db.get_user_context(user_id)
+    context_string = format_context_for_llm(user_context)
+    
     messages = [
-        {"role": "system", "content": "You are a helpful ai assistant. You have two tools that you can access. First is that you can fetch random questions from a file.json. You have to use this tool when the user ask you to give some random question. The other tool is that you can search relevant question and answers related to user question. User can ask some question and you will find the relavant question and answers pair from the dataset, you have a tool to do that. whenever you get some question by user, first search the question in the dataset, if you find the question in the dataset, then return the answer of the question."}
+        {"role": "system", "content": f"""You are a helpful AI assistant specialized in answering questions and providing practice questions. You have access to two tools:
+
+1. get_random_question: Fetches random questions based on difficulty and topic
+2. get_question_and_answer: Searches for relevant question-answer pairs from the dataset
+
+Guidelines:
+- When a user asks for practice questions, random questions, or wants to test their knowledge, ask them to specify:
+  * Difficulty level (beginner, intermediate, advanced) - if they don't specify or say "any", use None
+  * Topic - if they say "any topic" or don't specify, use None
+- Always search the dataset first when users ask specific questions
+- If you find the answer in the dataset, provide it directly
+- Be conversational and helpful
+
+Context from previous conversations:
+{context_string}"""}
     ]
     
     while True:
         user_input = input("\nYour question (or 'exit' to quit): ")
         if user_input.lower() == 'exit':
             break
-            
-        # Add user message to conversation
-        messages.append({"role": "user", "content": user_input})
+        
 
+        messages.append({"role": "user", "content": user_input})
+        
         completion = client.chat.completions.create(
-           
             model="llama3",
             messages=messages,
             tools=available_functions,
             tool_choice="auto"
         )
-        # print("completion -----\n",completion)
+        
         assistant_message = completion.choices[0].message
-        # print("assistant_message -----\n",assistant_message)
-        # Check if the model wants to call a tool
-        # print("assistant_message.tool_calls -----\n",assistant_message.tool_calls)
+        tool_response_content = ""
+        
+
         if assistant_message.tool_calls:
-            # Handle tool calls
-            
             tool_responses = handle_tool_calls(assistant_message.tool_calls)
-            # print("tool_responses -----\n",tool_responses)
-            # Add assistant message to conversation
+            tool_response_content = json.dumps([resp["content"] for resp in tool_responses])
+            
             messages.append({
                 "role": "assistant",
                 "content": assistant_message.content,
@@ -190,16 +216,11 @@ def chat_with_exam_bot():
                 ]
             })
             
-            # Add tool responses to conversation
             for tool_response in tool_responses:
                 messages.append(tool_response)
             
-            # Get final response from OpenAI
+
             final_completion = client.chat.completions.create(
-                # extra_headers={
-                #     "HTTP-Referer": "https://example.com",
-                #     "X-Title": "MCP Tool Example",
-                # },
                 model="llama3",
                 messages=messages,
                 tools=available_functions,
@@ -210,10 +231,36 @@ def chat_with_exam_bot():
             messages.append({"role": "assistant", "content": final_message.content})
             
             print(f"\nAssistant: {final_message.content}")
+            
+            # Update context in MongoDB
+            new_context_entry = {
+                "user_query": user_input,
+                "agent_response": final_message.content,
+                "tool_response": tool_response_content
+            }
+            
         else:
-            # No tool calls, just regular response
+
             messages.append({"role": "assistant", "content": assistant_message.content})
             print(f"\nAssistant: {assistant_message.content}")
+            
+
+            new_context_entry = {
+                "user_query": user_input,
+                "agent_response": assistant_message.content,
+                "tool_response": ""
+            }
+        
+
+        if user_context and len(user_context) == 1 and not user_context[0]["user_query"]:
+            user_context[0] = new_context_entry
+        else:
+            user_context.append(new_context_entry)
+        
+        if len(user_context) > 10:
+            user_context = user_context[-10:]
+        
+        mongo_db.update_user_context(user_id, user_context)
 
 if __name__ == "__main__":
     try:

@@ -11,7 +11,7 @@ client = QdrantClient("localhost", port=6333)
 
 # Create collection with appropriate vector size
 client.create_collection(
-    collection_name="mining_qa",
+    collection_name="kubernetes_qa",
     vectors_config=VectorParams(size=384, distance=Distance.COSINE)
 )
 
@@ -23,14 +23,17 @@ for i, qa_pair in enumerate(qa_pairs):
     
     # Store the vector with complete Q&A as payload
     client.upsert(
-        collection_name="mining_qa",
+        collection_name="kubernetes_qa",
         points=[
             PointStruct(
                 id=i,
                 vector=question_embedding,
                 payload={
                     "question": qa_pair["question"],
-                    "answer": qa_pair["answer"]
+                    "answer": qa_pair["answer"],
+                    "topic": qa_pair["topic"],
+                    "type": qa_pair["type"],
+                    "difficulty": qa_pair["difficulty"]
                 }
             )
         ]
