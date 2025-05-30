@@ -140,7 +140,7 @@ docker run -p 6333:6333 qdrant/qdrant
 ```bash
 OPENAI_API_KEY = "" # you can keep it empty
 ```
-- Setup a MongoDB instance. Make a database and a collection. In the .env variable add the `MONGO_URI` as a variable and its value.
+- Setup a MongoDB instance. Make a database and a collection. In the .env variable add the `MONGODB_URI` as a variable and its value.
 
 - Run the app.py file 
 ```bash
