@@ -5,7 +5,7 @@ A prototype AI agent built using the **Model Context Protocol (MCP)** to assist 
 ---
 
 Here is the demo video of bot in action: 
-https://www.loom.com/share/7043e129098745d6a7f57e56cca11863?sid=c7a57e18-3779-48ce-8ecd-ad8938f08489
+https://www.loom.com/share/5ee6606c85bf4af89db3f2c949be22b7?sid=fe4c0d9b-71b7-4bbb-add8-436bba2e0c93
 ## 🚀 Project Overview
 
 This project serves as an intelligent study companion leveraging **open-source Large Language Models (LLMs)** and **MCP servers** to provide an engaging and interactive learning experience. The agent supports:
