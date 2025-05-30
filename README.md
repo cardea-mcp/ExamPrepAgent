@@ -16,6 +16,12 @@ This project serves as an intelligent study companion leveraging **open-source L
 
 ---
 
+ScreenShots of the bot in action
+![Bot giving practicing question to the user](public/lfx_memory_diff-feature_sc.png)
+
+ ### **Here in the above image, you can see that the bot is asking the user about the complexity level of question he wants to practice. The bot is also asking the topic he wants to prepare.** 
+
+### **In this way the practicing for the exam becomes more personal and engaging.**
 ## 🏗️ Architecture
 
 The system is composed of several core components:
