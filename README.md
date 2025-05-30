@@ -22,6 +22,14 @@ ScreenShots of the bot in action
  ### **Here in the above image, you can see that the bot is asking the user about the complexity level of question he wants to practice. The bot is also asking the topic he wants to prepare.** 
 
 ### **In this way the practicing for the exam becomes more personal and engaging.**
+---
+
+For this prototype I have created two datasets:
+- **Kubernetes-Q&A** - A collection of Q&A pairs focused on Kubernetes and cloud native concepts. It is uploaded to my hugging face id. 
+here is the link to the dataset. https://huggingface.co/datasets/ItshMoh/kubernetes_qa_pairs . It contains 497 Q&A pairs. It has also crossed **45 downloads** on hugging face.
+It is made for KCNA exam. Contents are taken from the kubernetes.io licensed under CC BY 4.0
+
+- **Metal-mining-Q&A** - A collection of Q&A pairs focused on metal mining methods. The link to the dataset https://huggingface.co/datasets/ItshMoh/metal-mining-qa-pairs . It has also more than 31 downloads on hugging face.
 ## 🏗️ Architecture
 
 The system is composed of several core components:
