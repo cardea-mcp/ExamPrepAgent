@@ -128,18 +128,25 @@ The system is composed of several core components:
 ---
 ## 🚀 Setup Instructions
 ### Prerequisites
-- Qdrant VectorStore
-```bash
-docker run -p 6333:6333 qdrant/qdrant
-```
 - Python Dependencies
 ```bash
 pip install -r requirements.txt
+```
+- Qdrant VectorStore
+```bash
+docker run -p 6333:6333 qdrant/qdrant
 ```
 - Environment Variables Create a .env file:
 ```bash
 OPENAI_API_KEY = "" # you can keep it empty
 ```
+- Setup a MongoDB instance. Make a database and a collection. In the .env variable add the `MONGO_URI` as a variable and its value.
+
+- Run the app.py file 
+```bash
+python app.py
+```
+
 
 ## 🔧 MCP Functions
 
