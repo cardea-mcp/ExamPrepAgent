@@ -11,8 +11,8 @@ from database.monogodb import MongoDB
 mongo_db = MongoDB()
 openai_api_key = os.getenv('OPENAI_API_KEY')
 client = OpenAI(
-    base_url= "https://openrouter.ai/api/v1",
-    api_key= openai_api_key,
+    base_url= "http://127.0.0.1:8080/v1",
+    api_key= "gaia",
 )
 
 server = subprocess.Popen(
@@ -184,7 +184,7 @@ Context from previous conversations:
         messages.append({"role": "user", "content": user_input})
         
         completion = client.chat.completions.create(
-            model="openai/gpt-4.1-nano",
+            model="llama3",
             messages=messages,
             tools=available_functions,
             tool_choice="auto"
@@ -216,7 +216,7 @@ Context from previous conversations:
                 messages.append(tool_response)
             
             final_completion = client.chat.completions.create(
-                model="openai/gpt-4.1-nano",
+                model="llama3",
                 messages=messages,
                 tools=available_functions,
                 tool_choice="none"

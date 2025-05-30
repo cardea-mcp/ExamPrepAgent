@@ -5,7 +5,7 @@ A prototype AI agent built using the **Model Context Protocol (MCP)** to assist 
 ---
 
 Here is the demo video of bot in action: 
-https://www.loom.com/share/5ee6606c85bf4af89db3f2c949be22b7?sid=fe4c0d9b-71b7-4bbb-add8-436bba2e0c93
+https://www.loom.com/share/2912a7f9f0384bcfaebb5642da3cc76f
 ## 🚀 Project Overview
 
 This project serves as an intelligent study companion leveraging **open-source Large Language Models (LLMs)** and **MCP servers** to provide an engaging and interactive learning experience. The agent supports:
@@ -17,7 +17,7 @@ This project serves as an intelligent study companion leveraging **open-source L
 ---
 
 ScreenShots of the bot in action
-![Bot giving practicing question to the user](public/lfx_memory_diff-feature_sc.png)
+![Bot giving practicing question to the user](public/lfx_exambot_ui_sc.png)
 
  ### **Here in the above image, you can see that the bot is asking the user about the complexity level of question he wants to practice. The bot is also asking the topic he wants to prepare.** 
 
@@ -93,29 +93,37 @@ The system is composed of several core components:
 ---
 ## 📁 Project Structure
 ```
-.
-├── .gitignore
-├── README.md
-├── database
-│ └── monogodb.py
-├── dataset
-│ ├── dataPrep.py # logic for extracting mining dataset
-│ ├── file.json
-│ ├── kubernetes_basic.json
-│ ├── kubernetes_qa.csv # kubernetes dataset
-│ ├── mining_qa_pairs.csv # metal mining dataset
-│ ├── url_data_fit.py
-│ └── url_scrap.py # scrap data from url
-├── encoder
-│ └── encoder.py # encoder model
-├── utils
-│ ├── data.py
-│ └── ques_select.py # logic to search questions from the vector database
-├── vectorstore
-│ └── qdrant.py # used for converting q&a pairs to vector embeddings.
-├── llm.py # It contains the logic of LLM and tools
-├── main.py # contains the mcp tools and their descriptions.
-├── rust_qa.txt        
+
+    ├── README.md
+    ├── app.py
+    ├── llm.py
+    ├── llm_api.py
+    ├── main.py
+    ├── requirements.txt
+    ├── rust_qa.txt
+    ├── database/
+    │   └── monogodb.py
+    ├── dataset/
+    │   ├── dataPrep.py
+    │   ├── file.json
+    │   ├── kubernetes_basic.json
+    │   ├── kubernetes_qa.csv
+    │   ├── mining_qa_pairs.csv
+    │   ├── url_data_fit.py
+    │   └── url_scrap.py
+    ├── encoder/
+    │   └── encoder.py
+    ├── public/
+    ├── static/
+    │   ├── index.html
+    │   ├── script.js
+    │   └── styles.css
+    ├── utils/
+    │   ├── data.py
+    │   └── ques_select.py
+    └── vectorstore/
+        └── qdrant.py
+   
 ```
 ---
 ## 🚀 Setup Instructions
