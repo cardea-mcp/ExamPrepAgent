@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExamBOT - Your AI Study Companion</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="profile-section">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-name" id="userName">Guest</div>
+                        <div class="profile-email">Study Companion</div>
+                    </div>
+                </div>
+                <button class="new-chat-btn" id="newChatBtn">
+                    <i class="fas fa-plus"></i>
+                    New Chat
+                </button>
+            </div>
+            
+            <div class="sessions-container">
+                <div class="sessions-header">
+                    <h3>Recent Chats</h3>
+                </div>
+                <div class="sessions-list" id="sessionsList">
+                    <!-- Sessions will be dynamically loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="chat-header">
+                <button class="sidebar-toggle" id="sidebarToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="chat-title">
+                    <h2 id="chatTitle">ExamBOT</h2>
+                    <p id="chatSubtitle">Your AI-powered study companion for certification prep</p>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-message">
+                    <div class="bot-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="welcome-content">
+                        <h3>Welcome to ExamBOT! 🎓</h3>
+                        <p>I'm here to help you prepare for your Linux Foundation certifications. I can:</p>
+                        <ul>
+                            <li>📚 Provide practice questions tailored to your difficulty level</li>
+                            <li>🔍 Answer specific questions about Kubernetes and cloud-native technologies</li>
+                            <li>💡 Guide you through complex topics step by step</li>
+                        </ul>
+                        <p>What would you like to study today?</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <input type="text" id="messageInput" placeholder="Ask me anything about Kubernetes, or request practice questions..." maxlength="1000">
+                    <button id="sendButton" class="send-button">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="input-footer">
+                    <span class="character-count" id="charCount">0/1000</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Name Input Modal -->
+    <div class="modal" id="nameModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Welcome to ExamBOT!</h2>
+                <p>Enter your name to get started</p>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="nameInput" placeholder="Your name" maxlength="50">
+            </div>
+            <div class="modal-footer">
+                <button id="submitName" class="primary-button">Start Learning</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+# llm.py (updated version)
 import json
 import subprocess
 import os
@@ -8,10 +9,10 @@ from database.monogodb import MongoDB
 
 # Initialize MongoDB
 mongo_db = MongoDB()
-
+openai_api_key = os.getenv('OPENAI_API_KEY')
 client = OpenAI(
-    base_url= "http://127.0.0.1:8080/v1",
-    api_key= "gaia",
+    base_url= "https://openrouter.ai/api/v1",
+    api_key= openai_api_key,
 )
 
 server = subprocess.Popen(
@@ -39,7 +40,6 @@ def send_message(message):
 def receive_message():
     print("Reading from server...")
     server_output = json.loads(server.stdout.readline())
-    # print("server_output---- \n",server_output)
     if "result" in server_output:
         return server_output["result"]
     else:
@@ -132,8 +132,6 @@ def handle_tool_calls(tool_calls):
             "content": result_text
         })
         
-        # print(f"Tool response: {tool_responses}")
-    
     return tool_responses
 
 def format_context_for_llm(context):
@@ -153,8 +151,8 @@ def format_context_for_llm(context):
     
     return formatted_context
 
-
 def chat_with_exam_bot():
+    # This function is now only for CLI usage if needed
     user_id = input("Enter your user ID: ")
 
     user_context = mongo_db.get_user_context(user_id)
@@ -183,11 +181,10 @@ Context from previous conversations:
         if user_input.lower() == 'exit':
             break
         
-
         messages.append({"role": "user", "content": user_input})
         
         completion = client.chat.completions.create(
-            model="llama3",
+            model="openai/gpt-4.1-nano",
             messages=messages,
             tools=available_functions,
             tool_choice="auto"
@@ -196,7 +193,6 @@ Context from previous conversations:
         assistant_message = completion.choices[0].message
         tool_response_content = ""
         
-
         if assistant_message.tool_calls:
             tool_responses = handle_tool_calls(assistant_message.tool_calls)
             tool_response_content = json.dumps([resp["content"] for resp in tool_responses])
@@ -219,12 +215,11 @@ Context from previous conversations:
             for tool_response in tool_responses:
                 messages.append(tool_response)
             
-
             final_completion = client.chat.completions.create(
-                model="llama3",
+                model="openai/gpt-4.1-nano",
                 messages=messages,
                 tools=available_functions,
-                tool_choice="none"  # Don't use tools for this response
+                tool_choice="none"
             )
             
             final_message = final_completion.choices[0].message
@@ -232,7 +227,6 @@ Context from previous conversations:
             
             print(f"\nAssistant: {final_message.content}")
             
-            # Update context in MongoDB
             new_context_entry = {
                 "user_query": user_input,
                 "agent_response": final_message.content,
@@ -240,25 +234,20 @@ Context from previous conversations:
             }
             
         else:
-
             messages.append({"role": "assistant", "content": assistant_message.content})
             print(f"\nAssistant: {assistant_message.content}")
             
-
             new_context_entry = {
                 "user_query": user_input,
                 "agent_response": assistant_message.content,
                 "tool_response": ""
             }
         
-
+        # No longer limiting to 10 messages - removed the length check
         if user_context and len(user_context) == 1 and not user_context[0]["user_query"]:
             user_context[0] = new_context_entry
         else:
             user_context.append(new_context_entry)
-        
-        if len(user_context) > 10:
-            user_context = user_context[-10:]
         
         mongo_db.update_user_context(user_id, user_context)
 
