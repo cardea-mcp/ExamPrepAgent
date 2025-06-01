@@ -9,7 +9,7 @@ import torch
 class WhisperHandler:
     """Handles Whisper model loading and audio transcription"""
     
-    def __init__(self, model_size: str = "tiny"):
+    def __init__(self, model_size: str = "base.en"):
         """
         Initialize Whisper handler
         
@@ -156,4 +156,4 @@ class WhisperHandler:
         return self.model is not None
 
 # Global instance to be reused across requests
-whisper_handler = WhisperHandler(model_size="tiny")
+whisper_handler = WhisperHandler(model_size="base.en")
