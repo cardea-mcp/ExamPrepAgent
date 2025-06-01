@@ -6,7 +6,9 @@ from dotenv import load_dotenv
 load_dotenv()
 from openai import OpenAI
 from database.monogodb import MongoDB
-
+from audio_processing.whisper_handler import whisper_handler
+from audio_processing.audio_utils import validate_audio_file, cleanup_temp_file, create_temp_audio_file
+import logging
 
 mongo_db = MongoDB()
 openai_api_key = os.getenv('OPENAI_API_KEY')
@@ -237,6 +239,75 @@ Context from previous conversations:
     
     return response_text
 
+async def process_audio_message(session_id, audio_data, filename, available_functions, language=None):
+    """Process an audio message and return the response"""
+    logger = logging.getLogger(__name__)
+    temp_file_path = None
+    
+    try:
+        # Validate audio file
+        is_valid, error_message = validate_audio_file(audio_data, filename)
+        if not is_valid:
+            return {
+                "success": False,
+                "error": error_message,
+                "transcription": "",
+                "response": ""
+            }
+
+        # Create temporary file for Whisper
+        temp_file_path = create_temp_audio_file(audio_data, filename)
+        
+        # Transcribe audio using Whisper
+        logger.info(f"Starting transcription for session {session_id}")
+        transcription_result = whisper_handler.transcribe_audio(temp_file_path, language)
+        
+        if not transcription_result["success"]:
+            return {
+                "success": False,
+                "error": f"Transcription failed: {transcription_result['error']}",
+                "transcription": "",
+                "response": ""
+            }
+
+        transcribed_text = transcription_result["text"]
+        detected_language = transcription_result["language"]
+        
+        logger.info(f"Transcription successful: '{transcribed_text[:100]}...'")
+
+        # Process the transcribed text through the normal message pipeline
+        if transcribed_text.strip():
+            response_text = await process_message(session_id, transcribed_text, available_functions)
+            
+            return {
+                "success": True,
+                "transcription": transcribed_text,
+                "detected_language": detected_language,
+                "response": response_text,
+                "error": None
+            }
+        else:
+            return {
+                "success": False,
+                "error": "No speech detected in audio",
+                "transcription": "",
+                "response": ""
+            }
+
+    except Exception as e:
+        logger.error(f"Audio message processing failed: {str(e)}")
+        return {
+            "success": False,
+            "error": str(e),
+            "transcription": "",
+            "response": ""
+        }
+    
+    finally:
+        # Clean up temporary file
+        if temp_file_path:
+            cleanup_temp_file(temp_file_path)
+            
 def cleanup_server():
     """Cleanup the MCP server"""
     global server

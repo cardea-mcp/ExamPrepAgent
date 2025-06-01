@@ -1,9 +1,6 @@
-#!/usr/bin/env python3
-"""
-URL Scraper and Q&A Generator using Gemini
-Scrapes content from a URL and generates 30 Kubernetes-related Q&A pairs
-"""
-
+from playwright.sync_api import sync_playwright
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
 import google.generativeai as genai
@@ -16,68 +13,63 @@ from typing import List, Dict, Optional
 from dotenv import load_dotenv
 load_dotenv()
 class URLScraper:
-    """Handles web scraping with proper error handling and content extraction"""
-    
+    """Handles web scraping with JavaScript rendering using Playwright"""
+
     def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        })
-    
-    def scrape_url(self, url: str) -> Dict[str, str]:
-        """
-        Scrape content from a given URL
-        
-        Args:
-            url (str): URL to scrape
-            
-        Returns:
-            Dict containing title, content, and metadata
-        """
+        pass  # No session needed as Playwright handles browser context
+
+    def scrape_url(self, url: str) -> dict:
         try:
-            print(f"Scraping URL: {url}")
-            response = self.session.get(url, timeout=30)
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.content, 'html.parser')
-            
+            print(f"Scraping URL with JS rendering: {url}")
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
+                context = browser.new_context(
+                    user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36',
+                    viewport={'width': 1280, 'height': 800},
+                    java_script_enabled=True
+                )
+                page = context.new_page()
+                page.goto(url, timeout=60000)
+                page.wait_for_load_state("networkidle")
+                time.sleep(3)  # Give some time for JS to render
+                page.screenshot(path="debug.png", full_page=True)  # For debugging
+                html = page.content()
+                browser.close()
+
+
+            soup = BeautifulSoup(html, 'html.parser')
+
             # Remove script and style elements
             for script in soup(["script", "style", "nav", "footer", "header"]):
                 script.decompose()
-            
+
             # Extract title
             title = soup.find('title')
             title_text = title.get_text().strip() if title else "No title found"
-            
+
             # Extract main content - try multiple selectors
             content_selectors = [
-                'main', 
-                'article', 
-                '.content', 
-                '#content',
-                '.post-content',
-                '.entry-content',
-                'body'
+                'main', 'article', '.content', '#content',
+                '.post-content', '.entry-content', 'body'
             ]
-            
+
             content_text = ""
             for selector in content_selectors:
                 content_element = soup.select_one(selector)
                 if content_element:
                     content_text = content_element.get_text(separator='\n', strip=True)
                     break
-            
+
             if not content_text:
                 content_text = soup.get_text(separator='\n', strip=True)
-            
+
             # Clean and limit content length
             content_lines = [line.strip() for line in content_text.split('\n') if line.strip()]
             content_text = '\n'.join(content_lines)
-            
-            # Limit content to ~8000 characters to avoid token limits
+
             if len(content_text) > 8000:
                 content_text = content_text[:8000] + "..."
-            
+
             return {
                 'url': url,
                 'title': title_text,
@@ -85,11 +77,9 @@ class URLScraper:
                 'domain': urlparse(url).netloc,
                 'length': len(content_text)
             }
-            
-        except requests.RequestException as e:
-            raise Exception(f"Error scraping URL {url}: {str(e)}")
+
         except Exception as e:
-            raise Exception(f"Error processing content from {url}: {str(e)}")
+            raise Exception(f"Error scraping URL with Playwright: {str(e)}")
 
 class GeminiQAGenerator:
     """Handles Gemini API interaction for Q&A generation"""

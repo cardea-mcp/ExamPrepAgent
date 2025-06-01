@@ -1,25 +1,87 @@
-// static/script.js
+// static/script.js - UPDATED VERSION
 class ExamBotApp {
     constructor() {
         this.currentUser = null;
         this.currentSession = null;
         this.sessions = [];
+        this.audioRecorder = null;
+        this.audioPlayer = null;
+        this.isRecording = false;
+        this.recordedAudioBlob = null;
+        this.audioSupported = false;
+        this.recordingTimer = null;
         this.init();
     }
 
-    init() {
+    async init() {
         this.bindEvents();
+        await this.initializeAudio();
         this.checkUserSession();
     }
 
+    async initializeAudio() {
+        try {
+            // Check if audio is supported
+            const support = await AudioRecorder.checkBrowserSupport();
+            this.audioSupported = support.supported;
+
+            if (this.audioSupported) {
+                this.audioRecorder = new AudioRecorder();
+                this.audioPlayer = new AudioPlayer();
+                
+                // Set up audio recorder callbacks
+                this.audioRecorder.onRecordingStart = () => this.handleRecordingStart();
+                this.audioRecorder.onRecordingStop = (blob, duration) => this.handleRecordingStop(blob, duration);
+                this.audioRecorder.onRecordingError = (error) => this.handleRecordingError(error);
+
+                await this.audioRecorder.initialize();
+                
+                // Show audio support indicator
+                document.getElementById('audioSupport').style.display = 'inline-flex';
+                
+                // Check server audio support
+                await this.checkServerAudioSupport();
+            } else {
+                console.warn('Audio not supported:', support.reason);
+                this.disableAudioFeatures();
+            }
+        } catch (error) {
+            console.error('Audio initialization failed:', error);
+            this.disableAudioFeatures();
+        }
+    }
+
+    async checkServerAudioSupport() {
+        try {
+            const response = await fetch('/api/audio/support');
+            const data = await response.json();
+            
+            if (!data.supported) {
+                console.warn('Server audio processing not available:', data.error);
+                this.disableAudioFeatures();
+            }
+        } catch (error) {
+            console.error('Failed to check server audio support:', error);
+        }
+    }
+
+    disableAudioFeatures() {
+        const micButton = document.getElementById('micButton');
+        if (micButton) {
+            micButton.disabled = true;
+            micButton.title = 'Voice input not available';
+            micButton.classList.add('disabled');
+        }
+        document.getElementById('audioSupport').style.display = 'none';
+    }
+
     bindEvents() {
-        // Modal events
+        // Existing events
         document.getElementById('submitName').addEventListener('click', () => this.handleNameSubmit());
         document.getElementById('nameInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.handleNameSubmit();
         });
 
-        // Chat events
         document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
         document.getElementById('messageInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
@@ -28,12 +90,21 @@ class ExamBotApp {
             }
         });
         
-        // Character count
         document.getElementById('messageInput').addEventListener('input', () => this.updateCharCount());
-
-        // Sidebar events
         document.getElementById('newChatBtn').addEventListener('click', () => this.createNewSession());
         document.getElementById('sidebarToggle').addEventListener('click', () => this.toggleSidebar());
+
+        // NEW: Audio events
+        document.getElementById('micButton').addEventListener('click', () => this.toggleRecording());
+        document.getElementById('stopRecordingBtn').addEventListener('click', () => this.stopRecording());
+        document.getElementById('sendAudioBtn').addEventListener('click', () => this.sendAudioMessage());
+        document.getElementById('discardAudioBtn').addEventListener('click', () => this.discardAudio());
+        document.getElementById('sendTranscriptionBtn').addEventListener('click', () => this.sendTranscriptionMessage());
+        document.getElementById('editTranscriptionBtn').addEventListener('click', () => this.editTranscription());
+
+        // Audio permission modal events
+        document.getElementById('requestMicPermission')?.addEventListener('click', () => this.requestMicrophonePermission());
+        document.getElementById('skipMicPermission')?.addEventListener('click', () => this.skipMicrophonePermission());
 
         // Click outside sidebar to close on mobile
         document.addEventListener('click', (e) => {
@@ -47,6 +118,225 @@ class ExamBotApp {
         });
     }
 
+    // Audio Recording Methods
+    async toggleRecording() {
+        if (!this.audioSupported || !this.audioRecorder) {
+            this.showError('Voice input is not available');
+            return;
+        }
+
+        if (this.isRecording) {
+            this.stopRecording();
+        } else {
+            await this.startRecording();
+        }
+    }
+
+    async startRecording() {
+        try {
+            this.clearAudioStates();
+            const success = await this.audioRecorder.startRecording();
+            
+            if (success) {
+                this.isRecording = true;
+                this.showRecordingState();
+                this.startRecordingTimer();
+            }
+        } catch (error) {
+            console.error('Failed to start recording:', error);
+            
+            if (error.name === 'NotAllowedError') {
+                this.showMicrophonePermissionModal();
+            } else {
+                this.showError('Failed to start recording: ' + error.message);
+            }
+        }
+    }
+
+    stopRecording() {
+        if (this.audioRecorder && this.isRecording) {
+            this.audioRecorder.stopRecording();
+            this.isRecording = false;
+            this.stopRecordingTimer();
+        }
+    }
+
+    handleRecordingStart() {
+        console.log('Recording started');
+    }
+
+    handleRecordingStop(audioBlob, duration) {
+        this.recordedAudioBlob = audioBlob;
+        this.hideRecordingState();
+        this.showAudioPreview(audioBlob);
+        console.log(`Recording stopped. Duration: ${duration}s, Size: ${audioBlob.size} bytes`);
+    }
+
+    handleRecordingError(error) {
+        this.hideRecordingState();
+        this.showError('Recording error: ' + error);
+        this.isRecording = false;
+        this.stopRecordingTimer();
+    }
+
+    async sendAudioMessage() {
+        if (!this.recordedAudioBlob || !this.currentSession) {
+            return;
+        }
+
+        this.hideAudioPreview();
+        this.showTypingIndicator();
+
+        try {
+            const formData = new FormData();
+            formData.append('audio_file', this.recordedAudioBlob, 'recording.webm');
+
+            const response = await fetch(`/api/sessions/${this.currentSession}/audio`, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.hideTypingIndicator();
+
+                if (data.success) {
+                    // Show transcription in chat
+                    this.addMessage(`🎤 "${data.transcription}"`, 'user');
+                    this.addMessage(data.response, 'bot');
+                } else {
+                    this.showError(data.error || 'Audio processing failed');
+                }
+            } else {
+                throw new Error('Failed to send audio message');
+            }
+        } catch (error) {
+            this.hideTypingIndicator();
+            this.showError('Failed to send audio message: ' + error.message);
+        } finally {
+            this.clearAudioStates();
+        }
+    }
+
+    discardAudio() {
+        this.clearAudioStates();
+    }
+
+    sendTranscriptionMessage() {
+        const transcriptionText = document.getElementById('transcriptionText').textContent;
+        if (transcriptionText.trim()) {
+            document.getElementById('messageInput').value = transcriptionText;
+            this.clearAudioStates();
+            this.sendMessage();
+        }
+    }
+
+    editTranscription() {
+        const transcriptionText = document.getElementById('transcriptionText').textContent;
+        document.getElementById('messageInput').value = transcriptionText;
+        this.clearAudioStates();
+        document.getElementById('messageInput').focus();
+    }
+
+    // Audio UI State Management
+    showRecordingState() {
+        document.getElementById('audioStatus').style.display = 'flex';
+        document.getElementById('inputWrapper').style.display = 'none';
+        
+        const micButton = document.getElementById('micButton');
+        micButton.classList.add('recording');
+        micButton.innerHTML = '<i class="fas fa-stop"></i>';
+    }
+
+    hideRecordingState() {
+        document.getElementById('audioStatus').style.display = 'none';
+        document.getElementById('inputWrapper').style.display = 'flex';
+        
+        const micButton = document.getElementById('micButton');
+        micButton.classList.remove('recording');
+        micButton.innerHTML = '<i class="fas fa-microphone"></i>';
+    }
+
+    showAudioPreview(audioBlob) {
+        const audioPlayer = document.getElementById('audioPlayer');
+        audioPlayer.src = URL.createObjectURL(audioBlob);
+        document.getElementById('audioPreview').style.display = 'block';
+        document.getElementById('inputWrapper').style.display = 'none';
+    }
+
+    hideAudioPreview() {
+        document.getElementById('audioPreview').style.display = 'none';
+        document.getElementById('inputWrapper').style.display = 'flex';
+        
+        const audioPlayer = document.getElementById('audioPlayer');
+        if (audioPlayer.src) {
+            URL.revokeObjectURL(audioPlayer.src);
+            audioPlayer.src = '';
+        }
+    }
+
+    showTranscriptionPreview(transcriptionText) {
+        document.getElementById('transcriptionText').textContent = transcriptionText;
+        document.getElementById('transcriptionPreview').style.display = 'block';
+        document.getElementById('inputWrapper').style.display = 'none';
+    }
+
+    hideTranscriptionPreview() {
+        document.getElementById('transcriptionPreview').style.display = 'none';
+        document.getElementById('inputWrapper').style.display = 'flex';
+    }
+
+    clearAudioStates() {
+        this.hideRecordingState();
+        this.hideAudioPreview();
+        this.hideTranscriptionPreview();
+        this.recordedAudioBlob = null;
+    }
+
+    startRecordingTimer() {
+        let seconds = 0;
+        this.recordingTimer = setInterval(() => {
+            seconds++;
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            document.getElementById('recordingTime').textContent = 
+                `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }, 1000);
+    }
+
+    stopRecordingTimer() {
+        if (this.recordingTimer) {
+            clearInterval(this.recordingTimer);
+            this.recordingTimer = null;
+        }
+    }
+
+    showMicrophonePermissionModal() {
+        document.getElementById('audioPermissionModal').style.display = 'flex';
+    }
+
+    hideMicrophonePermissionModal() {
+        document.getElementById('audioPermissionModal').style.display = 'none';
+    }
+
+    async requestMicrophonePermission() {
+        try {
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.hideMicrophonePermissionModal();
+            this.audioSupported = true;
+            await this.initializeAudio();
+        } catch (error) {
+            this.showError('Microphone permission denied');
+            this.hideMicrophonePermissionModal();
+        }
+    }
+
+    skipMicrophonePermission() {
+        this.hideMicrophonePermissionModal();
+        this.disableAudioFeatures();
+    }
+
+    // Existing methods remain unchanged...
     checkUserSession() {
         const savedUser = localStorage.getItem('exambot_user');
         if (savedUser) {
@@ -211,7 +501,6 @@ class ExamBotApp {
     renderChatHistory(context) {
         const chatMessages = document.getElementById('chatMessages');
         
-        // Clear existing messages except welcome message
         const welcomeMessage = chatMessages.querySelector('.welcome-message');
         chatMessages.innerHTML = '';
         if (context.length === 0) {
@@ -236,12 +525,10 @@ class ExamBotApp {
         
         if (!message || !this.currentSession) return;
 
-        // Add user message to UI
         this.addMessage(message, 'user');
         input.value = '';
         this.updateCharCount();
 
-        // Show typing indicator
         this.showTypingIndicator();
 
         try {
@@ -290,24 +577,12 @@ class ExamBotApp {
     }
 
     formatMessage(content) {
-        // Basic formatting for bot messages
         content = this.escapeHtml(content);
-        
-        // Convert **bold** to <strong>
         content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        
-        // Convert *italic* to <em>
         content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        
-        // Convert line breaks
         content = content.replace(/\n/g, '<br>');
-        
-        // Convert code blocks
         content = content.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-        
-        // Convert inline code
         content = content.replace(/`([^`]+)`/g, '<code>$1</code>');
-        
         return content;
     }
 

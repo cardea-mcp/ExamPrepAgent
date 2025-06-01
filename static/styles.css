@@ -603,3 +603,474 @@ body {
     margin-bottom: 15px;
     border-left: 4px solid #ef4444;
  }
+
+ /* static/styles.css - ADD THESE STYLES TO YOUR EXISTING CSS */
+
+/* Audio Recording Styles */
+.audio-status {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    animation: pulse 2s infinite;
+}
+
+.recording-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.recording-dot {
+    width: 12px;
+    height: 12px;
+    background: white;
+    border-radius: 50%;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.stop-recording-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.stop-recording-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Audio Preview Styles */
+.audio-preview, .transcription-preview {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+   padding: 16px;
+   margin-bottom: 10px;
+   display: none;
+}
+
+.preview-header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-bottom: 12px;
+   font-weight: 600;
+   color: #374151;
+}
+
+.preview-content {
+   display: flex;
+   flex-direction: column;
+   gap: 12px;
+}
+
+.preview-actions {
+   display: flex;
+   gap: 8px;
+   justify-content: flex-end;
+}
+
+.send-audio-btn, .send-transcription-btn {
+   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+   color: white;
+   border: none;
+   padding: 8px 16px;
+   border-radius: 6px;
+   cursor: pointer;
+   font-size: 14px;
+   transition: all 0.3s ease;
+}
+
+.send-audio-btn:hover, .send-transcription-btn:hover {
+   transform: translateY(-1px);
+   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.discard-btn, .edit-btn {
+   background: #6b7280;
+   color: white;
+   border: none;
+   padding: 4px 8px;
+   border-radius: 4px;
+   cursor: pointer;
+   font-size: 12px;
+   transition: all 0.3s ease;
+}
+
+.discard-btn:hover, .edit-btn:hover {
+   background: #4b5563;
+}
+
+.transcription-text {
+   background: white;
+   padding: 12px;
+   border-radius: 6px;
+   border: 1px solid #d1d5db;
+   font-style: italic;
+   color: #374151;
+   line-height: 1.5;
+}
+
+/* Input Area Updates */
+.input-wrapper {
+   display: flex;
+   align-items: center;
+   background: #f9fafb;
+   border: 1px solid #d1d5db;
+   border-radius: 12px;
+   padding: 4px;
+   transition: all 0.3s ease;
+}
+
+.input-wrapper:focus-within {
+   border-color: #667eea;
+   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#messageInput {
+   flex: 1;
+   border: none;
+   background: none;
+   padding: 12px 16px;
+   font-size: 16px;
+   outline: none;
+   resize: none;
+   color: #1f2937;
+}
+
+.input-buttons {
+   display: flex;
+   gap: 8px;
+   margin-right: 4px;
+}
+
+.mic-button {
+   width: 40px;
+   height: 40px;
+   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+   border: none;
+   border-radius: 8px;
+   color: white;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   transition: all 0.3s ease;
+   position: relative;
+}
+
+.mic-button:hover {
+   transform: translateY(-1px);
+   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.mic-button.recording {
+   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+   animation: pulse 2s infinite;
+}
+
+.mic-button.disabled {
+   background: #d1d5db;
+   cursor: not-allowed;
+   transform: none;
+   box-shadow: none;
+}
+
+.mic-button.disabled:hover {
+   transform: none;
+   box-shadow: none;
+}
+
+.send-button {
+   width: 40px;
+   height: 40px;
+   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+   border: none;
+   border-radius: 8px;
+   color: white;
+   cursor: pointer;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   transition: all 0.3s ease;
+}
+
+.send-button:hover {
+   transform: translateY(-1px);
+   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.send-button:disabled {
+   background: #d1d5db;
+   cursor: not-allowed;
+   transform: none;
+   box-shadow: none;
+}
+
+/* Input Footer Updates */
+.input-footer {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   margin-top: 8px;
+   font-size: 12px;
+   color: #9ca3af;
+}
+
+.audio-support {
+   display: none;
+   align-items: center;
+   gap: 4px;
+   color: #10b981;
+}
+
+.audio-support i {
+   font-size: 10px;
+}
+
+/* Audio Permission Modal */
+.modal-actions {
+   display: flex;
+   gap: 12px;
+   justify-content: center;
+   margin-top: 20px;
+}
+
+.secondary-button {
+   background: #6b7280;
+   color: white;
+   border: none;
+   padding: 12px 24px;
+   border-radius: 8px;
+   font-size: 16px;
+   font-weight: 600;
+   cursor: pointer;
+   transition: all 0.3s ease;
+}
+
+.secondary-button:hover {
+   background: #4b5563;
+   transform: translateY(-1px);
+}
+
+/* Audio Player Styles */
+#audioPlayer {
+   width: 100%;
+   height: 40px;
+   border-radius: 6px;
+}
+
+#audioPlayer::-webkit-media-controls-panel {
+   background-color: #f3f4f6;
+}
+
+/* Voice Input Indicator for Messages */
+.message.user .message-content {
+   position: relative;
+}
+
+.message.user .message-content:has-text("🎤") {
+   border-left: 3px solid #10b981;
+   padding-left: 12px;
+}
+
+/* Recording Animation Styles */
+.recording-pulse {
+   position: relative;
+}
+
+.recording-pulse::before {
+   content: '';
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   transform: translate(-50%, -50%);
+   width: 100%;
+   height: 100%;
+   border-radius: 50%;
+   background: rgba(239, 68, 68, 0.3);
+   animation: recording-pulse 2s infinite;
+}
+
+@keyframes recording-pulse {
+   0% {
+       transform: translate(-50%, -50%) scale(1);
+       opacity: 1;
+   }
+   100% {
+       transform: translate(-50%, -50%) scale(1.4);
+       opacity: 0;
+   }
+}
+
+/* Responsive Updates */
+@media (max-width: 768px) {
+   .audio-status {
+       flex-direction: column;
+       gap: 10px;
+       text-align: center;
+   }
+   
+   .input-buttons {
+       gap: 6px;
+   }
+   
+   .mic-button, .send-button {
+       width: 36px;
+       height: 36px;
+   }
+   
+   .preview-actions {
+       flex-direction: column;
+       gap: 8px;
+   }
+   
+   .send-audio-btn, .send-transcription-btn {
+       width: 100%;
+       justify-content: center;
+   }
+   
+   .modal-actions {
+       flex-direction: column;
+   }
+   
+   .secondary-button, .primary-button {
+       width: 100%;
+   }
+}
+
+@media (max-width: 480px) {
+   .audio-preview, .transcription-preview {
+       padding: 12px;
+   }
+   
+   .preview-header {
+       font-size: 14px;
+   }
+   
+   .input-footer {
+       flex-direction: column;
+       gap: 4px;
+       align-items: flex-start;
+   }
+   
+   .audio-support {
+       align-self: flex-end;
+   }
+}
+
+/* Audio Processing States */
+.processing-audio {
+   opacity: 0.7;
+   pointer-events: none;
+}
+
+.audio-success {
+   border-left: 4px solid #10b981;
+   background: #f0fdf4;
+}
+
+.audio-error {
+   border-left: 4px solid #ef4444;
+   background: #fef2f2;
+}
+
+/* Accessibility Improvements */
+.mic-button:focus,
+.send-button:focus,
+.send-audio-btn:focus,
+.send-transcription-btn:focus {
+   outline: 2px solid #667eea;
+   outline-offset: 2px;
+}
+
+.mic-button[aria-pressed="true"] {
+   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+/* Loading states for audio */
+.audio-loading {
+   position: relative;
+   overflow: hidden;
+}
+
+.audio-loading::after {
+   content: '';
+   position: absolute;
+   top: 0;
+   left: -100%;
+   width: 100%;
+   height: 100%;
+   background: linear-gradient(90deg, 
+       transparent, 
+       rgba(255, 255, 255, 0.2), 
+       transparent
+   );
+   animation: loading-sweep 2s infinite;
+}
+
+@keyframes loading-sweep {
+   0% { left: -100%; }
+   100% { left: 100%; }
+}
+
+/* Improve contrast for better accessibility */
+.recording-indicator {
+   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.transcription-text {
+   line-height: 1.6;
+   font-size: 14px;
+}
+
+/* Better visual hierarchy */
+.preview-header {
+   font-size: 14px;
+   letter-spacing: 0.025em;
+}
+
+/* Smooth transitions for all audio elements */
+.audio-status,
+.audio-preview,
+.transcription-preview,
+.mic-button,
+.send-button {
+   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced error and success states */
+.error-message, .success-message {
+   animation: slideInFromBottom 0.3s ease-out;
+}
+
+@keyframes slideInFromBottom {
+   from {
+       transform: translateY(20px);
+       opacity: 0;
+   }
+   to {
+       transform: translateY(0);
+       opacity: 1;
+   }
+}
