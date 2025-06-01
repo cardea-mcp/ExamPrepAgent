@@ -889,7 +889,7 @@ body {
    position: relative;
 }
 
-.message.user .message-content:has-text("🎤") {
+.message.user .message-content:has-text("") {
    border-left: 3px solid #10b981;
    padding-left: 12px;
 }

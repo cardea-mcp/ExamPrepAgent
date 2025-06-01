@@ -13,8 +13,8 @@ import logging
 mongo_db = MongoDB()
 openai_api_key = os.getenv('OPENAI_API_KEY')
 client = OpenAI(
-    base_url= "http://127.0.0.1:8080/v1",
-    api_key= "gaia",
+    base_url= "https://openrouter.ai/api/v1",
+    api_key= openai_api_key,
 )
 
 # Global server instance
@@ -184,7 +184,7 @@ Context from previous conversations:
     messages.append({"role": "user", "content": user_input})
     
     completion = client.chat.completions.create(
-        model="llama3",
+        model="openai/gpt-4.1-nano",
         messages=messages,
         tools=available_functions,
         tool_choice="auto"
@@ -216,7 +216,7 @@ Context from previous conversations:
             messages.append(tool_response)
         
         final_completion = client.chat.completions.create(
-            model="llama3",
+            model="openai/gpt-4.1-nano",
             messages=messages,
             tools=available_functions,
             tool_choice="none"
@@ -239,28 +239,16 @@ Context from previous conversations:
     
     return response_text
 
-async def process_audio_message(session_id, audio_data, filename, available_functions, language=None):
-    """Process an audio message and return the response"""
+async def process_audio_message(session_id, audio_data_wav, filename_wav, available_functions, language=None):
+    """Process an audio message (expected to be WAV data) and return the response"""
     logger = logging.getLogger(__name__)
-    temp_file_path = None
     
     try:
-        # Validate audio file
-        is_valid, error_message = validate_audio_file(audio_data, filename)
-        if not is_valid:
-            return {
-                "success": False,
-                "error": error_message,
-                "transcription": "",
-                "response": ""
-            }
+        if not audio_data_wav:
+            return { "success": False, "error": "No audio data received for processing", "transcription": "", "response": ""}
 
-        # Create temporary file for Whisper
-        temp_file_path = create_temp_audio_file(audio_data, filename)
-        
-        # Transcribe audio using Whisper
-        logger.info(f"Starting transcription for session {session_id}")
-        transcription_result = whisper_handler.transcribe_audio(temp_file_path, language)
+        logger.info(f"Starting transcription for WAV data (filename: {filename_wav}) for session {session_id}")
+        transcription_result = whisper_handler.transcribe_audio_bytes(audio_data_wav, filename_wav, language)
         
         if not transcription_result["success"]:
             return {
@@ -271,9 +259,9 @@ async def process_audio_message(session_id, audio_data, filename, available_func
             }
 
         transcribed_text = transcription_result["text"]
-        detected_language = transcription_result["language"]
+        detected_language = transcription_result["language"] 
         
-        logger.info(f"Transcription successful: '{transcribed_text[:100]}...'")
+        logger.info(f"Transcription successful: '{transcribed_text[:100]}...' (Language: {detected_language})")
 
         # Process the transcribed text through the normal message pipeline
         if transcribed_text.strip():
@@ -287,27 +275,23 @@ async def process_audio_message(session_id, audio_data, filename, available_func
                 "error": None
             }
         else:
+            logger.info("Transcription resulted in empty text (possibly silence).")
             return {
-                "success": False,
-                "error": "No speech detected in audio",
+                "success": True, # Transcription itself didn't fail, just no speech
                 "transcription": "",
-                "response": ""
+                "detected_language": detected_language,
+                "response": "I didn't detect any speech in your audio. Could you please try again?",
+                "error": "No speech detected"
             }
 
     except Exception as e:
-        logger.error(f"Audio message processing failed: {str(e)}")
+        logger.error(f"Audio message processing failed in llm_api: {str(e)}", exc_info=True)
         return {
             "success": False,
-            "error": str(e),
+            "error": f"Internal error during audio processing: {str(e)}",
             "transcription": "",
             "response": ""
         }
-    
-    finally:
-        # Clean up temporary file
-        if temp_file_path:
-            cleanup_temp_file(temp_file_path)
-            
 def cleanup_server():
     """Cleanup the MCP server"""
     global server

@@ -84,21 +84,17 @@ def _has_valid_audio_signature(file_data: bytes, file_ext: str) -> bool:
     """
     if len(file_data) < 12:
         return False
-    
-    # Check common audio file signatures
+
     if file_ext == '.mp3':
-        # MP3 files can start with ID3 tag or frame sync
         return (file_data[:3] == b'ID3' or 
                 file_data[:2] == b'\xff\xfb' or 
                 file_data[:2] == b'\xff\xfa')
     
     elif file_ext == '.wav':
-        # WAV files start with RIFF and contain WAVE
         return (file_data[:4] == b'RIFF' and 
                 file_data[8:12] == b'WAVE')
     
     elif file_ext in ['.m4a', '.mp4']:
-        # M4A/MP4 files contain ftyp box
         return b'ftyp' in file_data[:32]
     
     elif file_ext == '.ogg':

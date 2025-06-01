@@ -202,7 +202,7 @@ class ExamBotApp {
 
                 if (data.success) {
                     // Show transcription in chat
-                    this.addMessage(`🎤 "${data.transcription}"`, 'user');
+                    this.addMessage(` "${data.transcription}"`, 'user');
                     this.addMessage(data.response, 'bot');
                 } else {
                     this.showError(data.error || 'Audio processing failed');
