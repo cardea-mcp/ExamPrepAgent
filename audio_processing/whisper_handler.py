@@ -156,13 +156,13 @@ class WhisperHandler:
         """
         Transcribe audio from bytes data using the configured API.
         """
-        if not self.load_model():
-            return {
-                "success": False,
-                "error": "Transcription handler not properly loaded/configured.",
-                "text": "",
-                "language": None
-            }
+        # if not self.load_model():
+        #     return {
+        #         "success": False,
+        #         "error": "Transcription handler not properly loaded/configured.",
+        #         "text": "",
+        #         "language": None
+        #     }
 
         if not audio_data:
              return {

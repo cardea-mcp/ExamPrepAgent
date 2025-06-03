@@ -8,6 +8,7 @@ from database.monogodb import MongoDB
 from llm_api import initialize_mcp_server, process_message, cleanup_server, process_audio_message
 from audio_processing.whisper_handler import whisper_handler 
 from audio_processing.audio_utils import validate_audio_file, MAX_FILE_SIZE, get_file_extension, cleanup_temp_file
+from audio_processing.tts_handler import tts_handler
 import atexit
 import logging
 import tempfile 
@@ -168,8 +169,25 @@ async def send_audio_message_route(
             available_functions,
             language
         )
+        if response.get("success") and response.get("response"):
+            detected_lang = response.get("detected_language", "en")
+            # Map some language codes to supported TTS languages
+            tts_lang = detected_lang if tts_handler.is_language_supported(detected_lang) else "en"
+            
+            tts_result = tts_handler.text_to_speech(
+                response["response"], 
+                language=tts_lang
+            )
+            
+            if tts_result["success"]:
+                response["tts_audio"] = tts_result["audio_data"]
+                response["tts_format"] = tts_result["format"]
+            else:
+                logger.warning(f"TTS generation failed: {tts_result['error']}")
         
         return response
+        
+       
 
     except HTTPException:
         raise # Re-raise HTTPException if it's already one
@@ -215,6 +233,49 @@ async def check_audio_support():
         return { "supported": False, "error": str(e) }
 
 
+@app.post("/api/tts")
+async def text_to_speech_endpoint(
+    request: dict
+):
+    """Convert text to speech"""
+    try:
+        text = request.get("text", "")
+        language = request.get("language", "en")
+        slow = request.get("slow", False)
+        
+        if not text.strip():
+            raise HTTPException(status_code=400, detail="No text provided")
+        
+        result = tts_handler.text_to_speech(text, language, slow)
+        
+        if result["success"]:
+            return {
+                "success": True,
+                "audio_data": result["audio_data"],
+                "format": result["format"],
+                "language": result["language"]
+            }
+        else:
+            raise HTTPException(status_code=500, detail=result["error"])
+            
+    except Exception as e:
+        logger.error(f"TTS endpoint error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Add TTS support check endpoint
+@app.get("/api/tts/support")
+async def check_tts_support():
+    """Check TTS support and available languages"""
+    try:
+        return {
+            "supported": True,
+            "languages": tts_handler.get_supported_languages(),
+            "default_language": tts_handler.default_language
+        }
+    except Exception as e:
+        logger.error(f"TTS support check failed: {str(e)}")
+        return {"supported": False, "error": str(e)}
+    
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
     # ... (implementation)

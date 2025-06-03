@@ -16,9 +16,25 @@ class ExamBotApp {
     async init() {
         this.bindEvents();
         await this.initializeAudio();
+        await this.initializeTTS();
         this.checkUserSession();
     }
 
+    async initializeTTS() {
+        try {
+            const response = await fetch('/api/tts/support');
+            const data = await response.json();
+            this.ttsSupported = data.supported;
+            
+            if (this.ttsSupported) {
+                console.log('TTS supported with languages:', data.languages);
+                this.addTTSControls();
+            }
+        } catch (error) {
+            console.error('TTS initialization failed:', error);
+            this.ttsSupported = false;
+        }
+    }
     async initializeAudio() {
         try {
             // Check if audio is supported
@@ -64,6 +80,55 @@ class ExamBotApp {
             console.error('Failed to check server audio support:', error);
         }
     }
+
+    addTTSControls() {
+        // Add TTS toggle to input footer
+        const inputFooter = document.getElementById('inputWrapper');
+        if (inputFooter) {
+            const ttsToggle = document.createElement('button');
+            ttsToggle.id = 'ttsToggle';
+            ttsToggle.className = 'tts-toggle';
+            ttsToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+            ttsToggle.title = 'Toggle voice responses';
+            ttsToggle.addEventListener('click', () => this.toggleTTS());
+            
+            const inputButtons = inputFooter.querySelector('.input-buttons');
+            inputButtons.insertBefore(ttsToggle, inputButtons.firstChild);
+        }
+    }
+
+    toggleTTS() {
+        this.ttsEnabled = !this.ttsEnabled;
+        const toggle = document.getElementById('ttsToggle');
+        if (toggle) {
+            toggle.classList.toggle('active', this.ttsEnabled);
+            toggle.innerHTML = this.ttsEnabled ? 
+                '<i class="fas fa-volume-up"></i>' : 
+                '<i class="fas fa-volume-mute"></i>';
+        }
+        
+        // Save preference
+        localStorage.setItem('exambot_tts_enabled', this.ttsEnabled.toString());
+        
+        // Show status message
+        this.showTTSStatus(this.ttsEnabled ? 'Voice responses enabled' : 'Voice responses disabled');
+    }
+
+    showTTSStatus(message) {
+        const statusDiv = document.createElement('div');
+        statusDiv.className = 'tts-status-message';
+        statusDiv.textContent = message;
+        
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.appendChild(statusDiv);
+        
+        setTimeout(() => {
+            statusDiv.remove();
+        }, 2000);
+        
+        this.scrollToBottom();
+    }
+
 
     disableAudioFeatures() {
         const micButton = document.getElementById('micButton');
@@ -183,27 +248,32 @@ class ExamBotApp {
         if (!this.recordedAudioBlob || !this.currentSession) {
             return;
         }
-
+    
         this.hideAudioPreview();
         this.showTypingIndicator();
-
+    
         try {
             const formData = new FormData();
             formData.append('audio_file', this.recordedAudioBlob, 'recording.webm');
-
+    
             const response = await fetch(`/api/sessions/${this.currentSession}/audio`, {
                 method: 'POST',
                 body: formData
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
                 this.hideTypingIndicator();
-
+    
                 if (data.success) {
                     // Show transcription in chat
-                    this.addMessage(` "${data.transcription}"`, 'user');
+                    this.addMessage(`🎤 "${data.transcription}"`, 'user');
                     this.addMessage(data.response, 'bot');
+                    
+                    // NEW: Play TTS audio if available and enabled
+                    if (this.ttsEnabled && data.tts_audio) {
+                        await this.playTTSAudio(data.tts_audio, data.tts_format || 'wav');
+                    }
                 } else {
                     this.showError(data.error || 'Audio processing failed');
                 }
@@ -218,6 +288,82 @@ class ExamBotApp {
         }
     }
 
+    async playTTSAudio(audioData, format) {
+        try {
+            // Stop any currently playing audio
+            if (this.currentAudio) {
+                this.currentAudio.pause();
+                this.currentAudio = null;
+            }
+    
+            // Convert base64 audio data to blob
+            const binaryString = atob(audioData);
+            const bytes = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            const audioBlob = new Blob([bytes], { type: `audio/${format}` });
+            
+            // Create audio element and play
+            this.currentAudio = new Audio();
+            this.currentAudio.src = URL.createObjectURL(audioBlob);
+            
+            // Add visual indicator
+            this.showTTSPlaying();
+            
+            this.currentAudio.onended = () => {
+                this.hideTTSPlaying();
+                URL.revokeObjectURL(this.currentAudio.src);
+                this.currentAudio = null;
+            };
+            
+            this.currentAudio.onerror = (e) => {
+                console.error('TTS audio playback error:', e);
+                this.hideTTSPlaying();
+                this.showError('Failed to play voice response');
+            };
+            
+            await this.currentAudio.play();
+            
+        } catch (error) {
+            console.error('Failed to play TTS audio:', error);
+            this.showError('Failed to play voice response');
+        }
+    }
+
+    showTTSPlaying() {
+        const indicator = document.createElement('div');
+        indicator.id = 'ttsPlayingIndicator';
+        indicator.className = 'tts-playing-indicator';
+        indicator.innerHTML = `
+            <div class="tts-icon">
+                <i class="fas fa-volume-up"></i>
+            </div>
+            <div class="tts-text">Playing voice response...</div>
+            <button onclick="app.stopTTSAudio()" class="tts-stop-btn">
+                <i class="fas fa-stop"></i>
+            </button>
+        `;
+        
+        const chatMessages = document.getElementById('chatMessages');
+        chatMessages.appendChild(indicator);
+        this.scrollToBottom();
+    }
+
+    hideTTSPlaying() {
+        const indicator = document.getElementById('ttsPlayingIndicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    }
+
+    stopTTSAudio() {
+        if (this.currentAudio) {
+            this.currentAudio.pause();
+            this.currentAudio = null;
+            this.hideTTSPlaying();
+        }
+    }
     discardAudio() {
         this.clearAudioStates();
     }
@@ -339,9 +485,12 @@ class ExamBotApp {
     // Existing methods remain unchanged...
     checkUserSession() {
         const savedUser = localStorage.getItem('exambot_user');
+        const ttsEnabled = localStorage.getItem('exambot_tts_enabled') === 'true';
         if (savedUser) {
             this.currentUser = JSON.parse(savedUser);
+            this.ttsEnabled = ttsEnabled;
             this.hideNameModal();
+            
             this.loadUserData();
         } else {
             this.showNameModal();

@@ -1074,3 +1074,100 @@ body {
        opacity: 1;
    }
 }
+/* TTS Control Styles */
+.tts-toggle {
+    width: 40px;
+    height: 40px;
+    background: #6b7280;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-right: 8px;
+}
+
+.tts-toggle:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+}
+
+.tts-toggle.active {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.tts-toggle.active:hover {
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* TTS Playing Indicator */
+.tts-playing-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    animation: pulse 2s infinite;
+}
+
+.tts-icon {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+}
+
+.tts-text {
+    flex: 1;
+    font-weight: 500;
+}
+
+.tts-stop-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.tts-stop-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* TTS Status Messages */
+.tts-status-message {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 14px;
+    border-left: 3px solid #3b82f6;
+}
+
+/* Voice message indicator */
+.message.user .message-content:has-text("🎤") {
+    border-left: 3px solid #10b981;
+}
+
+/* Responsive TTS styles */
+@media (max-width: 768px) {
+    .tts-playing-indicator {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+    
+    .tts-toggle {
+        width: 36px;
+        height: 36px;
+    }
+}
