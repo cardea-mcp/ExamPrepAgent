@@ -1,19 +1,49 @@
-# llm.py (updated version)
+# llm.py (updated version with direct API requests)
 import json
 import subprocess
 import os
+import requests
 from dotenv import load_dotenv
 load_dotenv()
-from openai import OpenAI
 from database.monogodb import MongoDB
 
 # Initialize MongoDB
 mongo_db = MongoDB()
 openai_api_key = os.getenv('OPENAI_API_KEY')
-client = OpenAI(
-    base_url= "http://127.0.0.1:8080/v1",
-    api_key= openai_api_key,
-)
+gaia_api_key = os.getenv('GAIA_API_KEY')
+
+# API configuration
+API_BASE_URL = "https://qwen72b.gaia.domains/v1"
+API_KEY = gaia_api_key
+
+def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
+    """Make a direct API request to chat completions endpoint"""
+    url = f"{API_BASE_URL}/chat/completions"
+    
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {API_KEY}" if API_KEY.strip() else "Bearer dummy"
+    }
+    
+    payload = {
+        "model": "gemma-3-27b-it-q4_0",
+        "messages": messages,
+        "temperature": 0.7  # Adding temperature like your working example
+    }
+    
+    if tools:
+        payload["tools"] = tools
+        payload["tool_choice"] = tool_choice
+    
+    try:
+        # Use data=json.dumps(payload) instead of json=payload
+        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=6000)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"API request failed: {str(e)}")
+        print(f"Response text: {response.text if 'response' in locals() else 'No response'}")
+        raise Exception(f"API request failed: {str(e)}")
 
 server = subprocess.Popen(
     ['python3', 'main.py'],
@@ -103,12 +133,12 @@ def handle_tool_calls(tool_calls):
     tool_responses = []
     
     for tool_call in tool_calls:
-        function_name = tool_call.function.name
-        function_args = json.loads(tool_call.function.arguments)
+        function_name = tool_call["function"]["name"]
+        function_args = json.loads(tool_call["function"]["arguments"]) if isinstance(tool_call["function"]["arguments"], str) else tool_call["function"]["arguments"]
         
         print(f"Calling tool: {function_name} with args: {function_args}")
         
-        id = tool_call.id  
+        id = tool_call["id"]
         tool_call_message = create_message("tools/call", {
             "name": function_name,
             "arguments": function_args,
@@ -126,7 +156,7 @@ def handle_tool_calls(tool_calls):
             result_text += ("No result")
             
         tool_responses.append({
-            "tool_call_id": tool_call.id,
+            "tool_call_id": tool_call["id"],
             "role": "tool",
             "name": function_name,
             "content": result_text
@@ -183,63 +213,54 @@ Context from previous conversations:
         
         messages.append({"role": "user", "content": user_input})
         
-        completion = client.chat.completions.create(
-            model="llama3",
+        # Make initial API request
+        completion_response = make_chat_completion_request(
             messages=messages,
             tools=available_functions,
             tool_choice="auto"
         )
         
-        assistant_message = completion.choices[0].message
+        assistant_message = completion_response["choices"][0]["message"]
         tool_response_content = ""
         
-        if assistant_message.tool_calls:
-            tool_responses = handle_tool_calls(assistant_message.tool_calls)
+        if assistant_message.get("tool_calls"):
+            tool_responses = handle_tool_calls(assistant_message["tool_calls"])
             tool_response_content = json.dumps([resp["content"] for resp in tool_responses])
             
             messages.append({
                 "role": "assistant",
-                "content": assistant_message.content,
-                "tool_calls": [
-                    {
-                        "id": tc.id,
-                        "type": "function", 
-                        "function": {
-                            "name": tc.function.name,
-                            "arguments": tc.function.arguments
-                        }
-                    } for tc in assistant_message.tool_calls
-                ]
+                "content": assistant_message.get("content"),
+                "tool_calls": assistant_message["tool_calls"]
             })
             
             for tool_response in tool_responses:
                 messages.append(tool_response)
             
-            final_completion = client.chat.completions.create(
-                model="llama3",
+            # Make final completion request
+            final_completion_response = make_chat_completion_request(
                 messages=messages,
                 tools=available_functions,
                 tool_choice="none"
             )
             
-            final_message = final_completion.choices[0].message
-            messages.append({"role": "assistant", "content": final_message.content})
+            final_message = final_completion_response["choices"][0]["message"]
+            messages.append({"role": "assistant", "content": final_message["content"]})
             
-            print(f"\nAssistant: {final_message.content}")
+            print(f"\nAssistant: {final_message['content']}")
             
             new_context_entry = {
                 "user_query": user_input,
-                "agent_response": final_message.content,
+                "agent_response": final_message["content"],
                 "tool_response": tool_response_content
             }
             
         else:
-            messages.append({"role": "assistant", "content": assistant_message.content})
-            print(f"\nAssistant: {assistant_message.content}")
+            messages.append({"role": "assistant", "content": assistant_message["content"]})
+            print(f"\nAssistant: {assistant_message['content']}")
             
             new_context_entry = {
                 "user_query": user_input,
-                "agent_response": assistant_message.content,
+                "agent_response": assistant_message["content"],
                 "tool_response": ""
             }
         
