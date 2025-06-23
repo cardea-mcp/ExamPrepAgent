@@ -132,7 +132,7 @@ The system is composed of several core components:
 ```bash
 pip install -r requirements.txt
 ```
-- Upload the Data on Tidb Cloud. You have to connect to the tiDB instance and save the required login details in the `.env` file
+- Upload the Data on Tidb Cloud. You have to connect to the tiDB instance and save the required login details in the `.env` file.
 ```bash
 python3 database/dataloader.py
 ```
@@ -180,6 +180,6 @@ python app.py
    ```
 3. Add your Q&A datasets in the specified format
 4. Test your changes with the MCP server
-5. Submit a pull request
+5. Submit a pull request.
 ---
 
