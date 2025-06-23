@@ -15,6 +15,7 @@ gaia_api_key = os.getenv('GAIA_API_KEY')
 # API configuration
 API_BASE_URL = "https://qwen72b.gaia.domains/v1"
 API_KEY = gaia_api_key
+# API_KEY = openai_api_key
 
 def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
     """Make a direct API request to chat completions endpoint"""
@@ -26,9 +27,9 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
     }
     
     payload = {
-        "model": "gemma-3-27b-it-q4_0",
+        "model": "gemma",
         "messages": messages,
-        "temperature": 0.7  # Adding temperature like your working example
+        "temperature": 0.7 
     }
     
     if tools:
@@ -36,7 +37,6 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
         payload["tool_choice"] = tool_choice
     
     try:
-        # Use data=json.dumps(payload) instead of json=payload
         response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=6000)
         response.raise_for_status()
         return response.json()
@@ -182,7 +182,7 @@ def format_context_for_llm(context):
     return formatted_context
 
 def chat_with_exam_bot():
-    # This function is now only for CLI usage if needed
+
     user_id = input("Enter your user ID: ")
 
     user_context = mongo_db.get_user_context(user_id)
@@ -191,15 +191,15 @@ def chat_with_exam_bot():
     messages = [
         {"role": "system", "content": f"""You are a helpful AI assistant specialized in answering questions and providing practice questions. You have access to two tools:
 
-1. get_random_question: Fetches random questions based on difficulty and topic
+1. get_random_question: Fetches random questions based on difficulty and topic. 
 2. get_question_and_answer: Searches for relevant question-answer pairs from the dataset
 
 Guidelines:
 - When a user asks for practice questions, random questions, or wants to test their knowledge, ask them to specify:
   * Difficulty level (beginner, intermediate, advanced) - if they don't specify or say "any", use None
-  * Topic - if they say "any topic" or don't specify, use None
-- Always search the dataset first when users ask specific questions
-- If you find the answer in the dataset, provide it directly
+  * Topic - if they say "any topic" or don't specify, use None. Then call the get_random_question tool with the topic and difficulty as arguments.
+- Always search the dataset first when users ask specific questions not any practice question.
+- If you find the answer in the dataset, provide it directly, you can search with the help of get_question_and_answer tool. You have to call get_question_and_answer tool with the user's question as argument.
 - Be conversational and helpful
 
 Context from previous conversations:
@@ -263,8 +263,7 @@ Context from previous conversations:
                 "agent_response": assistant_message["content"],
                 "tool_response": ""
             }
-        
-        # No longer limiting to 10 messages - removed the length check
+
         if user_context and len(user_context) == 1 and not user_context[0]["user_query"]:
             user_context[0] = new_context_entry
         else:
