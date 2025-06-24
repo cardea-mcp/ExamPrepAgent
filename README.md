@@ -37,8 +37,8 @@ The system is composed of several core components:
 - **MCP Server (`main.py`)**  
   Handles question retrieval via defined MCP functions.
 
-- **Vector Database (Qdrant)**  
-  Stores text embeddings for efficient semantic search.
+- **TiDB **  
+  It stores the required Dataset of Q&A pairs. It is like SQL with Full text search feature. You can read about it here. https://docs.pingcap.com/tidbcloud/vector-search-full-text-search-python/
 
 - **LLM Integration (`llm.py`)**  
   Interfaces with OpenAI-compatible APIs to manage conversation flow.
@@ -70,7 +70,7 @@ The system is composed of several core components:
 
 - **Python 3.x**
 - **FastMCP** – MCP server framework
-- **Qdrant** – Vector database for semantic search
+- **TiDB** – SQL database for Full text Search
 - **SentenceTransformers** – Text embedding generation
 - **LLama3** Run the LLAMAEDGE api server locally. 
     
@@ -132,9 +132,9 @@ The system is composed of several core components:
 ```bash
 pip install -r requirements.txt
 ```
-- Qdrant VectorStore
+- Upload the Data on Tidb Cloud. You have to connect to the tiDB instance and save the required login details in the `.env` file.
 ```bash
-docker run -p 6333:6333 qdrant/qdrant
+python3 database/dataloader.py
 ```
 - Environment Variables Create a .env file:
 ```bash
@@ -180,6 +180,6 @@ python app.py
    ```
 3. Add your Q&A datasets in the specified format
 4. Test your changes with the MCP server
-5. Submit a pull request
+5. Submit a pull request.
 ---
 

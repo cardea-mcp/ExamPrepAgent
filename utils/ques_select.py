@@ -1,58 +1,28 @@
-import random
-import json
-from vectorstore.qdrant import client
-from encoder.encoder import create_embedding
+from typing import Optional, Dict, Any, List
+from database.tidb import tidb_client
 
-import random
-
-def get_random_qa(qa_list, difficulty=None, topic=None):
+def get_random_qa(difficulty: Optional[str] = None, topic: Optional[str] = None) -> Optional[Dict[str, Any]]:
     """
-    Select a random question-answer pair from a list of dictionaries with optional filtering.
+    Select a random question-answer pair with optional filtering using TiDB full-text search.
     
     Parameters:
-    qa_list (list): A list of dictionaries, where each dictionary has 'question', 'answer', 'topic', 'type', and 'difficulty' keys.
     difficulty (str, optional): Filter by difficulty level (e.g., 'beginner', 'intermediate', 'advanced').
-    topic (str, optional): Filter by topic (e.g., 'architecture', 'control plane').
+    topic (str, optional): Search term for full-text search (e.g., 'node controller', 'networking').
     
     Returns:
     dict: A randomly selected dictionary containing question, answer, and other fields, or None if no matches found.
     """
-    if not qa_list:
-        return None
-    
-    # Filter the list based on provided criteria
-    filtered_list = qa_list.copy()
-    
-    if difficulty:
-        filtered_list = [qa for qa in filtered_list if qa.get('difficulty', '').lower() == difficulty.lower()]
-    
-    if topic:
-        filtered_list = [qa for qa in filtered_list if qa.get('topic', '').lower() == topic.lower()]
-    
-    # Return None if no questions match the criteria
-    if not filtered_list:
-        return None
-    
-    return random.choice(filtered_list)
-def search_pair(query_text):
-    # Create embedding for the query
-    query_embedding = create_embedding(query_text)
-    
-    # Search in Qdrant
-    search_results = client.search(
-        collection_name="kubernetes_qa",
-        query_vector=query_embedding,
-        limit=3  # Return top 3 matches
-    )
-    
-    # Return the complete Q&A pairs
-    return [{
-        "question": result.payload["question"],
-        "answer": result.payload["answer"],
-        "topic": result.payload["topic"],
-        "type": result.payload["type"],
-        "difficulty": result.payload["difficulty"],
-        "score": result.score
-    } for result in search_results]   
+    return tidb_client.get_random_qa(difficulty=difficulty, topic=topic)
 
+def search_pair(query_text: str) -> List[Dict[str, Any]]:
+    """
+    Search for relevant question and answer pairs from TiDB using full-text search.
+    
+    Parameters:
+    query_text (str): The search query
+    
+    Returns:
+    list: List of relevant Q&A pairs with relevance scores
+    """
+    return tidb_client.search_pair(query_text)
 
