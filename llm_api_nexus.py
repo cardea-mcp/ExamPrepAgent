@@ -9,7 +9,7 @@ from audio_processing.whisper_handler import whisper_handler
 load_dotenv()
 mongo_db = MongoDB()
 
-# Llama-nexus configuration
+
 NEXUS_BASE_URL = "http://localhost:9095/v1"
 
 class LlamaNexusClient:
@@ -27,7 +27,7 @@ class LlamaNexusClient:
         }
         
         payload = {
-            "model": "gemma",  # This will be routed to your registered chat API
+            "model": "Qwen3-235B-A22B-Q4_K_M",  
             "messages": messages,
             "temperature": 0.7,
         }
@@ -68,18 +68,16 @@ def format_context_for_llm(context):
 async def process_message(session_id: str, user_input: str, available_functions: List = None):
     """Process a user message using llama-nexus with MCP tools"""
     
-    # Get session context
     session_context = mongo_db.get_session_context(session_id)
     context_string = format_context_for_llm(session_context)
     
-    # Updated system prompt for the new search() function
-    system_prompt = f"""You are a helpful AI assistant specialized in answering questions and providing practice questions. You have access to a search() tool that can find relevant information from a knowledge base.
+    system_prompt = f"""You are a helpful AI assistant specialized in answering questions and providing practice questions. You have access to a tool that can find relevant information from a knowledge base.
 
 Guidelines:
-- ALWAYS call the search() tool before answering any factual question
+- ALWAYS call the  tool before answering any factual question
 - For practice questions or random questions:
-  * Ask user for difficulty (beginner, intermediate, advanced) and topic preferences
-  * Search using difficulty/topic keywords like "beginner kubernetes" or "networking intermediate"
+  * Ask user for  topic preferences
+  * Search using topic keywords like "kubernetes" or "intermediate"
   * Present the question from search results and guide the learning process
 - For specific questions:
   * Extract key terms from the user's question
@@ -88,7 +86,7 @@ Guidelines:
 - Be conversational and helpful
 - If search returns multiple results, use the most relevant ones
 
-The search() function searches through a knowledge base containing questions and answers about various technical topics.
+
 
 Context from previous conversations:
 {context_string}"""
@@ -107,17 +105,16 @@ Context from previous conversations:
     messages.append({"role": "user", "content": user_input})
     
     try:
-        # Make request to llama-nexus (it will handle MCP tool calls automatically)
+       
         completion_response = nexus_client.make_chat_completion_request(
             messages=messages,
-            tools=None,  # Llama-nexus handles MCP tools automatically
             tool_choice="auto"
         )
         
         assistant_message = completion_response["choices"][0]["message"]
         response_text = assistant_message["content"]
         
-        # Log tool calls if any were made (for debugging)
+        
         if "tool_calls" in assistant_message:
             logging.info(f"Tool calls made: {len(assistant_message['tool_calls'])}")
             for tool_call in assistant_message['tool_calls']:

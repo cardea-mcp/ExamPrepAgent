@@ -11,13 +11,11 @@ else
 fi
 
 # Start TiDB MCP Server
-echo "🚀 Starting TiDB MCP Server on port 9096..."
+echo "🚀 Starting agentic search MCP Server on port 9096..."
 
-./gaia-tidb-mcp-server \
-    --ssl-ca /etc/ssl/certs/ca-certificates.crt \
-    --socket-addr 127.0.0.1:9096 \
-    --transport stream-http \
-    --database "${TIDB_DATABASE}" \
-    --table-name "kubernetes_qa_pairs" \
-    --search-tool-desc "You MUST call the search() tool before answering any factual question. For practice questions, search with difficulty/topic keywords like 'beginner kubernetes'. For specific questions, extract keywords from the user query and search for relevant information." \
-    --search-tool-param-desc "Keywords or phrase to search for. Use difficulty/topic terms for practice questions (e.g., 'beginner networking') or question keywords for specific queries (e.g., 'kubernetes pod definition')."
+./gaia-agentic-search-mcp-server tidb \
+    --tidb-ssl-ca /etc/ssl/certs/ca-certificates.crt \
+    --tidb-table-name kubernetes_qa_pairs \
+    --chat-service https://0xb2962131564bc854ece7b0f7c8c9a8345847abfb.gaia.domains \
+    --limit 8 \
+    --score-threshold 0.5

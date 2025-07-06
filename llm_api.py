@@ -14,7 +14,7 @@ openai_api_key = os.getenv('OPENAI_API_KEY')
 gaia_api_key = os.getenv('GAIA_API_KEY')
 
 # API configuration
-API_BASE_URL = "https://qwen72b.gaia.domains/v1"
+API_BASE_URL = "http://localhost:9095/v1"
 API_KEY = gaia_api_key
 
 
@@ -31,7 +31,8 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
     }
     
     payload = {
-        "model": "gemma",
+        # "model": "gemma",
+        "model": "Qwen3-235B-A22B-Q4_K_M",
         "messages": messages,
         "temperature": 0.7,
         "tool_choice": "auto" 
