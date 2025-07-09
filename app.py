@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
 from database.monogodb import MongoDB
-from llm_api import initialize_mcp_server, process_message, cleanup_server, process_audio_message
+from llm_api import process_message, process_audio_message, cleanup_server
 from audio_processing.whisper_handler import whisper_handler 
 from audio_processing.audio_utils import validate_audio_file, MAX_FILE_SIZE, get_file_extension, cleanup_temp_file
 from audio_processing.tts_handler import tts_handler
@@ -22,13 +22,10 @@ logger = logging.getLogger(__name__)
 app = FastAPI(title="ExamBOT API")
 
 mongo_db = MongoDB()
-available_functions = initialize_mcp_server()
 
 atexit.register(cleanup_server)
 
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 class UserCreate(BaseModel):
     name: str
@@ -41,7 +38,6 @@ class SessionCreate(BaseModel):
 
 class SessionUpdate(BaseModel):
     name: str
-
 
 def transcode_to_wav(input_file_path: str, output_file_path: str) -> bool:
     """
@@ -67,7 +63,6 @@ def transcode_to_wav(input_file_path: str, output_file_path: str) -> bool:
     except Exception as e_gen:
         logger.error(f"Unexpected error during transcoding of {input_file_path}: {str(e_gen)}")
         return False
-
 
 # Existing API Routes...
 @app.post("/api/users")
@@ -100,11 +95,10 @@ async def get_session_context(session_id: str):
 @app.post("/api/sessions/{session_id}/messages")
 async def send_message_route(session_id: str, message: MessageSend): 
     try:
-        response = await process_message(session_id, message.message, available_functions)
+        response = await process_message(session_id, message.message)
         return {"response": response}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.post("/api/sessions/{session_id}/audio")
 async def send_audio_message_route( 
@@ -132,9 +126,7 @@ async def send_audio_message_route(
             audio_file.content_type
         )
         if not is_valid:
-
             logger.warning(f"Initial audio validation failed for '{original_filename}': {error_message}. Attempting transcoding anyway.")
-
 
         # Save uploaded audio to a temporary file
         original_ext = get_file_extension(original_filename)
@@ -148,7 +140,6 @@ async def send_audio_message_route(
         
         logger.info(f"Received audio file: '{original_filename}', saved to temp: '{temp_input_file_path}'")
 
-       
         temp_wav_file_path = tempfile.mktemp(suffix=".wav")
 
         # Transcode to WAV
@@ -161,14 +152,14 @@ async def send_audio_message_route(
             wav_contents = f_wav.read()
 
         # Process audio (now WAV) and get response
-        # The filename passed to process_audio_message should now reflect it's a WAV file
         response = await process_audio_message(
             session_id,
             wav_contents, # Send WAV bytes
             os.path.basename(temp_wav_file_path), # e.g., "somerandomname.wav"
-            available_functions,
+            None,  # available_functions no longer needed
             language
         )
+        
         if response.get("success") and response.get("response"):
             detected_lang = response.get("detected_language", "en")
             # Map some language codes to supported TTS languages
@@ -186,8 +177,6 @@ async def send_audio_message_route(
                 logger.warning(f"TTS generation failed: {tts_result['error']}")
         
         return response
-        
-       
 
     except HTTPException:
         raise # Re-raise HTTPException if it's already one
@@ -201,10 +190,10 @@ async def send_audio_message_route(
         if temp_wav_file_path:
             cleanup_temp_file(temp_wav_file_path)
 
+# ... rest of the endpoints remain the same
 
 @app.delete("/api/sessions/{session_id}")
 async def delete_session(session_id: str):
-    # ... (implementation)
     success = mongo_db.delete_session(session_id)
     if not success:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -212,7 +201,6 @@ async def delete_session(session_id: str):
 
 @app.put("/api/sessions/{session_id}")
 async def update_session(session_id: str, update: SessionUpdate):
-    # ... (implementation)
     success = mongo_db.update_session_name(session_id, update.name)
     if not success:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -231,7 +219,6 @@ async def check_audio_support():
     except Exception as e:
         logger.error(f"Audio support check failed: {str(e)}")
         return { "supported": False, "error": str(e) }
-
 
 @app.post("/api/tts")
 async def text_to_speech_endpoint(
@@ -262,7 +249,6 @@ async def text_to_speech_endpoint(
         logger.error(f"TTS endpoint error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
-# Add TTS support check endpoint
 @app.get("/api/tts/support")
 async def check_tts_support():
     """Check TTS support and available languages"""
@@ -278,7 +264,6 @@ async def check_tts_support():
     
 @app.get("/", response_class=HTMLResponse)
 async def serve_frontend():
-    # ... (implementation)
     with open("static/index.html", "r") as f:
         html_content = f.read()
     return HTMLResponse(content=html_content)

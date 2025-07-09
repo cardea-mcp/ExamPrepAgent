@@ -1,5 +1,4 @@
 import json
-import subprocess
 import os
 import requests
 from dotenv import load_dotenv
@@ -8,18 +7,19 @@ from database.monogodb import MongoDB
 from audio_processing.whisper_handler import whisper_handler
 from audio_processing.audio_utils import validate_audio_file, cleanup_temp_file, create_temp_audio_file
 import logging
-
+import asyncio
+from fastmcp import Client
+from llmclient import client
 mongo_db = MongoDB()
 openai_api_key = os.getenv('OPENAI_API_KEY')
 gaia_api_key = os.getenv('GAIA_API_KEY')
 
 # API configuration
-API_BASE_URL = "http://localhost:9095/v1"
+API_BASE_URL = "https://qwen72b.gaia.domains/v1"
+
+
 API_KEY = gaia_api_key
 
-
-
-server = None
 
 def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
     """Make a direct API request to chat completions endpoint"""
@@ -31,8 +31,7 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
     }
     
     payload = {
-        # "model": "gemma",
-        "model": "Qwen3-235B-A22B-Q4_K_M",
+        "model": "gpt-4.1",
         "messages": messages,
         "temperature": 0.7,
         "tool_choice": "auto" 
@@ -51,116 +50,70 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
         print(f"Response text: {response.text if 'response' in locals() else 'No response'}")
         raise Exception(f"API request failed: {str(e)}")
 
-def initialize_mcp_server():
-    """Initialize the MCP server"""
-    global server
-    server = subprocess.Popen(
-        ['python3', 'main.py'],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        stdin=subprocess.PIPE,
-        text=True,
-    )
-    
-    id = 1
-    init_message = create_message(
-        "initialize",
-        {
-            "clientInfo": {
-                "name": "Llama Agent",
-                "version": "0.1"
-            },
-            "protocolVersion": "2024-11-05",
-            "capabilities": {},
-        },
-        id
-    )
-    
-    send_message(init_message)
-    response = receive_message()
-    
-    init_complete_message = create_message("notifications/initialized", {})
-    send_message(init_complete_message)
-    
-    # Get the list of available tools
-    id += 1
-    list_tools_message = create_message("tools/list", {}, id)
-    send_message(list_tools_message)
-    tools_response = receive_message()
-    
-    available_functions = []
-    for tool in tools_response["tools"]:
-        func = {
-            "type": "function",
-            "function": {
-                "name": tool["name"],
-                "description": tool["description"],
-                "parameters": {
-                    "type": "object",
-                    "properties": tool["inputSchema"]["properties"],
-                    "required": tool["inputSchema"].get("required", []),
-                },
-            },
-        }
-        available_functions.append(func)
-    
-    return available_functions
+async def get_tools():
+    """Get available tools using FastMCP client"""
+    try:
+        async with client:
+            tools_response = await client.list_tools()
+            available_functions = []
+            
+            for tool in tools_response:
+                func = {
+                    "type": "function",
+                    "function": {
+                        "name": tool.name,
+                        "description": tool.description,
+                        "parameters": {
+                            "type": "object",
+                            "properties": tool.inputSchema.get("properties", {}),
+                            "required": tool.inputSchema.get("required", []),
+                        },
+                    },
+                }
+                available_functions.append(func)
+            
+            return available_functions
+    except Exception as e:
+        print(f"Error getting tools: {str(e)}")
+        return []
 
-def create_message(method_name, params, id=None):
-    message = {
-        "jsonrpc": "2.0",
-        "method": method_name,
-        "params": params
-    }
-    if id is not None:
-        message["id"] = id
-    return json.dumps(message)
-
-def send_message(message):
-    global server
-    server.stdin.write(message + "\n")
-    server.stdin.flush()
-
-def receive_message():
-    global server
-    server_output = json.loads(server.stdout.readline())
-    if "result" in server_output:
-        return server_output["result"]
-    else:
-        return "Error"
-
-def handle_tool_calls(tool_calls):
-    """Handle tool calls and get responses"""
+async def handle_tool_calls(tool_calls):
+    """Handle tool calls using FastMCP client"""
     tool_responses = []
     
-    for tool_call in tool_calls:
-        function_name = tool_call["function"]["name"]
-        function_args = json.loads(tool_call["function"]["arguments"]) if isinstance(tool_call["function"]["arguments"], str) else tool_call["function"]["arguments"]
+    try:
+        async with client:
+            for tool_call in tool_calls:
+                function_name = tool_call["function"]["name"]
+                function_args = json.loads(tool_call["function"]["arguments"]) if isinstance(tool_call["function"]["arguments"], str) else tool_call["function"]["arguments"]
+                
+                print(f"Calling tool: {function_name} with args: {function_args}")
+                
+                # Call tool using FastMCP client
+                tool_result = await client.call_tool(name=function_name, arguments=function_args)
+                
+                result_text = ""
+                
+                if hasattr(tool_result, 'content') and tool_result.content:
+                    for content in tool_result.content:
+                        if hasattr(content, 'text'):
+                            result_text += content.text
+                elif hasattr(tool_result, 'structured_content') and tool_result.structured_content:
+                    result_text = json.dumps(tool_result.structured_content)
+                else:
+                    result_text = "No result"
+                
+                tool_responses.append({
+                    "tool_call_id": tool_call["id"],
+                    "role": "tool",
+                    "name": function_name,
+                    "content": result_text
+                })
         
-        id = tool_call["id"]
-        tool_call_message = create_message("tools/call", {
-            "name": function_name,
-            "arguments": function_args,
-        }, id)
-        
-        send_message(tool_call_message)
-        tool_result = receive_message()
-        
-        result_text = " "
-        if tool_result.get("content"):
-            for content in tool_result["content"]:
-                result_text += content["text"]
-        else:
-            result_text += ("No result")
-            
-        tool_responses.append({
-            "tool_call_id": tool_call["id"],
-            "role": "tool",
-            "name": function_name,
-            "content": result_text
-        })
-    
-    return tool_responses
+        return tool_responses
+    except Exception as e:
+        print(f"Error handling tool calls: {str(e)}")
+        return []
 
 def format_context_for_llm(context):
     """Convert context list to formatted string for LLM"""
@@ -179,8 +132,11 @@ def format_context_for_llm(context):
     
     return formatted_context
 
-async def process_message(session_id, user_input, available_functions):
+async def process_message(session_id, user_input):
     """Process a user message and return the response"""
+
+    available_functions = await get_tools()
+    
     # Get session context
     session_context = mongo_db.get_session_context(session_id)
     context_string = format_context_for_llm(session_context)
@@ -224,7 +180,7 @@ Context from previous conversations:
     tool_response_content = ""
     
     if assistant_message.get("tool_calls"):
-        tool_responses = handle_tool_calls(assistant_message["tool_calls"])
+        tool_responses = await handle_tool_calls(assistant_message["tool_calls"])
         tool_response_content = json.dumps([resp["content"] for resp in tool_responses])
         
         messages.append({
@@ -236,6 +192,7 @@ Context from previous conversations:
         # Add tool responses
         for tool_response in tool_responses:
             messages.append(tool_response)
+        
         final_completion_response = make_chat_completion_request(
             messages=messages,
             tools=available_functions,
@@ -260,7 +217,7 @@ Context from previous conversations:
     return response_text
 
 async def process_audio_message(session_id, audio_data_wav, filename_wav, available_functions, language=None):
-    """Process an audio message (expected to be WAV data) and return the response"""
+    """Process an audio message and return the response"""
     logger = logging.getLogger(__name__)
     
     try:
@@ -285,7 +242,7 @@ async def process_audio_message(session_id, audio_data_wav, filename_wav, availa
 
         # Process the transcribed text through the normal message pipeline
         if transcribed_text.strip():
-            response_text = await process_message(session_id, transcribed_text, available_functions)
+            response_text = await process_message(session_id, transcribed_text)
             
             return {
                 "success": True,
@@ -314,7 +271,5 @@ async def process_audio_message(session_id, audio_data_wav, filename_wav, availa
         }
 
 def cleanup_server():
-    """Cleanup the MCP server"""
-    global server
-    if server:
-        server.terminate()
+    """Cleanup function (no longer needed with FastMCP client)"""
+    pass
