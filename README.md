@@ -32,21 +32,174 @@ It is made for KCNA exam. Contents are taken from the kubernetes.io licensed und
 - **Metal-mining-Q&A** - A collection of Q&A pairs focused on metal mining methods. The link to the dataset https://huggingface.co/datasets/ItshMoh/metal-mining-qa-pairs . It has also more than 31 downloads on hugging face.
 ## 🏗️ Architecture
 
+### 🔧 Key Files Description
+
+#### Core Application Files
+
+`app.py` vs `app_nexus.py`
+
+`app.py`: Direct API integration architecture
+
+- Communicates directly with LLM APIs (OpenAI-compatible)
+- Manages MCP server subprocess internally
+- Suitable for direct API deployments
+
+
+`app_nexus.py`: Llama-Nexus integration architecture
+
+- Routes requests through Llama-Nexus gateway
+- Llama-Nexus handles MCP tool calls automatically
+- Better for complex multi-agent scenarios
+
+#### LLM Integration Files
+
+`llm.py` - Command Line Interface
+- Interactive CLI chat interface
+- Direct MCP server communication
+- User context management via MongoDB
+- Manual tool calling workflow
+
+`llm_api.py` - FastAPI Integration (Direct)
+
+- HTTP API endpoint integration
+- Subprocess MCP server management
+- Audio message processing
+- Session-based context handling
+
+`llm_api_nexus.py` - Llama-Nexus Integration
+- Llama-Nexus HTTP client
+- Automatic MCP tool routing
+- Simplified tool calling (handled by Nexus)
+- Enhanced error handling
+
+#### MCP & Database
+
+`main.py` - MCP Server
+- Implements FastMCP server
+- Provides get_random_question() and get_question_and_answer() tools
+- Interfaces with TiDB for full-text search
 The system is composed of several core components:
 
-- **MCP Server (`main.py`)**  
-  Handles question retrieval via defined MCP functions.
+`database/tidb.py` - TiDB Integration
 
-- **TiDB **  
-  It stores the required Dataset of Q&A pairs. It is like SQL with Full text search feature. You can read about it here. https://docs.pingcap.com/tidbcloud/vector-search-full-text-search-python/
-
-- **LLM Integration (`llm.py`)**  
-  Interfaces with OpenAI-compatible APIs to manage conversation flow.
-
-- **Question Database**  
-  A collection of text-based Q&A pairs focused on mining and technical certification topics.
+- Vector similarity search
+- Full-text search capabilities
+- Q&A pair management
+- Bulk data operations
 
 ---
+
+## 🛠️ Setup Scripts
+### Primary Setup Scripts
+`setup_complete_system.sh`
+
+Purpose: Complete system initialization
+#### What it does:
+- Loads environment variables
+- Sets up TiDB knowledge base from CSV
+- Downloads and configures MCP server binary
+- Downloads and configures Llama-Nexus
+- Creates all necessary start scripts
+- Configures service connections
+
+`start_system.sh`
+
+Purpose: Orchestrated service startup
+#### Service startup order:
+1. gaia-agentic-search MCP Server (port 9096)
+2. Llama-Nexus (port 9095)
+3. API Registration
+4. FastAPI Application (port 8000)
+
+### Component-Specific Scripts
+
+`setup_mcp_server.sh`
+- Downloads gaia-mcp-servers binary
+- Platform-specific installation (Linux/macOS, x86_64/ARM64)
+- Creates TiDB MCP server configuration
+
+`start_tidb_mcp.sh`:  gaia-agentic-search-mcp tool
+#### TiDB MCP Server Configuration:
+- Socket: 127.0.0.1:9096
+- Table: kubernetes_qa_pairs
+- Search tools: Full-text search capabilities
+
+`start_llama_nexus.sh`
+- Starts Llama-Nexus gateway on port 9095
+- Uses config.toml for MCP server routing
+- Provides unified API endpoint
+
+`register_apis.sh`
+#### Registers with Llama-Nexus:
+- Chat API server (Gaia domains)
+- Embedding API server
+- Health check verification
+
+### Feature Installation Scripts
+
+`install_voice_features.sh` : Install voice dependencies
+#### Dependencies:
+- openai-whisper
+- torch & torchaudio
+- ffmpeg-python
+- python-multipart
+- System ffmpeg installation
+
+`install_tts_features.sh` : Install tts dependencies
+#### Dependencies:
+- gtts (Google Text-to-Speech)
+- pydub (Audio processing)
+---
+## Getting Started with the project
+
+1. Clone the repository: 
+```
+git clone https://github.com/ItshMoh/Exam-BOT.git
+```
+
+2. Install dependencies: 
+```
+pip install -r requirements.txt
+```
+
+3. Run the setup script: It will download the LLama-Nexus binary and configure the system.
+```
+bash setup_complete_system.sh
+```
+4. Edit the `config.toml file in the nexus folder  to specify a port (9095) for the gateway server to listen to.
+```
+[server]
+host = "0.0.0.0" # The host to listen on.
+port = 9095        # The port to listen on.
+```
+Register the MCP server in this way by adding the below code in the config.toml file in the nexus folder.
+```
+[[mcp.server.tool]]
+name      = "cardea-ExamBot-search"
+transport = "stream-http"
+url       = "http://127.0.0.1:9096/mcp"
+enable    = true
+```
+
+5. Start the MCP server: 
+```
+python3 main.py
+```
+
+6. Start the Llama-Nexus gateway: 
+```
+bash start_system.sh
+```
+
+7. Register APIs with Llama-Nexus:
+```
+bash register_apis.sh
+```
+
+8. Run the FastAPI application: 
+```
+python3 app_nexus.py
+```
 
 ## ✨ Features
 
@@ -94,35 +247,58 @@ The system is composed of several core components:
 ## 📁 Project Structure
 ```
 
+    Directory structure:
+└── Exam-BOT
     ├── README.md
     ├── app.py
+    ├── app_nexus.py
+    ├── install_tts_features.sh
+    ├── install_voice_features.sh
     ├── llm.py
     ├── llm_api.py
+    ├── llm_api_nexus.py
     ├── main.py
+    ├── register_apis.sh
     ├── requirements.txt
     ├── rust_qa.txt
+    ├── setup_complete_system.sh
+    ├── setup_mcp_server.sh
+    ├── start_llama_nexus.sh
+    ├── start_system.sh
+    ├── start_tidb_mcp.sh
+    ├── audio_processing/
+    │   ├── audio_utils.py
+    │   ├── tts_handler.py
+    │   └── whisper_handler.py
     ├── database/
-    │   └── monogodb.py
+    │   ├── csv_loader.py
+    │   ├── dataloader.py
+    │   ├── monogodb.py
+    │   └── tidb.py
     ├── dataset/
     │   ├── dataPrep.py
     │   ├── file.json
     │   ├── kubernetes_basic.json
     │   ├── kubernetes_qa.csv
     │   ├── mining_qa_pairs.csv
+    │   ├── playwright_scrap.py
     │   ├── url_data_fit.py
     │   └── url_scrap.py
     ├── encoder/
     │   └── encoder.py
-    ├── public/
     ├── static/
+    │   ├── audio_recorder.js
     │   ├── index.html
     │   ├── script.js
-    │   └── styles.css
+    │   ├── styles.css
+    │   └── uploads/
+    │       └── .gitkeep
     ├── utils/
     │   ├── data.py
     │   └── ques_select.py
     └── vectorstore/
         └── qdrant.py
+
    
 ```
 ---

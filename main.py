@@ -1,8 +1,10 @@
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 from utils.ques_select import get_random_qa, search_pair
-
+from typing import Dict, Any, List
+import logging
 mcp = FastMCP("Exam-Bot")
 
+logger = logging.getLogger(__name__)
 @mcp.tool()
 def get_random_question(difficulty: str = None, topic: str = None):
     """
@@ -16,10 +18,12 @@ def get_random_question(difficulty: str = None, topic: str = None):
     dict: A randomly selected dictionary containing a question and answer.
     """
     print("using get_random_tool")
-    return get_random_qa(difficulty, topic)
+    result = get_random_qa(difficulty, topic)
+    logger.info(f"here is the random result: {result}")
+    return result 
 
 @mcp.tool()
-def get_question_and_answer(question: str) -> str:
+def get_question_and_answer(question: str) -> List[Dict[str, Any]]:
      """
      Here we are using the TIDB full text search
      Search for relevant question and answer pair from the database.
@@ -27,7 +31,15 @@ def get_question_and_answer(question: str) -> str:
      """ 
      print("using get-question-tool")
      result = search_pair(question)
+     logger.info(f"here is the get question and answer result: {result}")
      return result
 
 if __name__ == "__main__":
-    mcp.run(transport="stdio")
+    print("🚀 Starting MCP server...")
+    mcp.run(
+        transport="http",
+        host="127.0.0.1",
+        port=9096,
+        path="/mcp",
+        log_level="debug",
+    )
