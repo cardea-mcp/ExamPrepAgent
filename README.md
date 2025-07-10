@@ -149,6 +149,57 @@ Purpose: Orchestrated service startup
 #### Dependencies:
 - gtts (Google Text-to-Speech)
 - pydub (Audio processing)
+---
+## Getting Started with the project
+
+1. Clone the repository: 
+```
+git clone https://github.com/ItshMoh/Exam-BOT.git
+```
+
+2. Install dependencies: 
+```
+pip install -r requirements.txt
+```
+
+3. Run the setup script: It will download the LLama-Nexus binary and configure the system.
+```
+bash setup_complete_system.sh
+```
+4. Edit the `config.toml file in the nexus folder  to specify a port (9095) for the gateway server to listen to.
+```
+[server]
+host = "0.0.0.0" # The host to listen on.
+port = 9095        # The port to listen on.
+```
+Register the MCP server in this way by adding the below code in the config.toml file in the nexus folder.
+```
+[[mcp.server.tool]]
+name      = "cardea-ExamBot-search"
+transport = "stream-http"
+url       = "http://127.0.0.1:9096/mcp"
+enable    = true
+```
+
+5. Start the MCP server: 
+```
+python3 main.py
+```
+
+6. Start the Llama-Nexus gateway: 
+```
+bash start_system.sh
+```
+
+7. Register APIs with Llama-Nexus:
+```
+bash register_apis.sh
+```
+
+8. Run the FastAPI application: 
+```
+python3 app_nexus.py
+```
 
 ## ✨ Features
 
