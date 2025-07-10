@@ -31,10 +31,7 @@ class LlamaNexusClient:
             "messages": messages,
             "temperature": 0.7,
         }
-        
-        if tools:
-            payload["tools"] = tools
-            payload["tool_choice"] = tool_choice
+
         
         try:
             self.logger.info(f"Making request to llama-nexus: {url}")
@@ -67,39 +64,18 @@ def format_context_for_llm(context):
 
 async def process_message(session_id: str, user_input: str, available_functions: List = None):
     """Process a user message using llama-nexus with MCP tools"""
-    
+    logger = logging.getLogger(__name__)
     session_context = mongo_db.get_session_context(session_id)
-    context_string = format_context_for_llm(session_context)
+    recent_context = session_context[-5:] if len(session_context) > 5 else session_context
+    context_string = format_context_for_llm(recent_context)
     
-    system_prompt = f"""You are a helpful AI assistant specialized in answering questions and providing practice questions. You have access to a tool that can find relevant information from a knowledge base.
-
-Guidelines:
-- ALWAYS call the  tool before answering any factual question
-- For practice questions or random questions:
-  * Ask user for  topic preferences
-  * Search using topic keywords like "kubernetes" or "intermediate"
-  * Present the question from search results and guide the learning process
-- For specific questions:
-  * Extract key terms from the user's question
-  * Search using those keywords to find relevant information
-  * Synthesize your answer based on the search results
-- Be conversational and helpful
-- If search returns multiple results, use the most relevant ones
-
-
-
+    system_prompt = f"""If the user asks a question, you MUST use tool and pass in a list of search keywords to search for relevant information and then form your response based on the search results.
+   
+    You will also be given previous interaction with the user and the assistant. You can use this context to guide your response. 
 Context from previous conversations:
 {context_string}"""
 
     messages = [{"role": "system", "content": system_prompt}]
-    
-    # Add context messages (last 5 exchanges to keep context manageable)
-    recent_context = session_context[-5:] if len(session_context) > 5 else session_context
-    for entry in recent_context:
-        if entry.get("user_query"):
-            messages.append({"role": "user", "content": entry["user_query"]})
-        if entry.get("agent_response"):
-            messages.append({"role": "assistant", "content": entry["agent_response"]})
     
     # Add current user message
     messages.append({"role": "user", "content": user_input})
@@ -108,23 +84,17 @@ Context from previous conversations:
        
         completion_response = nexus_client.make_chat_completion_request(
             messages=messages,
-            tool_choice="auto"
+            # tool_choice="auto"
         )
-        
+        logger.info(f"The completion response is \n {completion_response}")
         assistant_message = completion_response["choices"][0]["message"]
         response_text = assistant_message["content"]
-        
-        
-        if "tool_calls" in assistant_message:
-            logging.info(f"Tool calls made: {len(assistant_message['tool_calls'])}")
-            for tool_call in assistant_message['tool_calls']:
-                logging.info(f"Tool: {tool_call['function']['name']}, Args: {tool_call['function']['arguments']}")
-        
-        # Update session context
+        logger.info(f"The  response is \n{response_text}")
+
+
         new_context_entry = {
             "user_query": user_input,
-            "agent_response": response_text,
-            "tool_response": json.dumps(assistant_message.get("tool_calls", []))
+            "agent_response": response_text
         }
         
         session_context.append(new_context_entry)
