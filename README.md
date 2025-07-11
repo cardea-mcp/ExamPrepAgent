@@ -161,7 +161,10 @@ https://github.com/cardea-mcp/ExamPrepAgent.git
 ```
 pip install -r requirements.txt
 ```
-
+`NOTE` If you get any dependency conflict while installing fastmcp. Try to first uninstall it and then install it manually by 
+```
+pip install fastmcp
+```
 3. Run the setup script: It will download the LLama-Nexus binary and configure the system.
 ```
 bash setup_complete_system.sh
