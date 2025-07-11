@@ -72,6 +72,10 @@ async def process_message(session_id: str, user_input: str, available_functions:
     system_prompt = f"""If the user asks a question, you MUST use tool and pass in a list of search keywords to search for relevant information and then form your response based on the search results.
    
     You will also be given previous interaction with the user and the assistant. You can use this context to guide your response. 
+
+    Guidelines:
+    1. When user has asked a practice question or random question to practice you will get the result from the tool with question and answer, but you have to tell the user only the question.
+    2. When user will say something which means he didn't know the answer to the practice question, you will tell him the answer to that question using the tool.
 Context from previous conversations:
 {context_string}"""
 
