@@ -154,7 +154,7 @@ Purpose: Orchestrated service startup
 
 1. Clone the repository: 
 ```
-git clone https://github.com/ItshMoh/Exam-BOT.git
+https://github.com/cardea-mcp/ExamPrepAgent.git
 ```
 
 2. Install dependencies: 
