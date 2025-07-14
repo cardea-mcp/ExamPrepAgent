@@ -24,7 +24,7 @@ class TiDBConnection:
         self.connect()
     
     def connect(self):
-        """Connect to TiDB Cloud"""
+        """Connect to TiDB Cloud and initialize QAPair table if not exists"""
         try:
             self.db = TiDBClient.connect(
                 host=os.getenv("TIDB_HOST"),
@@ -33,20 +33,27 @@ class TiDBConnection:
                 password=os.getenv("TIDB_PASSWORD"),
                 database=os.getenv("TIDB_DATABASE"),
             )
-            
-            self.table = self.db.create_table(schema=QAPair)
-            
+
+            table_name = QAPair.__tablename__
+            if not self.db.has_table(table_name):
+                print(f"🛠️ Table '{table_name}' does not exist. Creating it now...")
+                self.table = self.db.create_table(schema=QAPair)
+            else:
+                print(f"📦 Table '{table_name}' exists. Opening it.")
+                self.table = self.db.open_table(table_name)
+
+            # Create FTS indexes only if needed
             if not self.table.has_fts_index("question"):
                 self.table.create_fts_index("question")
-            
             if not self.table.has_fts_index("answer"):
                 self.table.create_fts_index("answer")
-            
+
             print("✅ Connected to TiDB successfully!")
-            
+
         except Exception as e:
             print(f"❌ Failed to connect to TiDB: {str(e)}")
             raise e
+
     
     def get_random_qa(self, difficulty: Optional[str] = None, topic: Optional[str] = None) -> Optional[Dict[str, Any]]:
    
