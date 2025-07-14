@@ -191,7 +191,7 @@ python3 main.py
 
 6. Start the Llama-Nexus gateway: 
 ```
-bash start_system.sh
+bash start_llama_nexus.sh
 ```
 
 7. Register APIs with Llama-Nexus:
