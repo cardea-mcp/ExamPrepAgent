@@ -69,14 +69,19 @@ async def process_message(session_id: str, user_input: str, available_functions:
     recent_context = session_context[-5:] if len(session_context) > 5 else session_context
     context_string = format_context_for_llm(recent_context)
     
-    system_prompt = f"""If the user asks a question, you MUST use tool and pass in a list of search keywords to search for relevant information and then form your response based on the search results.
+    system_prompt = system_prompt = f"""If the user asks a question, you MUST use tool and pass in a list of search keywords to search for relevant information and then form your response based on the search results.
    
+    When the user will ask a random or practice question, the tool will return a question and the answer you just have to give only the  question to the user.
+
+    Whenever user say that he doesn't know the answer tell the answer to the question which is the most recent in the  context.
     You will also be given previous interaction with the user and the assistant. You can use this context to guide your response. 
 
-    Guidelines:
-    1. When user has asked a practice question or random question to practice you will get the result from the tool with question and answer, but you have to tell the user only the question.
-    2. When user will say something which means he didn't know the answer to the practice question, you will tell him the answer to that question using the tool.
 Context from previous conversations:
+
+
+Previous conversation context:
+{context_string}
+
 {context_string}"""
 
     messages = [{"role": "system", "content": system_prompt}]
@@ -88,7 +93,6 @@ Context from previous conversations:
        
         completion_response = nexus_client.make_chat_completion_request(
             messages=messages,
-            # tool_choice="auto"
         )
         logger.info(f"The completion response is \n {completion_response}")
         assistant_message = completion_response["choices"][0]["message"]

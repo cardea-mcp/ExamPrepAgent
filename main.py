@@ -8,14 +8,11 @@ logger = logging.getLogger(__name__)
 @mcp.tool()
 def get_random_question(difficulty: str = None, topic: str = None):
     """
-    Here we are using the TIDB full text search
-    Arguments: It takes the difficulty of the question and the topic of the question (both optional).
-    Select a random question-answer pair from a list of question-answer pairs.
-    Here the difficulty means that the level of which question complexity user wants. 
-    The value of difficulty can be either 'beginner', 'intermediate', or 'advanced', or None for any difficulty.
-    The topic can be any topic string or None for any topic.
+    It is used to get a random practice question from the database
+    Arguments: It takes the topic of the question (both optional).
+
     Returns:
-    dict: A randomly selected dictionary containing a question and answer.
+    string : It returns a practice or random question for the given difficulty and topic
     """
     print("using get_random_tool")
     result = get_random_qa(difficulty, topic)
@@ -25,7 +22,6 @@ def get_random_question(difficulty: str = None, topic: str = None):
 @mcp.tool()
 def get_question_and_answer(question: str) -> List[Dict[str, Any]]:
      """
-     Here we are using the TIDB full text search
      Search for relevant question and answer pair from the database.
      return the question and answer pair relevant to the question.
      """ 

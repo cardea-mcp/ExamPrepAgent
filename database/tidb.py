@@ -55,25 +55,91 @@ class TiDBConnection:
             raise e
 
     
-    def get_random_qa(self, difficulty: Optional[str] = None, topic: Optional[str] = None) -> Optional[Dict[str, Any]]:
-   
+
+
+    def get_random_qa(self, difficulty: Optional[str] = None, topic: Optional[str] = None) -> list[dict[str,Any]]:
+        # List of 30 Kubernetes topics
+        KUBERNETES_TOPICS = [
+            "pods",
+            "services", 
+            "deployments",
+            "replicasets",
+            "statefulsets",
+            "daemonsets",
+            "jobs",
+            "cronjobs",
+            "namespaces",
+            "configmaps",
+            "secrets",
+            "persistent volumes",
+            "persistent volume claims",
+            "storage classes",
+            "ingress",
+            "network policies",
+            "service accounts",
+            "rbac",
+            "cluster roles",
+            "role bindings",
+            "labels and selectors",
+            "annotations",
+            "taints and tolerations",
+            "node affinity",
+            "pod affinity",
+            "horizontal pod autoscaler",
+            "vertical pod autoscaler",
+            "resource quotas",
+            "limit ranges",
+            "custom resource definitions"
+        ]
+        
         try:
             results_dict = {}
             
-            if topic:
-                print(f"🔍 Full-text searching for topic: '{topic}'")
+            # If no topic is specified, randomly select one from the predefined list
+            if not topic:
+                topic = random.choice(KUBERNETES_TOPICS)
+                print(f"🎲 No topic specified, randomly selected: '{topic}'")
+            
+            # Now proceed with topic-based search (topic is guaranteed to exist)
+            print(f"🔍 Full-text searching for topic: '{topic}'")
+            
+            # Search in questions
+            try:
+                question_results = (
+                    self.table
+                    .search(topic, search_type="fulltext")
+                    .text_column("question")
+                    .limit(5)
+                    .to_list()
+                )
+                print("question results -------\n", question_results)
+                for result in question_results:
+                    results_dict[result['id']] = {
+                        "id": result['id'],
+                        "question": result['question'],
+                        "answer": result['answer'],
+                        "topic": result['topic'],
+                        "type": result['type'],
+                        "difficulty": result['difficulty'],
+                        "score": result.get('_score', 1.0),
+                        "match_type": "question"
+                    }
+                print(f"✅ Found {len(question_results)} results in questions")
                 
-                # Search in questions
-                try:
-                    question_results = (
-                        self.table
-                        .search(topic, search_type="fulltext")
-                        .text_column("question")
-                        .limit(5)
-                        .to_list()
-                    )
-                    print("question results -------\n",question_results)
-                    for result in question_results:
+            except Exception as e:
+                print(f"⚠️ Question search failed: {str(e)}")
+            
+            try:
+                answer_results = (
+                    self.table
+                    .search(topic, search_type="fulltext")
+                    .text_column("answer")
+                    .limit(5)
+                    .to_list()
+                )
+                print("answer results ------ \n", answer_results)
+                for result in answer_results:
+                    if result['id'] not in results_dict:
                         results_dict[result['id']] = {
                             "id": result['id'],
                             "question": result['question'],
@@ -81,54 +147,28 @@ class TiDBConnection:
                             "topic": result['topic'],
                             "type": result['type'],
                             "difficulty": result['difficulty'],
-                            "score": result.get('_score', 1.0),
-                            "match_type": "question"
+                            "score": result.get('_score', 0.8),
+                            "match_type": "answer"
                         }
-                    print(f"✅ Found {len(question_results)} results in questions")
-                    
-                except Exception as e:
-                    print(f"⚠️ Question search failed: {str(e)}")
+                    else:
+                        results_dict[result['id']]['match_type'] = "both"
+                        results_dict[result['id']]['score'] = max(
+                            results_dict[result['id']]['score'], 
+                            result.get('_score', 0.8)
+                        ) + 0.2
                 
-                try:
-                    answer_results = (
-                        self.table
-                        .search(topic, search_type="fulltext")
-                        .text_column("answer")
-                        .limit(5)
-                        .to_list()
-                    )
-                    print("answer results ------ \n",answer_results)
-                    for result in answer_results:
-                        if result['id'] not in results_dict:
-                            results_dict[result['id']] = {
-                                "id": result['id'],
-                                "question": result['question'],
-                                "answer": result['answer'],
-                                "topic": result['topic'],
-                                "type": result['type'],
-                                "difficulty": result['difficulty'],
-                                "score": result.get('_score', 0.8),
-                                "match_type": "answer"
-                            }
-                        else:
-                            results_dict[result['id']]['match_type'] = "both"
-                            results_dict[result['id']]['score'] = max(
-                                results_dict[result['id']]['score'], 
-                                result.get('_score', 0.8)
-                            ) + 0.2
-                    
-                    print(f"✅ Found {len(answer_results)} results in answers")
-                    
-                except Exception as e:
-                    print(f"⚠️ Answer search failed: {str(e)}")
+                print(f"✅ Found {len(answer_results)} results in answers")
                 
-                qa_list = list(results_dict.values())
-                qa_list.sort(key=lambda x: x['score'], reverse=True)
-
-                qa_list = qa_list[:5]
-                
-            else:
-                print("📋 Using regular query (no topic search)")
+            except Exception as e:
+                print(f"⚠️ Answer search failed: {str(e)}")
+            
+            qa_list = list(results_dict.values())
+            qa_list.sort(key=lambda x: x['score'], reverse=True)
+            qa_list = qa_list[:5]
+            
+            # If no results found from topic search, fall back to regular query
+            if not qa_list:
+                print(f"❌ No results found for topic '{topic}', falling back to regular query")
                 filters = {}
                 if difficulty:
                     filters['difficulty'] = difficulty.lower()
@@ -141,7 +181,7 @@ class TiDBConnection:
                 qa_list = []
                 for result in results:
                     qa_dict = {
-                         "id": result['id'],
+                        "id": result['id'],
                         "question": result['question'],
                         "answer": result['answer'],
                         "topic": result['topic'],
@@ -152,6 +192,7 @@ class TiDBConnection:
                     }
                     qa_list.append(qa_dict)
             
+            # Apply difficulty filter if specified
             if difficulty and qa_list:
                 qa_list = [qa for qa in qa_list if qa['difficulty'].lower() == difficulty.lower()]
             
@@ -164,13 +205,20 @@ class TiDBConnection:
             selected_qa = random.choice(qa_list)
             
             print(f"✅ Selected Q&A: ID={selected_qa['id']}, Score={selected_qa['score']}, Match Type={selected_qa['match_type']}")
-            print("selected_qa ----\n",selected_qa)
-            return selected_qa
+            print("type of result", type(selected_qa['question']))
+            print("selected_qa ----\n", selected_qa['question'])
+            question_answer_chosen = []
+            question_dict = {
+                "question":selected_qa['question'],
+                "answer": selected_qa['answer']
+            }
+            question_answer_chosen.append(question_dict)
+            return question_answer_chosen
             
         except Exception as e:
             print(f"❌ Error in get_random_qa: {str(e)}")
             return None
-        
+            
     def search_pair(self, query_text: str, limit: int = 3) -> List[Dict[str, Any]]:
         """
         Search for relevant Q&A pairs using full-text search on both questions and answers
