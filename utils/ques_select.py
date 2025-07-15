@@ -1,7 +1,7 @@
 from typing import Optional, Dict, Any, List
 from database.tidb import tidb_client
 
-def get_random_qa(difficulty: Optional[str] = None, topic: Optional[str] = None) -> Optional[Dict[str, Any]]:
+def get_random_qa(difficulty: Optional[str] = None, topic: Optional[str] = None) -> List[Dict[str, Any]]:
     """
     Select a random question-answer pair with optional filtering using TiDB full-text search.
     
