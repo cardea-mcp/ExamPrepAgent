@@ -4,10 +4,12 @@ import logging
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
 from database.monogodb import MongoDB
+from database.tidb_chat import TiDBChat
 from audio_processing.whisper_handler import whisper_handler
 
 load_dotenv()
-mongo_db = MongoDB()
+# tidb_chat = MongoDB()
+tidb_chat = TiDBChat()
 
 
 NEXUS_BASE_URL = "http://localhost:9095/v1"
@@ -65,7 +67,7 @@ def format_context_for_llm(context):
 async def process_message(session_id: str, user_input: str, available_functions: List = None):
     """Process a user message using llama-nexus with MCP tools"""
     logger = logging.getLogger(__name__)
-    session_context = mongo_db.get_session_context(session_id)
+    session_context = tidb_chat.get_session_context(session_id)
     recent_context = session_context[-5:] if len(session_context) > 5 else session_context
     context_string = format_context_for_llm(recent_context)
     
@@ -106,7 +108,7 @@ Previous conversation context:
         }
         
         session_context.append(new_context_entry)
-        mongo_db.update_session_context(session_id, session_context)
+        tidb_chat.update_session_context(session_id, session_context)
         
         return response_text
         
