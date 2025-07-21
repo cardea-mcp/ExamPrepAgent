@@ -5,20 +5,23 @@ from dotenv import load_dotenv
 load_dotenv()
 from database.monogodb import MongoDB
 from audio_processing.whisper_handler import whisper_handler
-from audio_processing.audio_utils import validate_audio_file, cleanup_temp_file, create_temp_audio_file
 import logging
-import asyncio
-from fastmcp import Client
 from llmclient import client
-mongo_db = MongoDB()
+from database.tidb_chat import TiDBChat
+tidb_chat = TiDBChat()
+# tidb_chat = MongoDB()
 openai_api_key = os.getenv('OPENAI_API_KEY')
 gaia_api_key = os.getenv('GAIA_API_KEY')
 
 # API configuration
-API_BASE_URL = "https://qwen72b.gaia.domains/v1"
+# API_BASE_URL = "https://qwen72b.gaia.domains/v1"
+# API_BASE_URL = 'http://localhost:9095/v1'
+# API_BASE_URL = 'https://0xb2962131564bc854ece7b0f7c8c9a8345847abfb.gaia.domains/v1'
+API_BASE_URL  = 'https://api.openai.com/v1'
+# API_BASE_URL = 'https://openrouter.ai/api/v1'
 
-
-API_KEY = gaia_api_key
+# API_KEY = gaia_api_key
+API_KEY = os.getenv('OPENAI_API_KEY')
 
 
 def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
@@ -134,23 +137,25 @@ def format_context_for_llm(context):
 
 async def process_message(session_id, user_input):
     """Process a user message and return the response"""
-
+    logger = logging.getLogger(__name__)
+    logger.info(f"session id {session_id}")
     available_functions = await get_tools()
     
     # Get session context
-    session_context = mongo_db.get_session_context(session_id)
+    session_context = tidb_chat.get_session_context(session_id)
+    logger.info(f"type of session_context: {type(session_context)}")
+    logger.info(f"Session context: {session_context}")
     context_string = format_context_for_llm(session_context)
     
     messages = [
-        {"role": "system", "content": f"""You are a helpful AI assistant specialized in answering questions and providing practice questions. You have access to two tools:
+        {"role": "system", "content": f"""You are a helpful AI assistant specialized in answering questions and providing practice questions. You have access to two tools. Whenever user asks for practice questions or random questions, you should call the get_random_question tool. Whenever user asks for specific questions, you should call the get_question_and_answer tool. Always look for the tool.
 
-1. get_random_question: Fetches random questions based on difficulty and topic
+1. get_random_question: Fetches random question and answer based on topic. You have to return only question to the user.
 2. get_question_and_answer: Searches for relevant question-answer pairs from the dataset
 
 Guidelines:
-- When a user asks for practice questions, random questions, or wants to test their knowledge, ask them to specify:
-  * Difficulty level (beginner, intermediate, advanced) - if they don't specify or say "any", use None
-  * Topic - if they say "any topic" or don't specify, use None
+- When user says that he doesn't know or don't know the answer, you have to give the answer to the question which is the most recent in the context, you can also find the answer in the context.         
+- If answer to a question is in the recent chat context use that to answer user's query.
 - Always search the dataset first when users ask specific questions
 - If you find the answer in the dataset, provide it directly
 - Be conversational and helpful
@@ -160,11 +165,11 @@ Context from previous conversations:
     ]
     
     # Add context messages
-    for entry in session_context:
-        if entry.get("user_query"):
-            messages.append({"role": "user", "content": entry["user_query"]})
-        if entry.get("agent_response"):
-            messages.append({"role": "assistant", "content": entry["agent_response"]})
+    # for entry in session_context:
+    #     if entry.get("user_query"):
+    #         messages.append({"role": "user", "content": entry["user_query"]})
+    #     if entry.get("agent_response"):
+    #         messages.append({"role": "assistant", "content": entry["agent_response"]})
     
     # Add current user message
     messages.append({"role": "user", "content": user_input})
@@ -196,7 +201,7 @@ Context from previous conversations:
         final_completion_response = make_chat_completion_request(
             messages=messages,
             tools=available_functions,
-            tool_choice="none"
+            tool_choice="auto"
         )
         
         final_message = final_completion_response["choices"][0]["message"]
@@ -212,7 +217,7 @@ Context from previous conversations:
     }
     
     session_context.append(new_context_entry)
-    mongo_db.update_session_context(session_id, session_context)
+    tidb_chat.update_session_context(session_id, session_context)
     
     return response_text
 

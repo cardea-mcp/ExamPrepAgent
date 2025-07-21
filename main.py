@@ -33,9 +33,5 @@ def get_question_and_answer(question: str) -> List[Dict[str, Any]]:
 if __name__ == "__main__":
     print("🚀 Starting MCP server...")
     mcp.run(
-        transport="http",
-        host="127.0.0.1",
-        port=9096,
-        path="/mcp",
-        log_level="debug",
+        transport="stdio"
     )

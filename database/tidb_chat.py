@@ -5,7 +5,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from pytidb import TiDBClient
 from pytidb.schema import TableModel, Field
-from sqlalchemy import text , TEXT
+from sqlalchemy import text , TEXT , Column , JSON
 
 load_dotenv()
 
@@ -22,9 +22,9 @@ class ChatSession(TableModel, table=True):
     id: str = Field(primary_key=True, max_length=36)
     user_id: str = Field(max_length=36)
     session_name: str = Field(max_length=255)
-    context: str = Field() # Store JSON as TEXT
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    context: str = Field() 
+    created_at: datetime = Field()
+    updated_at: datetime = Field()
 
 class TiDBChat:
     def __init__(self):
@@ -54,12 +54,7 @@ class TiDBChat:
                 print(f"📦 Table '{user_table}' exists. Opening it...")
                 self.users_table = self.db.open_table(user_table)
             
-            if not self.db.has_table(session_table):
-                print(f"🛠️ Table '{session_table}' does not exist. Creating it now...")
-                self.sessions_table = self.db.create_table(schema=ChatSession)
-            else:
-                print(f"📦 Table '{session_table}' exists. Opening it...")
-                self.sessions_table = self.db.open_table(session_table)
+            self.sessions_table = self.db.open_table("chat_sessions")
             
             
             
