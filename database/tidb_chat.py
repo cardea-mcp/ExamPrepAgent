@@ -22,7 +22,7 @@ class ChatSession(TableModel, table=True):
     id: str = Field(primary_key=True, max_length=36)
     user_id: str = Field(max_length=36)
     session_name: str = Field(max_length=255)
-    context: str = Field()  # Simple dict type - TiDB will handle JSON automatically
+    context: str = Field() 
     created_at: datetime = Field()
     updated_at: datetime = Field()
 
