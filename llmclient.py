@@ -1,3 +1,3 @@
 from fastmcp import Client
 
-client = Client("main.py")
+client = Client("http://127.0.0.1:9096/mcp")
