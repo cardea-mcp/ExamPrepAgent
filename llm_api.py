@@ -7,9 +7,9 @@ from database.monogodb import MongoDB
 from audio_processing.whisper_handler import whisper_handler
 import logging
 from llmclient import client
-from database.tidb_chat import TiDBChat
-tidb_chat = TiDBChat()
-# tidb_chat = MongoDB()
+from database.tidb import tidb_client
+# tidb_client = TiDBChat()
+# tidb_client = MongoDB()
 openai_api_key = os.getenv('OPENAI_API_KEY')
 gaia_api_key = os.getenv('GAIA_API_KEY')
 
@@ -142,7 +142,7 @@ async def process_message(session_id, user_input):
     available_functions = await get_tools()
     
     # Get session context
-    session_context = tidb_chat.get_session_context(session_id)
+    session_context = tidb_client.get_session_context(session_id)
     logger.info(f"type of session_context: {type(session_context)}")
     logger.info(f"Session context: {session_context}")
     context_string = format_context_for_llm(session_context)
@@ -217,7 +217,7 @@ Context from previous conversations:
     }
     
     session_context.append(new_context_entry)
-    tidb_chat.update_session_context(session_id, session_context)
+    tidb_client.update_session_context(session_id, session_context)
     
     return response_text
 
