@@ -80,7 +80,6 @@ pydantic_core==2.33.2
 pydub==0.25.1
 pyee==13.0.0
 Pygments==2.19.1
-pymongo==4.13.0
 PyMuPDF==1.25.5
 PyMySQL==1.1.1
 pyparsing==3.2.3

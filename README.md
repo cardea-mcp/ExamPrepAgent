@@ -90,50 +90,39 @@ The system is composed of several core components:
 ---
 
 ## 🛠️ Setup Scripts
-### Primary Setup Scripts
-`setup_complete_system.sh`
+
+### Setting up the .env file
+
+The `.env` file should be like this.
+```
+BASE_URL='https://api.openai.com/v1'
+LLM_MODEL='gpt-4.1'
+API_KEY='your-api-key'
+TIDB_HOST=''
+TIDB_PORT=4000
+TIDB_USERNAME=''
+TIDB_PASSWORD=''
+TIDB_CONNECTIN=''
+MCP_HOST=127.0.0.1
+MCP_PORT=9096
+
+```
+
+### Running the MCP Server
+```
+python3 main.py
+```
+
 
 Purpose: Complete system initialization
 #### What it does:
-- Loads environment variables
-- Sets up TiDB knowledge base from CSV
-- Downloads and configures MCP server binary
-- Downloads and configures Llama-Nexus
-- Creates all necessary start scripts
-- Configures service connections
+- starts the MCP server 
 
-`start_system.sh`
 
-Purpose: Orchestrated service startup
-#### Service startup order:
-1. gaia-agentic-search MCP Server (port 9096)
-2. Llama-Nexus (port 9095)
-3. API Registration
-4. FastAPI Application (port 8000)
-
-### Component-Specific Scripts
-
-`setup_mcp_server.sh`
-- Downloads gaia-mcp-servers binary
-- Platform-specific installation (Linux/macOS, x86_64/ARM64)
-- Creates TiDB MCP server configuration
-
-`start_tidb_mcp.sh`:  gaia-agentic-search-mcp tool
-#### TiDB MCP Server Configuration:
-- Socket: 127.0.0.1:9096
-- Table: kubernetes_qa_pairs
-- Search tools: Full-text search capabilities
-
-`start_llama_nexus.sh`
-- Starts Llama-Nexus gateway on port 9095
-- Uses config.toml for MCP server routing
-- Provides unified API endpoint
-
-`register_apis.sh`
-#### Registers with Llama-Nexus:
-- Chat API server (Gaia domains)
-- Embedding API server
-- Health check verification
+#### Start the BOT:
+```
+python3 app.py
+```
 
 ### Feature Installation Scripts
 

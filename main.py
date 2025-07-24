@@ -2,6 +2,11 @@ from fastmcp import FastMCP
 from utils.ques_select import get_random_qa, search_pair
 from typing import Dict, Any, List
 import logging
+from dotenv import load_dotenv
+load_dotenv()
+import os
+host = os.getenv('MCP_HOST')
+port = os.getenv('MCP_PORT')
 mcp = FastMCP("Exam-Bot")
 
 logger = logging.getLogger(__name__)
@@ -34,8 +39,8 @@ if __name__ == "__main__":
     print("🚀 Starting MCP server...")
     mcp.run(
         transport="http",
-        host="127.0.0.1",
-        port=9096,
+        host=host,
+        port=port,
         path="/mcp",
         log_level="debug",
     )
