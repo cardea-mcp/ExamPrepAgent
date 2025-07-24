@@ -14,8 +14,11 @@ import tempfile
 import ffmpeg
 import os
 from database.tidb import tidb_client
+from dotenv import load_dotenv
+load_dotenv()
 
-
+host = os.getenv('HOST')
+port = os.getenv('PORT')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -270,4 +273,4 @@ async def serve_frontend():
     return HTMLResponse(content=html_content)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=host, port=port)
