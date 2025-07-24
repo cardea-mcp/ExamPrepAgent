@@ -1,3 +1,9 @@
 from fastmcp import Client
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-client = Client("http://127.0.0.1:9096/mcp")
+MCP_PORT = os.getenv('MCP_PORT')
+MCP_HOST = os.getenv('MCP_HOST')
+url = f"http://{MCP_HOST}:{MCP_PORT}/mcp"
+client = Client(url)

@@ -4,7 +4,6 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
-from database.monogodb import MongoDB
 from llm_api import process_message, process_audio_message, cleanup_server
 from audio_processing.whisper_handler import whisper_handler 
 from audio_processing.audio_utils import validate_audio_file, MAX_FILE_SIZE, get_file_extension, cleanup_temp_file

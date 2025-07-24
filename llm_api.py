@@ -3,25 +3,15 @@ import os
 import requests
 from dotenv import load_dotenv
 load_dotenv()
-from database.monogodb import MongoDB
 from audio_processing.whisper_handler import whisper_handler
 import logging
 from llmclient import client
 from database.tidb import tidb_client
-# tidb_client = TiDBChat()
-# tidb_client = MongoDB()
-openai_api_key = os.getenv('OPENAI_API_KEY')
-gaia_api_key = os.getenv('GAIA_API_KEY')
 
-# API configuration
-# API_BASE_URL = "https://qwen72b.gaia.domains/v1"
-# API_BASE_URL = 'http://localhost:9095/v1'
-# API_BASE_URL = 'https://0xb2962131564bc854ece7b0f7c8c9a8345847abfb.gaia.domains/v1'
-API_BASE_URL  = 'https://api.openai.com/v1'
-# API_BASE_URL = 'https://openrouter.ai/api/v1'
 
-# API_KEY = gaia_api_key
-API_KEY = os.getenv('OPENAI_API_KEY')
+
+API_BASE_URL  = os.getenv('BASE_URL')
+API_KEY = os.getenv('API_KEY')
 
 
 def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
@@ -34,7 +24,7 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
     }
     
     payload = {
-        "model": "gpt-4.1",
+        "model": os.getenv('LLM_MODEL'),
         "messages": messages,
         "temperature": 0.7,
         "tool_choice": "auto" 
