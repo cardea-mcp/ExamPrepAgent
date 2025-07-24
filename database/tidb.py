@@ -7,19 +7,26 @@ import logging
 import uuid
 import mysql.connector
 import json
+from urllib.parse import urlparse
 
 load_dotenv()
 
 class TiDBConnection:
     def __init__(self):
+        connection_url = os.getenv("TIDB_CONNECTION")
+
+        parsed = urlparse(connection_url)
+        
         self.conn = mysql.connector.connect(
-            host=os.getenv("TIDB_HOST"),
-            port=int(os.getenv("TIDB_PORT", 4000)),
-            user=os.getenv("TIDB_USERNAME"),
-            password=os.getenv("TIDB_PASSWORD"),
-            database=os.getenv("TIDB_DATABASE"),
+            host=parsed.hostname,
+            port=parsed.port or 4000,
+            user=parsed.username,
+            password=parsed.password,
+            database=parsed.path.lstrip('/'),
+            autocommit=False
         )
 
+       
         self.cursor = self.conn.cursor(dictionary=True)
         self.users_table = "users"
         self.sessions_table = 'chat_sessions'
