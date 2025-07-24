@@ -45,25 +45,12 @@ class TiDBConnection:
             "cronjobs",
             "namespaces",
             "configmaps",
-            "secrets",
-            "persistent volumes",
-            "persistent volume claims",
-            "storage classes",
             "ingress",
-            "network policies",
-            "service accounts",
             "rbac",
-            "cluster roles",
-            "role bindings",
-            "labels and selectors",
-            "annotations",
-            "taints and tolerations",
             "node affinity",
             "pod affinity",
-            "horizontal pod autoscaler",
-            "vertical pod autoscaler",
-            "resource quotas",
-            "limit ranges",
+
+
             "custom resource definitions"
         ]
         

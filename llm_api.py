@@ -12,7 +12,7 @@ from database.tidb import tidb_client
 
 API_BASE_URL  = os.getenv('BASE_URL')
 API_KEY = os.getenv('API_KEY')
-
+SYSTEM_PROMPT = os.getenv('SYSTEM_PROMPT')
 
 def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
     """Make a direct API request to chat completions endpoint"""
@@ -138,19 +138,7 @@ async def process_message(session_id, user_input):
     context_string = format_context_for_llm(session_context)
     
     messages = [
-        {"role": "system", "content": f"""You are a helpful AI assistant specialized in answering questions and providing practice questions. You have access to two tools. Whenever user asks for practice questions or random questions, you should call the get_random_question tool. Whenever user asks for specific questions, you should call the get_question_and_answer tool. Always look for the tool.
-
-1. get_random_question: Fetches random question and answer based on topic. You have to return only question to the user.
-2. get_question_and_answer: Searches for relevant question-answer pairs from the dataset
-
-Guidelines:
-- When user says that he doesn't know or don't know the answer, you have to give the answer to the question which is the most recent in the context, you can also find the answer in the context.         
-- If answer to a question is in the recent chat context use that to answer user's query.
-- Always search the dataset first when users ask specific questions
-- If you find the answer in the dataset, provide it directly
-- Be conversational and helpful
-
-Context from previous conversations:
+        {"role": "system", "content": f"""{SYSTEM_PROMPT}
 {context_string}"""}
     ]
     

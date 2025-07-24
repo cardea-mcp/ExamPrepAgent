@@ -10,10 +10,10 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY = os.getenv("API_KEY")
+BASE_URL = os.getenv("BASE_URL")
 
-
-OPENAI_API_URL = "http://localhost:8080/v1/audio/transcriptions"
+OPENAI_API_URL = f"{BASE_URL}/audio/transcriptions"
 
 def clean_transcription_timestamps(text_with_timestamps: str) -> str:
     """
@@ -57,34 +57,42 @@ class WhisperHandler:
 
     def _make_api_call(self, audio_file_obj, filename: str, language: Optional[str] = None) -> Dict[str, Any]:
         """
-        Internal method to make the API call.
+        Internal method to make the API call to OpenAI Whisper.
         """
-        headers = {}
-        files_payload = {
-            'file': (filename, audio_file_obj, 'application/octet-stream'), # 'application/octet-stream' is a safe default
+        headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}"
         }
 
+        files = {
+            'file': (filename, audio_file_obj, 'application/octet-stream')
+        }
 
-        # if language:
-        #     files_payload['language'] = (None, language) # Add if your local API supports it
+        data = {
+            'model': 'whisper-1'
+        }
+
+        if language:
+            data['language'] = language
 
         try:
             self.logger.info(f"Sending audio data to API for transcription. Endpoint: {OPENAI_API_URL}, Filename: {filename}")
-            response = requests.post(OPENAI_API_URL, headers=headers, files=files_payload, timeout=60)
-            response.raise_for_status()  # Raises an HTTPError for bad responses (4XX or 5XX)
+            response = requests.post(OPENAI_API_URL, headers=headers, files=files, data=data, timeout=60)
+            response.raise_for_status()
             
             result = response.json()
-            raw_transcribed_text = result.get("text", "").strip() # Get the raw text
+            raw_transcribed_text = result.get("text", "").strip()
 
-            # Clean the timestamps from the raw text
+            # Clean timestamps from the raw text if needed
             cleaned_transcribed_text = clean_transcription_timestamps(raw_transcribed_text)
-            
             detected_language = result.get("language", "unknown")
 
-            self.logger.info(f"Transcription successful via API. Raw: '{raw_transcribed_text[:100]}...', Cleaned: '{cleaned_transcribed_text[:100]}...'")
+            self.logger.info(
+                f"Transcription successful via API. Raw: '{raw_transcribed_text[:100]}...', "
+                f"Cleaned: '{cleaned_transcribed_text[:100]}...'"
+            )
             return {
                 "success": True,
-                "text": cleaned_transcribed_text, 
+                "text": cleaned_transcribed_text,
                 "language": detected_language,
                 "error": None
             }
@@ -97,11 +105,11 @@ class WhisperHandler:
                     error_content = e.response.json()
                     if isinstance(error_content, dict) and "error" in error_content:
                         if isinstance(error_content["error"], dict):
-                             error_detail = error_content["error"].get("message", str(e))
+                            error_detail = error_content["error"].get("message", str(e))
                         else:
-                             error_detail = str(error_content["error"])
-                    else: 
-                        error_detail = e.response.text 
+                            error_detail = str(error_content["error"])
+                    else:
+                        error_detail = e.response.text
                 except ValueError:
                     error_detail = e.response.text
             return {
@@ -110,14 +118,16 @@ class WhisperHandler:
                 "text": "",
                 "language": None
             }
+
         except Exception as e:
             self.logger.error(f"An unexpected error occurred during API transcription: {str(e)}")
             return {
                 "success": False,
                 "error": str(e),
                 "text": "",
-                "language": None
+                "language": "en"
             }
+
 
     def transcribe_audio(self, audio_file_path: str, language: Optional[str] = None) -> Dict[str, Any]:
         """
