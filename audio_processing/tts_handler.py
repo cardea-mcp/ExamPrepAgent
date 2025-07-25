@@ -11,17 +11,17 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = os.getenv('BASE_URL')
+BASE_URL = os.getenv('TTS_BASE_URL')
 class TTSHandler:
     """Handles Text-to-Speech conversion using OpenAI TTS API"""
 
     def __init__(self):
         """Initialize TTS handler with OpenAI configuration"""
         self.logger = logging.getLogger(__name__)
-        self.api_key = os.getenv('API_KEY')
+        self.api_key = os.getenv('TTS_API_KEY')
         self.api_url = f"{BASE_URL}/audio/speech"
-        self.model = "tts-1"
-        self.voice = "alloy"  
+        self.model = os.getenv('TTS_MODEL_NAME')
+        self.voice = os.getenv('TTS_SPEAKER') 
         self.speed = 1.0      
         self.max_text_length = 4000 
         
