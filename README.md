@@ -93,22 +93,8 @@ The system is composed of several core components:
 
 ### Setting up the .env file
 
-The `.env` file should be like this.
-```
-BASE_URL='https://api.openai.com/v1'
-LLM_MODEL='gpt-4.1'
-API_KEY='your-api-key'
-TIDB_HOST=''
-TIDB_PORT=4000
-TIDB_USERNAME=''
-TIDB_PASSWORD=''
-TIDB_CONNECTIN=''
-MCP_HOST=127.0.0.1
-MCP_PORT=9096
-HOST=0.0.0.0
-PORT=8000
+The `.env` file should contain some important environment variables. You can copy the template from the `.env.example` file and fill in the required values.
 
-```
 
 ### Running the MCP Server
 ```
@@ -340,6 +326,14 @@ python app.py
 - **Multi-modal Support**: Include diagrams and visual aids  
 
 ---
+
+### Kubernetes Dataset
+
+The dataset has been created using the [kubernetes.io](https://kubernetes.io) documentation. It is available under CC BY 4.0. license. 
+
+Here is the link to the [dataset](https://huggingface.co/datasets/ItshMoh/kubernetes_qa_pairs)
+
+The dataset has been generated using this [script](https://github.com/cardea-mcp/ExamPrepAgent/blob/master/url_scrap.py)
 
 ## 🤝 Contributing
 
