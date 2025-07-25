@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 load_dotenv() 
 
 
-OPENAI_API_KEY = os.getenv("API_KEY")
-BASE_URL = os.getenv("BASE_URL")
+OPENAI_API_KEY = os.getenv("STT_API_KEY")
+BASE_URL = os.getenv("STT_BASE_URL")
 
 OPENAI_API_URL = f"{BASE_URL}/audio/transcriptions"
 
@@ -68,7 +68,7 @@ class WhisperHandler:
         }
 
         data = {
-            'model': 'whisper-1'
+            'model': os.getenv('STT_MODEL_NAME'),
         }
 
         if language:
