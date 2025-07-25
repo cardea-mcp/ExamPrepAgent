@@ -170,8 +170,7 @@ async def send_audio_message_route(
             tts_lang = detected_lang if tts_handler.is_language_supported(detected_lang) else "en"
             
             tts_result = tts_handler.text_to_speech(
-                response["response"], 
-                language=tts_lang
+                response["response"]
             )
             
             if tts_result["success"]:
@@ -237,7 +236,7 @@ async def text_to_speech_endpoint(
         if not text.strip():
             raise HTTPException(status_code=400, detail="No text provided")
         
-        result = tts_handler.text_to_speech(text, language, slow)
+        result = tts_handler.text_to_speech(text)
         
         if result["success"]:
             return {
@@ -255,12 +254,11 @@ async def text_to_speech_endpoint(
 
 @app.get("/api/tts/support")
 async def check_tts_support():
-    """Check TTS support and available languages"""
     try:
         return {
-            "supported": True,
+            "supported": tts_handler.is_api_configured(),  
             "languages": tts_handler.get_supported_languages(),
-            "default_language": tts_handler.default_language
+            "default_language": "en" 
         }
     except Exception as e:
         logger.error(f"TTS support check failed: {str(e)}")

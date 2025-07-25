@@ -4,50 +4,58 @@ import logging
 from typing import Optional, Dict, Any
 import io
 import base64
-from gtts import gTTS
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+BASE_URL = os.getenv('BASE_URL')
 class TTSHandler:
-    """Handles Text-to-Speech conversion using gTTS"""
+    """Handles Text-to-Speech conversion using OpenAI TTS API"""
 
     def __init__(self):
-        """Initialize TTS handler"""
+        """Initialize TTS handler with OpenAI configuration"""
         self.logger = logging.getLogger(__name__)
-        self.supported_languages = {
-            'en': 'English',
-            'es': 'Spanish', 
-            'fr': 'French',
-            'de': 'German',
-            'it': 'Italian',
-            'pt': 'Portuguese',
-            'ru': 'Russian',
-            'ja': 'Japanese',
-            'ko': 'Korean',
-            'zh': 'Chinese'
-        }
-        self.default_language = 'en'
-        self.logger.info("TTSHandler initialized")
+        self.api_key = os.getenv('API_KEY')
+        self.api_url = f"{BASE_URL}/audio/speech"
+        self.model = "tts-1"
+        self.voice = "alloy"  
+        self.speed = 1.0      
+        self.max_text_length = 4000 
+        
+        if not self.api_key:
+            self.logger.warning("OpenAI API key not found. TTS functionality will be disabled.")
+        
+        self.logger.info("TTSHandler initialized with OpenAI TTS-1")
 
-    def text_to_speech(self, text: str, language: str = None, slow: bool = False) -> Dict[str, Any]:
+    def text_to_speech(self, text: str, slow: bool = False) -> Dict[str, Any]:
         """
-        Convert text to speech using gTTS
+        Convert text to speech using OpenAI TTS API
         
         Args:
             text (str): Text to convert to speech
-            language (str, optional): Language code (default: 'en')
-            slow (bool): Whether to use slow speech rate
+            slow (bool): Whether to use slower speech rate (optional)
             
         Returns:
             Dict containing success status, audio data, and metadata
         """
         try:
+            if not self.api_key:
+                return {
+                    "success": False,
+                    "error": "OpenAI API key not configured",
+                    "audio_data": None,
+                    "language": "en"
+                }
+
             if not text or not text.strip():
                 return {
                     "success": False,
                     "error": "No text provided for TTS conversion",
                     "audio_data": None,
-                    "language": None
+                    "language": "en"
                 }
 
             cleaned_text = self._clean_text(text)
@@ -56,44 +64,91 @@ class TTSHandler:
                     "success": False,
                     "error": "Text is empty after cleaning",
                     "audio_data": None,
-                    "language": None
+                    "language": "en"
                 }
 
-            lang = language or self.default_language
-            if lang not in self.supported_languages:
-                self.logger.warning(f"Unsupported language '{lang}', falling back to English")
-                lang = self.default_language
+            # Adjust speed if slow is requested
+            current_speed = 0.8 if slow else self.speed
 
-            self.logger.info(f"Converting text to speech: '{cleaned_text[:50]}...' (Language: {lang})")
+            self.logger.info(f"Converting text to speech: '{cleaned_text[:50]}...' (Length: {len(cleaned_text)})")
 
-            tts = gTTS(text=cleaned_text, lang=lang, slow=slow)
-            
-            audio_buffer = io.BytesIO()
-            tts.write_to_fp(audio_buffer)
-            audio_buffer.seek(0)
-            audio_data = audio_buffer.getvalue()
 
-            audio_base64 = base64.b64encode(audio_data).decode('utf-8')
-
-            self.logger.info(f"TTS conversion successful. Audio size: {len(audio_data)} bytes")
-
-            return {
-                "success": True,
-                "audio_data": audio_base64,
-                "audio_bytes": audio_data,  # Keep raw bytes for file operations
-                "language": lang,
-                "format": "mp3",
-                "text_length": len(cleaned_text),
-                "error": None
+            headers = {
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
             }
 
+            payload = {
+                "model": self.model,
+                "input": cleaned_text,
+                "voice": self.voice,
+                "speed": current_speed
+            }
+
+
+            response = requests.post(
+                self.api_url,
+                headers=headers,
+                json=payload,
+                timeout=30 
+            )
+
+            if response.status_code == 200:
+                audio_data = response.content
+                audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+
+                self.logger.info(f"TTS conversion successful. Audio size: {len(audio_data)} bytes")
+
+                return {
+                    "success": True,
+                    "audio_data": audio_base64,
+                    "audio_bytes": audio_data,  # Keep raw bytes for file operations
+                    "language": "en", 
+                    "format": "mp3",
+                    "text_length": len(cleaned_text),
+                    "error": None
+                }
+            else:
+                error_msg = f"OpenAI API error: {response.status_code}"
+                try:
+                    error_detail = response.json().get("error", {}).get("message", "Unknown error")
+                    error_msg += f" - {error_detail}"
+                except:
+                    error_msg += f" - {response.text}"
+                
+                self.logger.error(error_msg)
+                return {
+                    "success": False,
+                    "error": error_msg,
+                    "audio_data": None,
+                    "language": "en"
+                }
+
+        except requests.exceptions.Timeout:
+            error_msg = "OpenAI API request timed out"
+            self.logger.error(error_msg)
+            return {
+                "success": False,
+                "error": error_msg,
+                "audio_data": None,
+                "language": "en"
+            }
+        except requests.exceptions.RequestException as e:
+            error_msg = f"OpenAI API request failed: {str(e)}"
+            self.logger.error(error_msg)
+            return {
+                "success": False,
+                "error": error_msg,
+                "audio_data": None,
+                "language": "en"
+            }
         except Exception as e:
             self.logger.error(f"TTS conversion failed: {str(e)}", exc_info=True)
             return {
                 "success": False,
                 "error": f"TTS conversion failed: {str(e)}",
                 "audio_data": None,
-                "language": lang if 'lang' in locals() else None
+                "language": "en"
             }
 
     def _clean_text(self, text: str) -> str:
@@ -109,10 +164,9 @@ class TTSHandler:
         if not text:
             return ""
 
-
         import re
         
-
+        # Remove code blocks and inline code
         text = re.sub(r'```[\s\S]*?```', '[code block]', text)
         text = re.sub(r'`([^`]+)`', r'\1', text)
         
@@ -128,11 +182,10 @@ class TTSHandler:
         text = re.sub(r'\s+', ' ', text)
         text = text.strip()
         
-
-        max_length = 1000
-        if len(text) > max_length:
-            text = text[:max_length] + "..."
-            self.logger.warning(f"Text truncated to {max_length} characters for TTS")
+        # Truncate if too long (OpenAI limit is 4096 characters)
+        if len(text) > self.max_text_length:
+            text = text[:self.max_text_length] + "..."
+            self.logger.warning(f"Text truncated to {self.max_text_length} characters for TTS")
 
         return text
 
@@ -161,9 +214,9 @@ class TTSHandler:
         Get dictionary of supported languages
         
         Returns:
-            Dict mapping language codes to language names
+            Dict mapping language codes to language names (English only)
         """
-        return self.supported_languages.copy()
+        return {'en': 'English'}
 
     def is_language_supported(self, language: str) -> bool:
         """
@@ -173,9 +226,18 @@ class TTSHandler:
             language (str): Language code to check
             
         Returns:
-            bool: True if language is supported
+            bool: True if language is English
         """
-        return language in self.supported_languages
+        return language.lower() in ['en', 'english']
+
+    def is_api_configured(self) -> bool:
+        """
+        Check if OpenAI API is properly configured
+        
+        Returns:
+            bool: True if API key is available
+        """
+        return bool(self.api_key)
 
     @staticmethod
     def cleanup_temp_file(file_path: str) -> None:
@@ -190,5 +252,6 @@ class TTSHandler:
                 os.unlink(file_path)
         except Exception as e:
             logger.warning(f"Failed to cleanup temp file {file_path}: {str(e)}")
+
 
 tts_handler = TTSHandler()
