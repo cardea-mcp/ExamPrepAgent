@@ -17,15 +17,14 @@ from database.tidb import tidb_client
 from dotenv import load_dotenv
 load_dotenv()
 
-host = os.getenv('HOST')
-port = os.getenv('PORT')
+host = os.getenv('HOST', '0.0.0.0')
+port = int(os.getenv('PORT', 8000))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="ExamBOT API")
 
-# tidb_client = MongoDB()
-# tidb_client = TiDBChat()
+
 
 atexit.register(cleanup_server)
 
