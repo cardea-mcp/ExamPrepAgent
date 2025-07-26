@@ -95,12 +95,16 @@ The system is composed of several core components:
 
 The `.env` file should contain some important environment variables. You can copy the template from the `.env.example` file and fill in the required values.
 
+### Setting up the TiDB dataset 
+
+```
+bash setup_dataset.sh
+```
 
 ### Running the MCP Server
 ```
 python3 main.py
 ```
-
 
 Purpose: Complete system initialization
 #### What it does:
