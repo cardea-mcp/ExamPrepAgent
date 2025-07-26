@@ -19,12 +19,9 @@ This project serves as an intelligent study companion leveraging **open-source L
 ScreenShots of the bot in action
 ![Bot giving practicing question to the user](public/lfx_exambot_ui_sc.png)
 
- ### **Here in the above image, you can see that the bot is asking the user about the complexity level of question he wants to practice. The bot is also asking the topic he wants to prepare.** 
-
-### **In this way the practicing for the exam becomes more personal and engaging.**
 ---
 
-For this prototype I have created two datasets:
+For this ExamPrep Agent we have created two datasets:
 - **Kubernetes-Q&A** - A collection of Q&A pairs focused on Kubernetes and cloud native concepts. It is uploaded to my hugging face id. 
 here is the link to the dataset. https://huggingface.co/datasets/ItshMoh/kubernetes_qa_pairs . It contains 497 Q&A pairs. It has also crossed **45 downloads** on hugging face.
 It is made for KCNA exam. Contents are taken from the kubernetes.io licensed under CC BY 4.0
@@ -36,7 +33,7 @@ It is made for KCNA exam. Contents are taken from the kubernetes.io licensed und
 
 #### Core Application Files
 
-`app.py` vs `app_nexus.py`
+`app.py`
 
 `app.py`: Direct API integration architecture
 
@@ -45,19 +42,8 @@ It is made for KCNA exam. Contents are taken from the kubernetes.io licensed und
 - Suitable for direct API deployments
 
 
-`app_nexus.py`: Llama-Nexus integration architecture
-
-- Routes requests through Llama-Nexus gateway
-- Llama-Nexus handles MCP tool calls automatically
-- Better for complex multi-agent scenarios
-
 #### LLM Integration Files
 
-`llm.py` - Command Line Interface
-- Interactive CLI chat interface
-- Direct MCP server communication
-- User context management via MongoDB
-- Manual tool calling workflow
 
 `llm_api.py` - FastAPI Integration (Direct)
 
@@ -66,11 +52,7 @@ It is made for KCNA exam. Contents are taken from the kubernetes.io licensed und
 - Audio message processing
 - Session-based context handling
 
-`llm_api_nexus.py` - Llama-Nexus Integration
-- Llama-Nexus HTTP client
-- Automatic MCP tool routing
-- Simplified tool calling (handled by Nexus)
-- Enhanced error handling
+
 
 #### MCP & Database
 
@@ -110,35 +92,19 @@ Purpose: Complete system initialization
 #### What it does:
 - starts the MCP server 
 
-
 #### Start the BOT:
 ```
 python3 app.py
 ```
-
-### Feature Installation Scripts
-
-`install_voice_features.sh` : Install voice dependencies
-#### Dependencies:
-- openai-whisper
-- torch & torchaudio
-- ffmpeg-python
-- python-multipart
-- System ffmpeg installation
-
-`install_tts_features.sh` : Install tts dependencies
-#### Dependencies:
-- gtts (Google Text-to-Speech)
-- pydub (Audio processing)
 ---
 ## Getting Started with the project
 
-1. Clone the repository: 
+1. **Clone the repository:** 
 ```
 https://github.com/cardea-mcp/ExamPrepAgent.git
 ```
 
-2. Install dependencies: 
+2. **Install dependencies:** 
 ```
 pip install -r requirements.txt
 ```
@@ -146,45 +112,22 @@ pip install -r requirements.txt
 ```
 pip install fastmcp
 ```
-3. Run the setup script: It will download the LLama-Nexus binary and configure the system.
+3. The `.env` file should contain some important environment variables. You can copy the template from the `.env.example` file and fill in the required values.
+
+4. **Setting up the TiDB dataset:**
 ```
-bash setup_complete_system.sh
-```
-4. Edit the `config.toml file in the nexus folder  to specify a port (9095) for the gateway server to listen to.
-```
-[server]
-host = "0.0.0.0" # The host to listen on.
-port = 9095        # The port to listen on.
-```
-Register the MCP server in this way by adding the below code in the config.toml file in the nexus folder.
-```
-[[mcp.server.tool]]
-name      = "cardea-ExamBot-search"
-transport = "stream-http"
-url       = "http://127.0.0.1:9096/mcp"
-enable    = true
+bash setup_dataset.sh
 ```
 
-5. Start the MCP server: 
+5. **Start the MCP server:** 
 ```
 python3 main.py
 ```
 
-6. Start the Llama-Nexus gateway: 
+6. Start the app
 ```
-bash start_llama_nexus.sh
+python3 app.py
 ```
-
-7. Register APIs with Llama-Nexus:
-```
-bash register_apis.sh
-```
-
-8. Run the FastAPI application: 
-```
-python3 app_nexus.py
-```
-
 ## ✨ Features
 
 ### Core Workflows
@@ -192,7 +135,7 @@ python3 app_nexus.py
 #### 📌 Workflow 1: Question Search
 1. User asks a specific question.
 2. LLM invokes the `get_question_and_answer()` MCP function.
-3. The system searches the Qdrant vector database for relevant Q&A pairs.
+3. The system searches the TiDB for relevant Q&A pairs.
 4. The LLM provides a contextual, helpful response based on the findings.
 
 #### 🎯 Workflow 2: Practice Mode
@@ -207,24 +150,7 @@ python3 app_nexus.py
 
 - **Python 3.x**
 - **FastMCP** – MCP server framework
-- **TiDB** – SQL database for Full text Search
-- **SentenceTransformers** – Text embedding generation
-- **LLama3** Run the LLAMAEDGE api server locally. 
-    
-    for running the model that i have used for this project.
-    ```bash
-    curl -LO https://huggingface.co/tensorblock/Llama-3-Groq-8B-Tool-Use-GGUF/resolve/main/Llama-3-Groq-8B-Tool-Use-Q5_K_M.gguf
-   ```
-   then run 
-   ```bash
-   wasmedge --dir .:. --nn-preload default:GGML:AUTO:Llama-3-Groq-8B-Tool-Use-Q5_K_M.gguf \
-   llama-api-server.wasm \
-   --prompt-template groq-llama3-tool  --log-all \
-   --ctx-size 2048 \
-   --model-name llama3
-   ```
-
-  
+- **TiDB** – SQL database for Full text Search 
 - **JSON** – Data storage format
 
 ---
@@ -286,41 +212,7 @@ python3 app_nexus.py
    
 ```
 ---
-## 🚀 Setup Instructions
-### Prerequisites
-- Python Dependencies
-```bash
-pip install -r requirements.txt
-```
-- Upload the Data on Tidb Cloud. You have to connect to the tiDB instance and save the required login details in the `.env` file.
-```bash
-python3 database/dataloader.py
-```
-- Environment Variables Create a .env file:
-```bash
-OPENAI_API_KEY = "" # you can keep it empty
-```
-- Setup a MongoDB instance. Make a database and a collection. In the .env variable add the `MONGODB_URI` as a variable and its value.
-
-- Run the app.py file 
-```bash
-python app.py
-```
-
-
 ## 🔧 MCP Functions
-
-### `get_random_question()`
-- **Purpose**: Returns a random Q&A pair from the dataset  
-- **Use Case**: Practice mode – presents questions for self-testing  
-- **Returns**: `dict` with `question` and `answer`
-
----
-
-### `get_question_and_answer(question: str)`
-- **Purpose**: Searches for relevant Q&A pairs using semantic similarity  
-- **Use Case**: Query mode – finds answers to specific questions  
-- **Returns**: `list` of top 3 matching Q&A pairs with similarity scores
 
 ## 🔮 Future Enhancements
 
@@ -328,7 +220,6 @@ python app.py
 - **Expanded Datasets**: Add more LF certification topics  
 - **Advanced Analytics**: Track learning progress and weak areas  
 - **Multi-modal Support**: Include diagrams and visual aids  
-
 ---
 
 ### Kubernetes Dataset
