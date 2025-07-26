@@ -1,4 +1,4 @@
-# 🧠 Exam-BOT (MCP-Based AI Agent for LF Certificate Prep)
+# 🧠 ExamPrepAgent
 
 An AI agent that assists students preparing for any exam or test, such as **Linux Foundation (LF) certifications**. The agent serves as an intelligent study companion leveraging **Large Language Models (LLMs)** and **MCP servers** to provide an engaging and interactive learning experience. The agent supports:
 
@@ -186,7 +186,6 @@ The system is composed of several core components:
 
 ## 🔮 Future Enhancements
 
- 
 - **Expanded Datasets**: Add more LF certification topics  
 - **Advanced Analytics**: Track learning progress and weak areas  
 - **Multi-modal Support**: Include diagrams and visual aids  
