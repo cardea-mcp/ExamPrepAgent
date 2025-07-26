@@ -157,25 +157,17 @@ python3 app.py
 ## 📁 Project Structure
 ```
 
-    Directory structure:
-└── Exam-BOT
+└── ExamPrepAgent/
     ├── README.md
     ├── app.py
-    ├── app_nexus.py
-    ├── install_tts_features.sh
-    ├── install_voice_features.sh
-    ├── llm.py
     ├── llm_api.py
-    ├── llm_api_nexus.py
+    ├── llmclient.py
+    ├── load_dataset.py
     ├── main.py
-    ├── register_apis.sh
     ├── requirements.txt
-    ├── rust_qa.txt
-    ├── setup_complete_system.sh
-    ├── setup_mcp_server.sh
-    ├── start_llama_nexus.sh
-    ├── start_system.sh
-    ├── start_tidb_mcp.sh
+    ├── setup_dataset.sh
+    ├── url_scrap.py
+    ├── .env.example
     ├── audio_processing/
     │   ├── audio_utils.py
     │   ├── tts_handler.py
@@ -183,19 +175,15 @@ python3 app.py
     ├── database/
     │   ├── csv_loader.py
     │   ├── dataloader.py
-    │   ├── monogodb.py
     │   └── tidb.py
     ├── dataset/
+    │   ├── csv_loader.py
     │   ├── dataPrep.py
     │   ├── file.json
     │   ├── kubernetes_basic.json
-    │   ├── kubernetes_qa.csv
-    │   ├── mining_qa_pairs.csv
     │   ├── playwright_scrap.py
     │   ├── url_data_fit.py
     │   └── url_scrap.py
-    ├── encoder/
-    │   └── encoder.py
     ├── static/
     │   ├── audio_recorder.js
     │   ├── index.html
@@ -203,16 +191,12 @@ python3 app.py
     │   ├── styles.css
     │   └── uploads/
     │       └── .gitkeep
-    ├── utils/
-    │   ├── data.py
-    │   └── ques_select.py
-    └── vectorstore/
-        └── qdrant.py
+    └── utils/
+        └── ques_select.py
 
    
 ```
 ---
-## 🔧 MCP Functions
 
 ## 🔮 Future Enhancements
 

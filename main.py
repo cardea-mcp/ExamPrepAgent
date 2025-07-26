@@ -5,8 +5,8 @@ import logging
 from dotenv import load_dotenv
 load_dotenv()
 import os
-host = os.getenv('MCP_HOST')
-port = os.getenv('MCP_PORT')
+host = os.getenv('MCP_HOST', '127.0.0.1')
+port = int(os.getenv('MCP_PORT', 9096))
 mcp = FastMCP("Exam-Bot")
 
 logger = logging.getLogger(__name__)
