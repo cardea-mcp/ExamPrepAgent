@@ -1,18 +1,59 @@
-# 🧠 Exam-BOT (MCP-Based AI Agent for LF Certificate Prep)
+# 🧠 ExamPrepAgent
 
-A prototype AI agent built using the **Model Context Protocol (MCP)** to assist students preparing for **Linux Foundation (LF) certifications** through interactive practice questions and intelligent Q&A responses.
+An AI agent that assists students preparing for any exam or test, such as **Linux Foundation (LF) certifications**. The agent serves as an intelligent study companion leveraging **Large Language Models (LLMs)** and **MCP servers** to provide an engaging and interactive learning experience. The agent supports:
+
+- Ask random study questions
+- Semantic and keyword search of the correct answers
+- Guided conversation for deeper understanding
+
+It consists of two major components.
+
+* An MCP (Model Context Protocol) server that provides tools to search for study questions and answers from a knowledge base. It can be used with any MCP-compatible LLM client.
+* A chatbot application that utilizes any LLM and the MCP server. It asks the user study questions, and helps the user to reach the correct answer.
 
 ---
 
 Here is the demo video of bot in action: 
 https://www.loom.com/share/e11263ab6c3e4a4da33e5e2b726cfd80?sid=173cf35a-8447-4666-b374-a78f5c5193d4
-## 🚀 Project Overview
 
-This project serves as an intelligent study companion leveraging **open-source Large Language Models (LLMs)** and **MCP servers** to provide an engaging and interactive learning experience. The agent supports:
+---
 
-- Random practice questions
-- Semantic search of relevant Q&A pairs
-- Guided conversation for deeper understanding
+## 🚀 Getting Started
+
+1. Clone the repository.
+
+```
+https://github.com/cardea-mcp/ExamPrepAgent.git
+```
+
+2. Install dependencies
+
+```
+pip install fastmcp fastapi requests mysql-connector-python ffmpeg
+```
+
+3. Create a `.env` file from the `.env.example` file and fill in the required values.
+
+You will need API endpoints for an LLM service, and the system prompt for the conversation management. If you want to use the voice features on the chatbot app, you will also need API endpoints for ASR and TTS services. You can run LLM, ASR, and TTS services [using open-source models locally on your own computers via LlamaEdge](https://llamaedge.com/docs/ai-models/). 
+
+6. Set up the question and answer database.
+
+
+```
+bash setup_dataset.sh
+```
+
+5. Start the MCP server.
+
+```
+python3 main.py
+```
+
+6. Start the chatbot app.
+
+```
+python3 app.py
+```
 
 ---
 
@@ -21,12 +62,14 @@ ScreenShots of the bot in action
 
 ---
 
-For this ExamPrep Agent we have created two datasets:
+We have created two datasets for the QA knowledge base for you to experiment with. The Kubernetes QA is the default dataset used in our scripts.
+
 - **Kubernetes-Q&A** - A collection of Q&A pairs focused on Kubernetes and cloud native concepts. It is uploaded to my hugging face id. 
 here is the link to the dataset. https://huggingface.co/datasets/ItshMoh/kubernetes_qa_pairs . It contains 497 Q&A pairs. It has also crossed **45 downloads** on hugging face.
 It is made for KCNA exam. Contents are taken from the kubernetes.io licensed under CC BY 4.0
 
 - **Metal-mining-Q&A** - A collection of Q&A pairs focused on metal mining methods. The link to the dataset https://huggingface.co/datasets/ItshMoh/metal-mining-qa-pairs . It has also more than 31 downloads on hugging face.
+
 ## 🏗️ Architecture
 
 ### 🔧 Key Files Description
@@ -71,63 +114,6 @@ The system is composed of several core components:
 
 ---
 
-## 🛠️ Setup Scripts
-
-### Setting up the .env file
-
-The `.env` file should contain some important environment variables. You can copy the template from the `.env.example` file and fill in the required values.
-
-### Setting up the TiDB dataset 
-
-```
-bash setup_dataset.sh
-```
-
-### Running the MCP Server
-```
-python3 main.py
-```
-
-Purpose: Complete system initialization
-#### What it does:
-- starts the MCP server 
-
-#### Start the BOT:
-```
-python3 app.py
-```
----
-## Getting Started with the project
-
-1. **Clone the repository:** 
-```
-https://github.com/cardea-mcp/ExamPrepAgent.git
-```
-
-2. **Install dependencies:** 
-```
-pip install -r requirements.txt
-```
-`NOTE` If you get any dependency conflict while installing fastmcp. Try to first uninstall it and then install it manually by 
-```
-pip install fastmcp
-```
-3. The `.env` file should contain some important environment variables. You can copy the template from the `.env.example` file and fill in the required values.
-
-4. **Setting up the TiDB dataset:**
-```
-bash setup_dataset.sh
-```
-
-5. **Start the MCP server:** 
-```
-python3 main.py
-```
-
-6. Start the app
-```
-python3 app.py
-```
 ## ✨ Features
 
 ### Core Workflows
@@ -200,7 +186,6 @@ python3 app.py
 
 ## 🔮 Future Enhancements
 
- 
 - **Expanded Datasets**: Add more LF certification topics  
 - **Advanced Analytics**: Track learning progress and weak areas  
 - **Multi-modal Support**: Include diagrams and visual aids  
