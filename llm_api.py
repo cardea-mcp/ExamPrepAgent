@@ -53,7 +53,6 @@ def mask_sensitive_data(headers):
     if 'Authorization' in masked_headers:
         auth_value = masked_headers['Authorization']
         if auth_value.startswith('Bearer '):
-            # Show first 10 chars of token, mask the rest
             token = auth_value[7:]  
             if len(token) > 10:
                 masked_token = token[:10] + '*' * (len(token) - 10)
@@ -143,10 +142,8 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
         payload["tool_choice"] = tool_choice
     
     try:
-        # Log the outgoing request
         log_http_request(url, headers, payload)
         
-        # Make the request
         http_logger.info("🚀 Sending HTTP request...")
         start_time = time.time()
         
@@ -161,15 +158,13 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
         request_duration = end_time - start_time
         
         http_logger.info(f"⏱️  Request completed in {request_duration:.2f} seconds")
-        
-        # Parse response
+
         response_data = None
         try:
             response_data = response.json()
         except json.JSONDecodeError:
             http_logger.warning("Could not parse response as JSON")
         
-        # Log the response
         log_http_response(response, response_data)
         
         response.raise_for_status()
@@ -181,10 +176,6 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
             log_http_response(response)
         raise Exception(f"API request failed: {str(e)}")
 
-# Add request timing import
-
-
-# Rest of the file remains the same...
 async def get_tools():
     """Get available tools using FastMCP client"""
     try:
@@ -212,7 +203,6 @@ async def get_tools():
         print(f"Error getting tools: {str(e)}")
         return []
 
-# ... rest of the functions remain unchanged
 
 async def handle_tool_calls(tool_calls):
     """Handle tool calls using FastMCP client"""
@@ -400,20 +390,4 @@ async def process_audio_message(session_id, audio_data_wav, filename_wav, availa
 def cleanup_server():
     """Cleanup function (no longer needed with FastMCP client)"""
     pass
-
-def mask_headers(headers):
-
-    masked_headers = headers.copy()
-
-    if 'Authorization' in mask_headers:
-        value = mask_headers['Authorization']
-
-        if value.startswith('Bearer'):
-            token = value[7:]
-
-            if len(token)>10:
-                masked_token = token[10:] + '*' * (len(token)-10)
-                mask_headers['Authorization'] = f"Bearer {masked_token}"
-            
-    return masked_headers         
 
