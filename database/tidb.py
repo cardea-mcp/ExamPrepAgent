@@ -33,248 +33,100 @@ class TiDBConnection:
         self.qa_table = 'kubernetes_qa_pairs'
 
     def get_random_qa(self, difficulty: Optional[str] = None, topic: Optional[str] = None) -> list[dict[str,Any]]:
-        # List of 30 Kubernetes topics
         KUBERNETES_TOPICS = [
-            "pods",
-            "services", 
-            "deployments",
-            "replicasets",
-            "statefulsets",
-            "daemonsets",
-            "jobs",
-            "cronjobs",
-            "namespaces",
-            "configmaps",
-            "ingress",
-            "rbac",
-            "node affinity",
-            "pod affinity",
-
-
-            "custom resource definitions"
+            "pods", "services", "deployments", "replicasets", "statefulsets",
+            "daemonsets", "jobs", "cronjobs", "namespaces", "configmaps",
+            "ingress", "rbac", "node affinity", "pod affinity", "custom resource definitions"
         ]
         
         try:
-            results_dict = {}
-            
             # If no topic is specified, randomly select one from the predefined list
             if not topic:
                 topic = random.choice(KUBERNETES_TOPICS)
                 print(f"🎲 No topic specified, randomly selected: '{topic}'")
             
-            # Now proceed with topic-based search (topic is guaranteed to exist)
-            print(f"🔍 Full-text searching for topic: '{topic}'")
+            print(f"🔍 Full-text searching content for topic: '{topic}'")
             
-            # Search in questions using TiDB full-text search
-            try:
-                question_search_sql = """
-                SELECT id, question, answer, topic, type, difficulty,
-                    fts_match_word(%s, question) as _score
-                FROM kubernetes_qa_pairs 
-                WHERE fts_match_word(%s, question)
-                ORDER BY _score DESC 
-                LIMIT 5
-                """
-                self.cursor.execute(question_search_sql, (topic, topic))
-                question_results = self.cursor.fetchall()
-                
-                print("question results -------\n", question_results)
-                for result in question_results:
-                    results_dict[result['id']] = {
-                        "id": result['id'],
-                        "question": result['question'],
-                        "answer": result['answer'],
-                        "topic": result['topic'],
-                        "type": result['type'],
-                        "difficulty": result['difficulty'],
-                        "score": result.get('_score', 1.0),
-                        "match_type": "question"
-                    }
-                print(f"✅ Found {len(question_results)} results in questions")
-                
-            except Exception as e:
-                print(f"⚠️ Question search failed: {str(e)}")
+            # Single FTS search on content field
+            search_sql = """
+            SELECT id, question, answer, topic, type, difficulty,
+                fts_match_word(%s, content) as _score
+            FROM kubernetes_qa_pairs 
+            WHERE fts_match_word(%s, content)
+            ORDER BY _score DESC 
+            LIMIT 3
+            """
             
-            try:
-                answer_search_sql = """
-                SELECT id, question, answer, topic, type, difficulty,
-                    fts_match_word(%s, answer) as _score
-                FROM kubernetes_qa_pairs 
-                WHERE fts_match_word(%s, answer)
-                ORDER BY _score DESC 
-                LIMIT 5
-                """
-                self.cursor.execute(answer_search_sql, (topic, topic))
-                answer_results = self.cursor.fetchall()
-                
-                print("answer results ------ \n", answer_results)
-                for result in answer_results:
-                    if result['id'] not in results_dict:
-                        results_dict[result['id']] = {
-                            "id": result['id'],
-                            "question": result['question'],
-                            "answer": result['answer'],
-                            "topic": result['topic'],
-                            "type": result['type'],
-                            "difficulty": result['difficulty'],
-                            "score": result.get('_score', 0.8),
-                            "match_type": "answer"
-                        }
-                    else:
-                        results_dict[result['id']]['match_type'] = "both"
-                        results_dict[result['id']]['score'] = max(
-                            results_dict[result['id']]['score'], 
-                            result.get('_score', 0.8)
-                        ) + 0.2
-                
-                print(f"✅ Found {len(answer_results)} results in answers")
-                
-            except Exception as e:
-                print(f"⚠️ Answer search failed: {str(e)}")
-            
-            qa_list = list(results_dict.values())
-            qa_list.sort(key=lambda x: x['score'], reverse=True)
-            qa_list = qa_list[:5]
-            
-            # If no results found from topic search, fall back to regular query
-            if not qa_list:
-                print(f"❌ No results found for topic '{topic}', falling back to regular query")
-                
-                fallback_sql = "SELECT id, question, answer, topic, type, difficulty FROM kubernetes_qa_pairs"
-                params = []
-                
-                if difficulty:
-                    fallback_sql += " WHERE difficulty = %s"
-                    params.append(difficulty.lower())
-                
-                self.cursor.execute(fallback_sql, params)
-                results = self.cursor.fetchall()
-                
-                if not results:
-                    return None
-
-                qa_list = []
-                for result in results:
-                    qa_dict = {
-                        "id": result['id'],
-                        "question": result['question'],
-                        "answer": result['answer'],
-                        "topic": result['topic'],
-                        "type": result['type'],
-                        "difficulty": result['difficulty'],
-                        "score": 1.0, 
-                        "match_type": "query"
-                    }
-                    qa_list.append(qa_dict)
+            params = [topic, topic]
             
             # Apply difficulty filter if specified
-            if difficulty and qa_list:
-                qa_list = [qa for qa in qa_list if qa['difficulty'].lower() == difficulty.lower()]
+            if difficulty:
+                search_sql = """
+                SELECT id, question, answer, topic, type, difficulty,
+                    fts_match_word(%s, content) as _score
+                FROM kubernetes_qa_pairs 
+                WHERE fts_match_word(%s, content) AND difficulty = %s
+                ORDER BY _score DESC 
+                LIMIT 3
+                """
+                params = [topic, topic, difficulty.lower()]
             
-            if not qa_list:
-                print("❌ No results found matching the criteria")
+            self.cursor.execute(search_sql, params)
+            results = self.cursor.fetchall()
+            
+            if not results:
+                print("❌ No results found for the specified criteria")
                 return None
             
-            print(f"🎲 Selecting random from {len(qa_list)} results")
+            print(f"✅ Found {len(results)} results")
             
-            selected_qa = random.choice(qa_list)
+            # Select random from top 3 results
+            selected_qa = random.choice(results)
             
-            print(f"✅ Selected Q&A: ID={selected_qa['id']}, Score={selected_qa['score']}, Match Type={selected_qa['match_type']}")
-            print("type of result", type(selected_qa['question']))
-            print("selected_qa ----\n", selected_qa['question'])
-            question_answer_chosen = []
-            question_dict = {
-                "question":selected_qa['question'],
+            question_answer_chosen = [{
+                "question": selected_qa['question'],
                 "answer": selected_qa['answer']
-            }
-            question_answer_chosen.append(question_dict)
+            }]
+            
             return question_answer_chosen
             
         except Exception as e:
             print(f"❌ Error in get_random_qa: {str(e)}")
             return None
-            
+
     def search_pair(self, query_text: str, limit: int = 3) -> List[Dict[str, Any]]:
         """
-        Search for relevant Q&A pairs using TiDB full-text search on both questions and answers
+        Search for relevant Q&A pairs using TiDB full-text search on content field
         """
         try:
-            results_dict = {}
+            print(f"🔍 Searching content for: '{query_text}'")
             
-            print(f"🔍 Searching in questions for: '{query_text}'")
-            try:
-                question_search_sql = """
-                SELECT id, question, answer, topic, type, difficulty,
-                    fts_match_word(%s, question) as _score
-                FROM kubernetes_qa_pairs 
-                WHERE fts_match_word(%s, question)
-                ORDER BY _score DESC 
-                LIMIT %s
-                """
-                self.cursor.execute(question_search_sql, (query_text, query_text, limit))
-                question_results = self.cursor.fetchall()
-                
-                print("question_results--------\n", question_results)
-                
-                for result in question_results:
-                    results_dict[result['id']] = {
-                        "question": result['question'],
-                        "answer": result['answer'],
-                        "topic": result['topic'],
-                        "type": result['type'],
-                        "difficulty": result['difficulty'],
-                        "score": result.get('_score', 1.0), 
-                        "match_type": "question"
-                    }
-                print(f"✅ Found {len(question_results)} results in questions")
-                
-            except Exception as e:
-                print(f"⚠️ Question search failed: {str(e)}")
+            search_sql = """
+            SELECT id, question, answer, topic, type, difficulty,
+                fts_match_word(%s, content) as _score
+            FROM kubernetes_qa_pairs 
+            WHERE fts_match_word(%s, content)
+            ORDER BY _score DESC 
+            LIMIT %s
+            """
             
-            print(f"🔍 Searching in answers for: '{query_text}'")
-            try:
-                answer_search_sql = """
-                SELECT id, question, answer, topic, type, difficulty,
-                    fts_match_word(%s, answer) as _score
-                FROM kubernetes_qa_pairs 
-                WHERE fts_match_word(%s, answer)
-                ORDER BY _score DESC 
-                LIMIT %s
-                """
-                self.cursor.execute(answer_search_sql, (query_text, query_text, limit))
-                answer_results = self.cursor.fetchall()
-                
-                print("answer_results--------\n", answer_results)
-                
-                for result in answer_results:
-                    if result['id'] not in results_dict:
-                        results_dict[result['id']] = {
-                            "question": result['question'],
-                            "answer": result['answer'],
-                            "topic": result['topic'],
-                            "type": result['type'],
-                            "difficulty": result['difficulty'],
-                            "score": result.get('_score', 0.8), 
-                            "match_type": "answer"
-                        }
-                    else:
-                        results_dict[result['id']]['match_type'] = "both"
-                        results_dict[result['id']]['score'] = max(
-                            results_dict[result['id']]['score'], 
-                            result.get('_score', 0.8)
-                        ) + 0.2
-                
-                print(f"✅ Found {len(answer_results)} results in answers")
-                
-            except Exception as e:
-                print(f"⚠️ Answer search failed: {str(e)}")
+            self.cursor.execute(search_sql, (query_text, query_text, limit))
+            results = self.cursor.fetchall()
             
-            qa_list = list(results_dict.values())
-            qa_list.sort(key=lambda x: x['score'], reverse=True)
+            qa_list = []
+            for result in results:
+                qa_dict = {
+                    "question": result['question'],
+                    "answer": result['answer'],
+                    "topic": result['topic'],
+                    "type": result['type'],
+                    "difficulty": result['difficulty'],
+                    "score": result.get('_score', 1.0),
+                    "match_type": "content"
+                }
+                qa_list.append(qa_dict)
             
-            qa_list = qa_list[:limit]
-            
-            print(f"📋 Returning {len(qa_list)} total results")
+            print(f"📋 Returning {len(qa_list)} results")
             return qa_list
             
         except Exception as e:
