@@ -32,56 +32,53 @@ class TiDBConnection:
         self.sessions_table = 'chat_sessions'
         self.qa_table = 'kubernetes_qa_pairs'
 
-    def get_random_qa(self, difficulty: Optional[str] = None, topic: Optional[str] = None) -> list[dict[str,Any]]:
-        KUBERNETES_TOPICS = [
-            "pods", "services", "deployments", "replicasets", "statefulsets",
-            "daemonsets", "jobs", "cronjobs", "namespaces", "configmaps",
-            "ingress", "rbac", "node affinity", "pod affinity", "custom resource definitions"
-        ]
-        
+    def get_random_qa(self, topic: Optional[str] = None) -> list[dict[str,Any]]:
         try:
-            # If no topic is specified, randomly select one from the predefined list
-            if not topic:
-                topic = random.choice(KUBERNETES_TOPICS)
-                print(f"🎲 No topic specified, randomly selected: '{topic}'")
-            
-            print(f"🔍 Full-text searching content for topic: '{topic}'")
-            
-            # Single FTS search on content field
-            search_sql = """
-            SELECT id, question, answer, topic, type, difficulty,
-                fts_match_word(%s, content) as _score
-            FROM kubernetes_qa_pairs 
-            WHERE fts_match_word(%s, content)
-            ORDER BY _score DESC 
-            LIMIT 3
-            """
-            
-            params = [topic, topic]
-            
-            # Apply difficulty filter if specified
-            if difficulty:
+            if topic:
+                print(f"🔍 Full-text searching content for topic: '{topic}'")
+                
                 search_sql = """
                 SELECT id, question, answer, topic, type, difficulty,
                     fts_match_word(%s, content) as _score
                 FROM kubernetes_qa_pairs 
-                WHERE fts_match_word(%s, content) AND difficulty = %s
+                WHERE fts_match_word(%s, content)
                 ORDER BY _score DESC 
                 LIMIT 3
                 """
-                params = [topic, topic, difficulty.lower()]
-            
-            self.cursor.execute(search_sql, params)
-            results = self.cursor.fetchall()
-            
-            if not results:
-                print("❌ No results found for the specified criteria")
-                return None
-            
-            print(f"✅ Found {len(results)} results")
-            
-            # Select random from top 3 results
-            selected_qa = random.choice(results)
+                
+                params = [topic, topic]
+                
+                self.cursor.execute(search_sql, params)
+                results = self.cursor.fetchall()
+                
+                if not results:
+                    print("❌ No results found for the specified topic")
+                    return None
+                
+                print(f"✅ Found {len(results)} results")
+                
+                # Select random from top 3 results
+                selected_qa = random.choice(results)
+                
+            else:
+                print("🎲 No topic specified, randomly selecting from all questions")
+                
+                random_sql = """
+                SELECT id, question, answer, topic, type, difficulty
+                FROM kubernetes_qa_pairs 
+                ORDER BY RAND()
+                LIMIT 1
+                """
+                
+                self.cursor.execute(random_sql)
+                results = self.cursor.fetchall()
+                
+                if not results:
+                    print("❌ No questions found in database")
+                    return None
+                
+                selected_qa = results[0]
+                print(f"✅ Randomly selected question from database")
             
             question_answer_chosen = [{
                 "question": selected_qa['question'],

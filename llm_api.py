@@ -269,19 +269,21 @@ async def process_message(session_id, user_input):
     session_context = tidb_client.get_session_context(session_id)
     logger.info(f"type of session_context: {type(session_context)}")
     logger.info(f"Session context: {session_context}")
-    context_string = format_context_for_llm(session_context)
+    # context_string = format_context_for_llm(session_context)
     
     messages = [
         {"role": "system", "content": f"""{SYSTEM_PROMPT}
-{context_string}"""}
+"""}
     ]
     
     # Add context messages
-    # for entry in session_context:
-    #     if entry.get("user_query"):
-    #         messages.append({"role": "user", "content": entry["user_query"]})
-    #     if entry.get("agent_response"):
-    #         messages.append({"role": "assistant", "content": entry["agent_response"]})
+    for entry in session_context:
+        if entry.get("user_query"):
+            messages.append({"role": "user", "content": entry["user_query"]})
+        if entry.get("agent_response"):
+            messages.append({"role": "assistant", "content": entry["agent_response"]})
+        if entry.get("tool_calls"):
+            messages.append({"role": "tool", "content": entry["tool_response"]})    
     
     # Add current user message
     messages.append({"role": "user", "content": user_input})
