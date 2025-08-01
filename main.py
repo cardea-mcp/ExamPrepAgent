@@ -1,6 +1,6 @@
 from fastmcp import FastMCP
 from utils.ques_select import get_random_qa, search_pair
-from typing import Dict, Any, List
+from typing import Dict, Any, List,Optional
 import logging
 from dotenv import load_dotenv
 load_dotenv()
@@ -11,16 +11,16 @@ mcp = FastMCP("Exam-Bot")
 
 logger = logging.getLogger(__name__)
 @mcp.tool()
-def get_random_question(difficulty: str = None, topic: str = None):
+def get_random_question(topic: Optional[str] = None ):
     """
     It is used to get a random practice question from the database
-    Arguments: It takes the topic of the question (both optional).
+    Arguments: It takes the topic of the question (optional).
 
     Returns:
-    string : It returns a practice or random question for the given difficulty and topic
+    string : It returns a practice or random question for the given topic
     """
     print("using get_random_tool")
-    result = get_random_qa(difficulty, topic)
+    result = get_random_qa(topic)
     logger.info(f"here is the random result: {result}")
     return result 
 
