@@ -21,6 +21,7 @@ def get_random_question(topic: Optional[str] = None ):
     """
     print("using get_random_tool")
     result = get_random_qa(topic)
+    print("Response from the tool: ", result)
     logger.info(f"here is the random result: {result}")
     return result 
 
