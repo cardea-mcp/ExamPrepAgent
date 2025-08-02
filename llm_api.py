@@ -242,53 +242,43 @@ async def handle_tool_calls(tool_calls):
         print(f"Error handling tool calls: {str(e)}")
         return []
 
-def format_context_for_llm(context):
-    """Convert context list to formatted string for LLM"""
-    if not context or (len(context) == 1 and not context[0]["user_query"]):
-        return "No previous conversation history."
-    
-    formatted_context = "Previous conversation history:\n"
-    for entry in context:
-        if entry["user_query"]:
-            formatted_context += f"User: {entry['user_query']}\n"
-        if entry["agent_response"]:
-            formatted_context += f"Assistant: {entry['agent_response']}\n"
-        if entry["tool_response"]:
-            formatted_context += f"Tool Result: {entry['tool_response']}\n"
-        formatted_context += "\n"
-    
-    return formatted_context
 
 async def process_message(session_id, user_input):
     """Process a user message and return the response"""
     logger = logging.getLogger(__name__)
     logger.info(f"session id {session_id}")
     available_functions = await get_tools()
-    
-    # Get session context
+
     session_context = tidb_client.get_session_context(session_id)
     logger.info(f"type of session_context: {type(session_context)}")
     logger.info(f"Session context: {session_context}")
-    # context_string = format_context_for_llm(session_context)
     
     messages = [
         {"role": "system", "content": f"""{SYSTEM_PROMPT}
 """}
     ]
     
-    # Add context messages
     for entry in session_context:
         if entry.get("user_query"):
             messages.append({"role": "user", "content": entry["user_query"]})
+        
+
+        if entry.get("tool_calls") and entry.get("tool_responses"):
+            messages.append({
+                "role": "assistant",
+                "content": entry.get("assistant_content"),  # This might be null/empty for tool calls
+                "tool_calls": entry["tool_calls"]
+            })
+            
+            # Add tool response messages
+            for tool_response in entry["tool_responses"]:
+                messages.append(tool_response)
+                
         if entry.get("agent_response"):
             messages.append({"role": "assistant", "content": entry["agent_response"]})
-        # if entry.get("tool_response"):
-        #     messages.append({"role": "tool", "content": entry["tool_response"]})    
     
-    # Add current user message
     messages.append({"role": "user", "content": user_input})
     
-    # Make initial API request
     completion_response = make_chat_completion_request(
         messages=messages,
         tools=available_functions,
@@ -296,9 +286,12 @@ async def process_message(session_id, user_input):
     )
     
     assistant_message = completion_response["choices"][0]["message"]
+    tool_calls = None
+    tool_responses = []
     tool_response_content = ""
     
     if assistant_message.get("tool_calls"):
+        tool_calls = assistant_message["tool_calls"]
         tool_responses = await handle_tool_calls(assistant_message["tool_calls"])
         tool_response_content = json.dumps([resp["content"] for resp in tool_responses])
         
@@ -323,11 +316,14 @@ async def process_message(session_id, user_input):
     else:
         response_text = assistant_message["content"]
     
-    # Update session context
+    # Update session context with complete structure
     new_context_entry = {
         "user_query": user_input,
         "agent_response": response_text,
-        "tool_response": tool_response_content
+        "tool_response": tool_response_content,  # Keep for backward compatibility
+        "tool_calls": tool_calls, 
+        "tool_responses": tool_responses,  # Store the tool responses
+        "assistant_content": assistant_message.get("content") if tool_calls else None
     }
     
     session_context.append(new_context_entry)

@@ -33,6 +33,7 @@ def get_question_and_answer(question: str) -> List[Dict[str, Any]]:
      """ 
      print("using get-question-tool")
      result = search_pair(question)
+     print("result from the tool: ", result)
      logger.info(f"here is the get question and answer result: {result}")
      return result
 
