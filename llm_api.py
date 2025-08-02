@@ -282,8 +282,8 @@ async def process_message(session_id, user_input):
             messages.append({"role": "user", "content": entry["user_query"]})
         if entry.get("agent_response"):
             messages.append({"role": "assistant", "content": entry["agent_response"]})
-        if entry.get("tool_calls"):
-            messages.append({"role": "tool", "content": entry["tool_response"]})    
+        # if entry.get("tool_response"):
+        #     messages.append({"role": "tool", "content": entry["tool_response"]})    
     
     # Add current user message
     messages.append({"role": "user", "content": user_input})
