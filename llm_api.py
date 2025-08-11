@@ -7,7 +7,7 @@ from audio_processing.whisper_handler import whisper_handler
 import logging
 import time
 from llmclient import client
-from database.tidb import tidb_client
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -243,39 +243,34 @@ async def handle_tool_calls(tool_calls):
         return []
 
 
-async def process_message(session_id, user_input):
-    """Process a user message and return the response"""
-    logger = logging.getLogger(__name__)
-    logger.info(f"session id {session_id}")
-    available_functions = await get_tools()
 
-    session_context = tidb_client.get_session_context(session_id)
-    logger.info(f"type of session_context: {type(session_context)}")
-    logger.info(f"Session context: {session_context}")
+# Add these functions to llm_api.py
+
+async def process_message_with_context(user_input: str, conversation_context: list):
+    """Process a user message with provided conversation context"""
+    logger = logging.getLogger(__name__)
+    available_functions = await get_tools()
     
     messages = [
-        {"role": "system", "content": f"""{SYSTEM_PROMPT}
-"""}
+        {"role": "system", "content": f"""{SYSTEM_PROMPT}"""}
     ]
     
-    for entry in session_context:
-        if entry.get("user_query"):
-            messages.append({"role": "user", "content": entry["user_query"]})
-        
-
-        if entry.get("tool_calls") and entry.get("tool_responses"):
-            messages.append({
-                "role": "assistant",
-                "content": entry.get("assistant_content"),  # This might be null/empty for tool calls
-                "tool_calls": entry["tool_calls"]
-            })
-            
-            # Add tool response messages
-            for tool_response in entry["tool_responses"]:
-                messages.append(tool_response)
-                
-        if entry.get("agent_response"):
-            messages.append({"role": "assistant", "content": entry["agent_response"]})
+    # Build messages from provided context
+    for entry in conversation_context:
+        if entry.get("type") == "user" and entry.get("content"):
+            messages.append({"role": "user", "content": entry["content"]})
+        elif entry.get("type") == "assistant" and entry.get("content"):
+            messages.append({"role": "assistant", "content": entry["content"]})
+        elif entry.get("type") == "tool_calls":
+            # Handle tool calls if present in context
+            if entry.get("tool_calls") and entry.get("tool_responses"):
+                messages.append({
+                    "role": "assistant",
+                    "content": entry.get("assistant_content"),
+                    "tool_calls": entry["tool_calls"]
+                })
+                for tool_response in entry["tool_responses"]:
+                    messages.append(tool_response)
     
     messages.append({"role": "user", "content": user_input})
     
@@ -288,12 +283,10 @@ async def process_message(session_id, user_input):
     assistant_message = completion_response["choices"][0]["message"]
     tool_calls = None
     tool_responses = []
-    tool_response_content = ""
     
     if assistant_message.get("tool_calls"):
         tool_calls = assistant_message["tool_calls"]
         tool_responses = await handle_tool_calls(assistant_message["tool_calls"])
-        tool_response_content = json.dumps([resp["content"] for resp in tool_responses])
         
         messages.append({
             "role": "assistant",
@@ -301,7 +294,6 @@ async def process_message(session_id, user_input):
             "tool_calls": assistant_message["tool_calls"]
         })
         
-        # Add tool responses
         for tool_response in tool_responses:
             messages.append(tool_response)
         
@@ -316,30 +308,22 @@ async def process_message(session_id, user_input):
     else:
         response_text = assistant_message["content"]
     
-    # Update session context with complete structure
-    new_context_entry = {
-        "user_query": user_input,
-        "agent_response": response_text,
-        "tool_response": tool_response_content,  # Keep for backward compatibility
-        "tool_calls": tool_calls, 
-        "tool_responses": tool_responses,  # Store the tool responses
-        "assistant_content": assistant_message.get("content") if tool_calls else None
-    }
-    
-    session_context.append(new_context_entry)
-    tidb_client.update_session_context(session_id, session_context)
-    
     return response_text
 
-async def process_audio_message(session_id, audio_data_wav, filename_wav, available_functions, language=None):
-    """Process an audio message and return the response"""
+async def process_audio_message_with_context(audio_data_wav, filename_wav, conversation_context, language=None):
+    """Process an audio message with provided conversation context"""
     logger = logging.getLogger(__name__)
     
     try:
         if not audio_data_wav:
-            return { "success": False, "error": "No audio data received for processing", "transcription": "", "response": ""}
+            return {
+                "success": False,
+                "error": "No audio data received for processing",
+                "transcription": "",
+                "response": ""
+            }
 
-        logger.info(f"Starting transcription for WAV data (filename: {filename_wav}) for session {session_id}")
+        logger.info(f"Starting transcription for WAV data (filename: {filename_wav})")
         transcription_result = whisper_handler.transcribe_audio_bytes(audio_data_wav, filename_wav, language)
         
         if not transcription_result["success"]:
@@ -355,9 +339,8 @@ async def process_audio_message(session_id, audio_data_wav, filename_wav, availa
         
         logger.info(f"Transcription successful: '{transcribed_text[:100]}...' (Language: {detected_language})")
 
-        # Process the transcribed text through the normal message pipeline
         if transcribed_text.strip():
-            response_text = await process_message(session_id, transcribed_text)
+            response_text = await process_message_with_context(transcribed_text, conversation_context)
             
             return {
                 "success": True,
@@ -369,7 +352,7 @@ async def process_audio_message(session_id, audio_data_wav, filename_wav, availa
         else:
             logger.info("Transcription resulted in empty text (possibly silence).")
             return {
-                "success": True, # Transcription itself didn't fail, just no speech
+                "success": True,
                 "transcription": "",
                 "detected_language": detected_language,
                 "response": "I didn't detect any speech in your audio. Could you please try again?",
@@ -377,14 +360,14 @@ async def process_audio_message(session_id, audio_data_wav, filename_wav, availa
             }
 
     except Exception as e:
-        logger.error(f"Audio message processing failed in llm_api: {str(e)}", exc_info=True)
+        logger.error(f"Audio message processing failed: {str(e)}", exc_info=True)
         return {
             "success": False,
             "error": f"Internal error during audio processing: {str(e)}",
             "transcription": "",
             "response": ""
         }
-
+    
 def cleanup_server():
     """Cleanup function (no longer needed with FastMCP client)"""
     pass
