@@ -6,31 +6,123 @@ from datetime import datetime
 import logging
 import uuid
 import mysql.connector
-import json
+from mysql.connector import pooling
 from urllib.parse import urlparse
+import time
 
 load_dotenv()
 
 class TiDBConnection:
     def __init__(self):
         connection_url = os.getenv("TIDB_CONNECTION")
-
         parsed = urlparse(connection_url)
         
-        self.conn = mysql.connector.connect(
-            host=parsed.hostname,
-            port=parsed.port or 4000,
-            user=parsed.username,
-            password=parsed.password,
-            database=parsed.path.lstrip('/'),
-            autocommit=False
-        )
+        self.config = {
+            'host': parsed.hostname,
+            'port': parsed.port or 4000,
+            'user': parsed.username,
+            'password': parsed.password,
+            'database': parsed.path.lstrip('/'),
+            'autocommit': False,
+            'charset': 'utf8mb4',
+            'use_unicode': True,
+            'get_warnings': True,
+            
+            # Connection timeout settings
+            'connection_timeout': 60,  # 60 seconds to establish connection
+            'autocommit': False,  
+            
+            # Pool settings
+            'pool_name': 'tidb_pool',
+            'pool_size': 5,
+            'pool_reset_session': True,
+        }
+        
+        try:
+            self.pool = pooling.MySQLConnectionPool(**self.config)
+            self.users_table = "users"
+            self.sessions_table = 'chat_sessions'
+            self.qa_table = 'kubernetes_qa_pairs'
+            print("✅ TiDB connection pool created successfully")
+        except Exception as e:
+            print(f"❌ Failed to create TiDB connection pool: {str(e)}")
+            raise e
 
-       
-        self.cursor = self.conn.cursor(dictionary=True)
-        self.users_table = "users"
-        self.sessions_table = 'chat_sessions'
-        self.qa_table = 'kubernetes_qa_pairs'
+    def get_connection(self):
+        """Get a connection from the pool with retry logic"""
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                conn = self.pool.get_connection()
+                
+                # Test the connection
+                cursor = conn.cursor()
+                cursor.execute("SELECT 1")
+                cursor.fetchone()
+                cursor.close()
+                
+                return conn
+            except Exception as e:
+                print(f"Connection attempt {attempt + 1} failed: {str(e)}")
+                if attempt == max_retries - 1:
+                    raise e
+                time.sleep(1)  # Wait 1 second before retry
+        
+        raise Exception("Failed to get database connection after retries")
+
+    def execute_query(self, query, params=None, fetch_type='all'):
+        """Execute query with connection retry logic"""
+        max_retries = 3
+        for attempt in range(max_retries):
+            conn = None
+            cursor = None
+            try:
+                conn = self.get_connection()
+                cursor = conn.cursor(dictionary=True)
+                
+                if params:
+                    cursor.execute(query, params)
+                else:
+                    cursor.execute(query)
+                
+                if fetch_type == 'all':
+                    result = cursor.fetchall()
+                elif fetch_type == 'one':
+                    result = cursor.fetchone()
+                elif fetch_type == 'none':
+                    result = cursor.rowcount
+                else:
+                    result = cursor.fetchall()
+                
+                conn.commit()
+                return result
+                
+            except mysql.connector.Error as e:
+                if conn:
+                    conn.rollback()
+                    
+                print(f"Database query attempt {attempt + 1} failed: {str(e)}")
+                
+                # Check if it's a connection error that we should retry
+                if e.errno in [2013, 2006, 2055]:  # Connection lost errors
+                    if attempt < max_retries - 1:
+                        print(f"Retrying query in 2 seconds...")
+                        time.sleep(2)
+                        continue
+                
+                raise e
+            except Exception as e:
+                if conn:
+                    conn.rollback()
+                print(f"Unexpected error in query attempt {attempt + 1}: {str(e)}")
+                raise e
+            finally:
+                if cursor:
+                    cursor.close()
+                if conn:
+                    conn.close()
+        
+        raise Exception("Failed to execute query after retries")
 
     def get_random_qa(self, topic: Optional[str] = None) -> list[dict[str,Any]]:
         try:
@@ -46,10 +138,7 @@ class TiDBConnection:
                 LIMIT 3
                 """
                 
-                params = [topic, topic]
-                
-                self.cursor.execute(search_sql, params)
-                results = self.cursor.fetchall()
+                results = self.execute_query(search_sql, [topic, topic])
                 
                 if not results:
                     print("❌ No results found for the specified topic")
@@ -70,8 +159,7 @@ class TiDBConnection:
                 LIMIT 1
                 """
                 
-                self.cursor.execute(random_sql)
-                results = self.cursor.fetchall()
+                results = self.execute_query(random_sql)
                 
                 if not results:
                     print("❌ No questions found in database")
@@ -107,8 +195,7 @@ class TiDBConnection:
             LIMIT %s
             """
             
-            self.cursor.execute(search_sql, (query_text, query_text, limit))
-            results = self.cursor.fetchall()
+            results = self.execute_query(search_sql, (query_text, query_text, limit))
             
             qa_list = []
             for result in results:
@@ -129,172 +216,30 @@ class TiDBConnection:
         except Exception as e:
             print(f"❌ Error in search_pair: {str(e)}")
             return []
-    
+
+
     def create_user(self, user_name: str) -> str:
         """Create a new user or get existing user"""
         logger = logging.getLogger(__name__)
         try:
-            # Check if user already exists
             check_sql = "SELECT id FROM users WHERE name = %s"
-            self.cursor.execute(check_sql, (user_name,))
-            existing_user = self.cursor.fetchone()
+            existing_user = self.execute_query(check_sql, (user_name,), 'one')
             
             if existing_user:
                 return existing_user['id']
             
-            logger.info(f"existing users {existing_user}")
             # Create new user
             user_id = str(uuid.uuid4())
-            logger.info(f" user id {user_id}")
             
             insert_sql = "INSERT INTO users (id, name, created_at) VALUES (%s, %s, %s)"
-            self.cursor.execute(insert_sql, (user_id, user_name, datetime.utcnow()))
-            self.conn.commit()
+            self.execute_query(insert_sql, (user_id, user_name, datetime.utcnow()), 'none')
             
             return user_id
             
         except Exception as e:
-            self.conn.rollback()
             print(f"❌ Error creating user: {str(e)}")
             raise e
-    
-    def create_session(self, user_id: str, session_name: Optional[str] = None) -> str:
-        """Create a new chat session for a user"""
-        try:
-            session_id = str(uuid.uuid4())
-            
-            if not session_name:
-                session_name = f"Chat {datetime.utcnow().strftime('%m/%d %H:%M')}"
-            
-            insert_sql = """
-            INSERT INTO chat_sessions (id, user_id, session_name, context, created_at, updated_at) 
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """
-            
-            now = datetime.utcnow()
-            self.cursor.execute(insert_sql, (session_id, user_id, session_name, "[]", now, now))
-            self.conn.commit()
-            
-            return session_id
-            
-        except Exception as e:
-            self.conn.rollback()
-            print(f"❌ Error creating session: {str(e)}")
-            raise e
-    
-    def get_user_sessions(self, user_id: str) -> List[Dict[str, Any]]:
-        """Get all sessions for a user"""
-        try:
-            select_sql = """
-            SELECT id, session_name, created_at, updated_at 
-            FROM chat_sessions 
-            WHERE user_id = %s 
-            ORDER BY updated_at DESC
-            """
-            self.cursor.execute(select_sql, (user_id,))
-            sessions = self.cursor.fetchall()
-            
-            # Convert to dict format and sort by updated_at desc
-            sessions_list = []
-            for session in sessions:
-                sessions_list.append({
-                    '_id': session['id'],
-                    'session_name': session['session_name'],
-                    'created_at': session['created_at'].isoformat(),
-                    'updated_at': session['updated_at'].isoformat()
-                })
-            
-            return sessions_list
-            
-        except Exception as e:
-            print(f"❌ Error loading sessions: {str(e)}")
-            return []
-    
-    def get_session_context(self, session_id: str) -> List[Dict[str, Any]]:
-        """Retrieve session context from TiDB"""
-        try:
-            select_sql = "SELECT context FROM chat_sessions WHERE id = %s"
-            self.cursor.execute(select_sql, (session_id,))
-            result = self.cursor.fetchone()
-            
-            if result and result['context']:
-                return json.loads(result['context'])
-            else:
-                return []
-                
-        except Exception as e:
-            print(f"❌ Error getting session context: {str(e)}")
-            return []
-    
-    def update_session_context(self, session_id: str, context: List[Dict[str, Any]]) -> bool:
-        """Update session context in TiDB"""
-        try:
-            context_json = json.dumps(context)
-            
-            update_sql = """
-            UPDATE chat_sessions 
-            SET context = %s, updated_at = %s 
-            WHERE id = %s
-            """
-            self.cursor.execute(update_sql, (context_json, datetime.utcnow(), session_id))
-            self.conn.commit()
-            
-            return True
-            
-        except Exception as e:
-            self.conn.rollback()
-            print(f"❌ Error updating session context: {str(e)}")
-            return False
-    
-    def get_user_by_name(self, user_name: str) -> Optional[Dict[str, Any]]:
-        """Get user by name"""
-        try:
-            select_sql = "SELECT id, name, created_at FROM users WHERE name = %s"
-            self.cursor.execute(select_sql, (user_name,))
-            result = self.cursor.fetchone()
-            
-            if result:
-                return {
-                    '_id': result['id'],
-                    'name': result['name'],
-                    'created_at': result['created_at'].isoformat()
-                }
-            return None
-            
-        except Exception as e:
-            print(f"❌ Error getting user by name: {str(e)}")
-            return None
-    
-    def delete_session(self, session_id: str) -> bool:
-        """Delete a session"""
-        try:
-            delete_sql = "DELETE FROM chat_sessions WHERE id = %s"
-            self.cursor.execute(delete_sql, (session_id,))
-            self.conn.commit()
-            
-            return self.cursor.rowcount > 0
-            
-        except Exception as e:
-            self.conn.rollback()
-            print(f"❌ Error deleting session: {str(e)}")
-            return False
-    
-    def update_session_name(self, session_id: str, new_name: str) -> bool:
-        """Update session name"""
-        try:
-            update_sql = """
-            UPDATE chat_sessions 
-            SET session_name = %s, updated_at = %s 
-            WHERE id = %s
-            """
-            self.cursor.execute(update_sql, (new_name, datetime.utcnow(), session_id))
-            self.conn.commit()
-            
-            return self.cursor.rowcount > 0
-            
-        except Exception as e:
-            self.conn.rollback()
-            print(f"❌ Error updating session name: {str(e)}")
-            return False
+
+
 
 tidb_client = TiDBConnection()
