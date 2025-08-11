@@ -1,4 +1,3 @@
-// static/script.js - UPDATED VERSION
 class ExamBotApp {
     constructor() {
         this.currentUser = null;
@@ -10,6 +9,19 @@ class ExamBotApp {
         this.recordedAudioBlob = null;
         this.audioSupported = false;
         this.recordingTimer = null;
+        this.ttsEnabled = false;
+        this.currentAudio = null;
+        this.ttsSupported = false;
+        
+        // Storage keys
+        this.STORAGE_KEYS = {
+            USER: 'exambot_user',
+            SESSIONS: 'exambot_sessions', 
+            CURRENT_SESSION: 'exambot_current_session',
+            TTS_ENABLED: 'exambot_tts_enabled',
+            SESSION_PREFIX: 'exambot_session_'
+        };
+        
         this.init();
     }
 
@@ -17,8 +29,368 @@ class ExamBotApp {
         this.bindEvents();
         await this.initializeAudio();
         await this.initializeTTS();
-        this.checkUserSession();
+        this.initializeUser();
     }
+
+    // ===== LOCAL STORAGE MANAGEMENT =====
+
+    generateUserId() {
+        return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    generateSessionId() {
+        return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    saveToStorage(key, data) {
+        try {
+            localStorage.setItem(key, JSON.stringify(data));
+            return true;
+        } catch (error) {
+            console.error('Failed to save to localStorage:', error);
+            this.showError('Failed to save data. Your browser storage might be full.');
+            return false;
+        }
+    }
+
+    getFromStorage(key, defaultValue = null) {
+        try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : defaultValue;
+        } catch (error) {
+            console.error('Failed to read from localStorage:', error);
+            return defaultValue;
+        }
+    }
+
+    // ===== USER MANAGEMENT =====
+
+    initializeUser() {
+        let user = this.getFromStorage(this.STORAGE_KEYS.USER);
+        
+        if (!user) {
+            this.showNameModal();
+        } else {
+            this.currentUser = user;
+            this.ttsEnabled = this.getFromStorage(this.STORAGE_KEYS.TTS_ENABLED, false);
+            this.hideNameModal();
+            this.loadUserData();
+        }
+    }
+
+    createUser(name) {
+        const user = {
+            id: this.generateUserId(),
+            name: name,
+            createdAt: new Date().toISOString()
+        };
+        
+        this.saveToStorage(this.STORAGE_KEYS.USER, user);
+        this.currentUser = user;
+        return user;
+    }
+
+    // ===== SESSION MANAGEMENT =====
+
+    loadUserData() {
+        this.loadSessions();
+        if (this.sessions.length === 0) {
+            this.createNewSession();
+        } else {
+            // Load the last active session or the most recent one
+            const lastSessionId = this.getFromStorage(this.STORAGE_KEYS.CURRENT_SESSION);
+            const targetSession = lastSessionId && this.sessions.find(s => s.id === lastSessionId) 
+                ? lastSessionId 
+                : this.sessions[0].id;
+            this.loadSession(targetSession);
+        }
+        this.updateUserDisplay();
+    }
+
+    updateUserDisplay() {
+        document.getElementById('userName').textContent = this.currentUser.name;
+    }
+
+    loadSessions() {
+        this.sessions = this.getFromStorage(this.STORAGE_KEYS.SESSIONS, []);
+        // Sort sessions by last updated time (most recent first)
+        this.sessions.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        this.renderSessions();
+    }
+
+    createNewSession(sessionName = null) {
+        const now = new Date().toISOString();
+        const sessionId = this.generateSessionId();
+        
+        const session = {
+            id: sessionId,
+            name: sessionName || `Chat ${new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}`,
+            createdAt: now,
+            updatedAt: now,
+            messageCount: 0
+        };
+
+        this.sessions.unshift(session); // Add to beginning
+        this.saveSessions();
+        
+        // Initialize empty conversation for this session
+        this.saveSessionMessages(sessionId, []);
+        
+        this.loadSession(sessionId);
+        this.renderSessions();
+    }
+
+    saveSessions() {
+        this.saveToStorage(this.STORAGE_KEYS.SESSIONS, this.sessions);
+    }
+
+    loadSession(sessionId) {
+        this.currentSession = sessionId;
+        this.saveToStorage(this.STORAGE_KEYS.CURRENT_SESSION, sessionId);
+        
+        const messages = this.getSessionMessages(sessionId);
+        this.renderChatHistory(messages);
+        this.updateActiveSession();
+    }
+
+    getSessionMessages(sessionId) {
+        return this.getFromStorage(this.STORAGE_KEYS.SESSION_PREFIX + sessionId, []);
+    }
+
+    saveSessionMessages(sessionId, messages) {
+        this.saveToStorage(this.STORAGE_KEYS.SESSION_PREFIX + sessionId, messages);
+        
+        // Update session metadata
+        const session = this.sessions.find(s => s.id === sessionId);
+        if (session) {
+            session.updatedAt = new Date().toISOString();
+            session.messageCount = messages.length;
+            this.saveSessions();
+        }
+    }
+
+    addMessageToSession(sessionId, type, content, metadata = {}) {
+        const messages = this.getSessionMessages(sessionId);
+        const message = {
+            id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            type: type, // 'user' or 'assistant'
+            content: content,
+            timestamp: new Date().toISOString(),
+            ...metadata
+        };
+        
+        messages.push(message);
+        this.saveSessionMessages(sessionId, messages);
+        return message;
+    }
+
+    deleteSession(sessionId) {
+        if (confirm('Are you sure you want to delete this chat session?')) {
+            // Remove session from list
+            this.sessions = this.sessions.filter(s => s.id !== sessionId);
+            this.saveSessions();
+            
+            // Remove session messages
+            localStorage.removeItem(this.STORAGE_KEYS.SESSION_PREFIX + sessionId);
+            
+            // If this was the current session, switch to another
+            if (this.currentSession === sessionId) {
+                if (this.sessions.length > 0) {
+                    this.loadSession(this.sessions[0].id);
+                } else {
+                    this.createNewSession();
+                }
+            }
+            
+            this.renderSessions();
+        }
+    }
+
+    editSessionName(sessionId) {
+        const currentSession = this.sessions.find(s => s.id === sessionId);
+        const newName = prompt('Enter new session name:', currentSession.name);
+        
+        if (newName && newName.trim() !== currentSession.name) {
+            this.updateSessionName(sessionId, newName.trim());
+        }
+    }
+
+    updateSessionName(sessionId, newName) {
+        const session = this.sessions.find(s => s.id === sessionId);
+        if (session) {
+            session.name = newName;
+            session.updatedAt = new Date().toISOString();
+            this.saveSessions();
+            this.renderSessions();
+        }
+    }
+
+    // ===== MESSAGE PROCESSING =====
+
+    buildConversationContext() {
+        if (!this.currentSession) return [];
+        
+        const messages = this.getSessionMessages(this.currentSession);
+        
+        // Return last 20 messages to avoid oversized requests
+        const recentMessages = messages.slice(-20);
+        
+        return recentMessages.map(msg => ({
+            type: msg.type,
+            content: msg.content,
+            timestamp: msg.timestamp
+        }));
+    }
+
+    async sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        
+        if (!message || !this.currentSession) return;
+
+        // Add user message to UI and storage
+        this.addMessage(message, 'user');
+        this.addMessageToSession(this.currentSession, 'user', message);
+        
+        input.value = '';
+        this.updateCharCount();
+        this.showTypingIndicator();
+
+        try {
+            const context = this.buildConversationContext();
+            
+            const response = await fetch('/api/chat/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    message: message,
+                    context: context
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.hideTypingIndicator();
+                
+                // Add assistant response to UI and storage
+                this.addMessage(data.response, 'bot');
+                this.addMessageToSession(this.currentSession, 'assistant', data.response);
+                
+                // Update session list to reflect new activity
+                this.renderSessions();
+            } else {
+                throw new Error('Failed to send message');
+            }
+        } catch (error) {
+            this.hideTypingIndicator();
+            this.showError('Failed to send message. Please try again.');
+            console.error('Error sending message:', error);
+        }
+    }
+
+    // ===== EVENT HANDLERS =====
+
+    async handleNameSubmit() {
+        const name = document.getElementById('nameInput').value.trim();
+        if (!name) {
+            this.showError('Please enter your name');
+            return;
+        }
+
+        try {
+            this.createUser(name);
+            this.hideNameModal();
+            this.loadUserData();
+        } catch (error) {
+            this.showError('Failed to create user. Please try again.');
+            console.error('Error creating user:', error);
+        }
+    }
+
+    // ===== UI RENDERING =====
+
+    renderSessions() {
+        const sessionsList = document.getElementById('sessionsList');
+        sessionsList.innerHTML = '';
+
+        this.sessions.forEach(session => {
+            const sessionElement = this.createSessionElement(session);
+            sessionsList.appendChild(sessionElement);
+        });
+    }
+
+    createSessionElement(session) {
+        const div = document.createElement('div');
+        div.className = `session-item ${session.id === this.currentSession ? 'active' : ''}`;
+        div.setAttribute('data-session-id', session.id);
+        
+        const createdDate = new Date(session.createdAt).toLocaleDateString();
+        
+        div.innerHTML = `
+            <div class="session-content">
+                <div class="session-name">${session.name}</div>
+                <div class="session-date">${createdDate} • ${session.messageCount || 0} messages</div>
+            </div>
+            <div class="session-actions">
+                <button onclick="app.editSessionName('${session.id}')" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button onclick="app.deleteSession('${session.id}')" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+
+        div.addEventListener('click', (e) => {
+            if (!e.target.closest('.session-actions')) {
+                this.loadSession(session.id);
+            }
+        });
+
+        return div;
+    }
+
+    renderChatHistory(messages) {
+        const chatMessages = document.getElementById('chatMessages');
+        const welcomeMessage = chatMessages.querySelector('.welcome-message');
+        
+        chatMessages.innerHTML = '';
+        
+        if (messages.length === 0) {
+            chatMessages.appendChild(welcomeMessage);
+        } else {
+            messages.forEach(message => {
+                this.addMessage(message.content, message.type);
+            });
+        }
+
+        this.scrollToBottom();
+    }
+
+    updateActiveSession() {
+        document.querySelectorAll('.session-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        const activeSession = document.querySelector(`[data-session-id="${this.currentSession}"]`);
+        if (activeSession) {
+            activeSession.classList.add('active');
+        }
+    }
+
+    showNameModal() {
+        document.getElementById('nameModal').style.display = 'flex';
+        document.getElementById('nameInput').focus();
+    }
+
+    hideNameModal() {
+        document.getElementById('nameModal').style.display = 'none';
+        document.getElementById('userName').textContent = this.currentUser.name;
+    }
+
+    // ===== TTS FUNCTIONALITY =====
 
     async initializeTTS() {
         try {
@@ -33,51 +405,6 @@ class ExamBotApp {
         } catch (error) {
             console.error('TTS initialization failed:', error);
             this.ttsSupported = false;
-        }
-    }
-    async initializeAudio() {
-        try {
-            // Check if audio is supported
-            const support = await AudioRecorder.checkBrowserSupport();
-            this.audioSupported = support.supported;
-
-            if (this.audioSupported) {
-                this.audioRecorder = new AudioRecorder();
-                this.audioPlayer = new AudioPlayer();
-                
-                // Set up audio recorder callbacks
-                this.audioRecorder.onRecordingStart = () => this.handleRecordingStart();
-                this.audioRecorder.onRecordingStop = (blob, duration) => this.handleRecordingStop(blob, duration);
-                this.audioRecorder.onRecordingError = (error) => this.handleRecordingError(error);
-
-                await this.audioRecorder.initialize();
-                
-                // Show audio support indicator
-                document.getElementById('audioSupport').style.display = 'inline-flex';
-                
-                // Check server audio support
-                await this.checkServerAudioSupport();
-            } else {
-                console.warn('Audio not supported:', support.reason);
-                this.disableAudioFeatures();
-            }
-        } catch (error) {
-            console.error('Audio initialization failed:', error);
-            this.disableAudioFeatures();
-        }
-    }
-
-    async checkServerAudioSupport() {
-        try {
-            const response = await fetch('/api/audio/support');
-            const data = await response.json();
-            
-            if (!data.supported) {
-                console.warn('Server audio processing not available:', data.error);
-                this.disableAudioFeatures();
-            }
-        } catch (error) {
-            console.error('Failed to check server audio support:', error);
         }
     }
 
@@ -129,165 +456,6 @@ class ExamBotApp {
         this.scrollToBottom();
     }
 
-
-    disableAudioFeatures() {
-        const micButton = document.getElementById('micButton');
-        if (micButton) {
-            micButton.disabled = true;
-            micButton.title = 'Voice input not available';
-            micButton.classList.add('disabled');
-        }
-        document.getElementById('audioSupport').style.display = 'none';
-    }
-
-    bindEvents() {
-        // Existing events
-        document.getElementById('submitName').addEventListener('click', () => this.handleNameSubmit());
-        document.getElementById('nameInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.handleNameSubmit();
-        });
-
-        document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
-        document.getElementById('messageInput').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                this.sendMessage();
-            }
-        });
-        
-        document.getElementById('messageInput').addEventListener('input', () => this.updateCharCount());
-        document.getElementById('newChatBtn').addEventListener('click', () => this.createNewSession());
-        document.getElementById('sidebarToggle').addEventListener('click', () => this.toggleSidebar());
-
-        // NEW: Audio events
-        document.getElementById('micButton').addEventListener('click', () => this.toggleRecording());
-        document.getElementById('stopRecordingBtn').addEventListener('click', () => this.stopRecording());
-        document.getElementById('sendAudioBtn').addEventListener('click', () => this.sendAudioMessage());
-        document.getElementById('discardAudioBtn').addEventListener('click', () => this.discardAudio());
-        document.getElementById('sendTranscriptionBtn').addEventListener('click', () => this.sendTranscriptionMessage());
-        document.getElementById('editTranscriptionBtn').addEventListener('click', () => this.editTranscription());
-
-        // Audio permission modal events
-        document.getElementById('requestMicPermission')?.addEventListener('click', () => this.requestMicrophonePermission());
-        document.getElementById('skipMicPermission')?.addEventListener('click', () => this.skipMicrophonePermission());
-
-        // Click outside sidebar to close on mobile
-        document.addEventListener('click', (e) => {
-            const sidebar = document.getElementById('sidebar');
-            const toggle = document.getElementById('sidebarToggle');
-            if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
-                if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
-                    sidebar.classList.remove('open');
-                }
-            }
-        });
-    }
-
-    // Audio Recording Methods
-    async toggleRecording() {
-        if (!this.audioSupported || !this.audioRecorder) {
-            this.showError('Voice input is not available');
-            return;
-        }
-
-        if (this.isRecording) {
-            this.stopRecording();
-        } else {
-            await this.startRecording();
-        }
-    }
-
-    async startRecording() {
-        try {
-            this.clearAudioStates();
-            const success = await this.audioRecorder.startRecording();
-            
-            if (success) {
-                this.isRecording = true;
-                this.showRecordingState();
-                this.startRecordingTimer();
-            }
-        } catch (error) {
-            console.error('Failed to start recording:', error);
-            
-            if (error.name === 'NotAllowedError') {
-                this.showMicrophonePermissionModal();
-            } else {
-                this.showError('Failed to start recording: ' + error.message);
-            }
-        }
-    }
-
-    stopRecording() {
-        if (this.audioRecorder && this.isRecording) {
-            this.audioRecorder.stopRecording();
-            this.isRecording = false;
-            this.stopRecordingTimer();
-        }
-    }
-
-    handleRecordingStart() {
-        console.log('Recording started');
-    }
-
-    handleRecordingStop(audioBlob, duration) {
-        this.recordedAudioBlob = audioBlob;
-        this.hideRecordingState();
-        this.showAudioPreview(audioBlob);
-        console.log(`Recording stopped. Duration: ${duration}s, Size: ${audioBlob.size} bytes`);
-    }
-
-    handleRecordingError(error) {
-        this.hideRecordingState();
-        this.showError('Recording error: ' + error);
-        this.isRecording = false;
-        this.stopRecordingTimer();
-    }
-
-    async sendAudioMessage() {
-        if (!this.recordedAudioBlob || !this.currentSession) {
-            return;
-        }
-    
-        this.hideAudioPreview();
-        this.showTypingIndicator();
-    
-        try {
-            const formData = new FormData();
-            formData.append('audio_file', this.recordedAudioBlob, 'recording.webm');
-    
-            const response = await fetch(`/api/sessions/${this.currentSession}/audio`, {
-                method: 'POST',
-                body: formData
-            });
-    
-            if (response.ok) {
-                const data = await response.json();
-                this.hideTypingIndicator();
-    
-                if (data.success) {
-                    // Show transcription in chat
-                    this.addMessage(`🎤 "${data.transcription}"`, 'user');
-                    this.addMessage(data.response, 'bot');
-                    
-                    // NEW: Play TTS audio if available and enabled
-                    if (this.ttsEnabled && data.tts_audio) {
-                        await this.playTTSAudio(data.tts_audio, data.tts_format || 'wav');
-                    }
-                } else {
-                    this.showError(data.error || 'Audio processing failed');
-                }
-            } else {
-                throw new Error('Failed to send audio message');
-            }
-        } catch (error) {
-            this.hideTypingIndicator();
-            this.showError('Failed to send audio message: ' + error.message);
-        } finally {
-            this.clearAudioStates();
-        }
-    }
-
     async playTTSAudio(audioData, format) {
         try {
             // Stop any currently playing audio
@@ -295,7 +463,7 @@ class ExamBotApp {
                 this.currentAudio.pause();
                 this.currentAudio = null;
             }
-    
+
             // Convert base64 audio data to blob
             const binaryString = atob(audioData);
             const bytes = new Uint8Array(binaryString.length);
@@ -364,6 +532,183 @@ class ExamBotApp {
             this.hideTTSPlaying();
         }
     }
+
+    // ===== AUDIO RECORDING FUNCTIONALITY =====
+
+    async initializeAudio() {
+        try {
+            // Check if audio is supported
+            const support = await AudioRecorder.checkBrowserSupport();
+            this.audioSupported = support.supported;
+
+            if (this.audioSupported) {
+                this.audioRecorder = new AudioRecorder();
+                this.audioPlayer = new AudioPlayer();
+                
+                // Set up audio recorder callbacks
+                this.audioRecorder.onRecordingStart = () => this.handleRecordingStart();
+                this.audioRecorder.onRecordingStop = (blob, duration) => this.handleRecordingStop(blob, duration);
+                this.audioRecorder.onRecordingError = (error) => this.handleRecordingError(error);
+
+                await this.audioRecorder.initialize();
+                
+                // Show audio support indicator
+                document.getElementById('audioSupport').style.display = 'inline-flex';
+                
+                // Check server audio support
+                await this.checkServerAudioSupport();
+            } else {
+                console.warn('Audio not supported:', support.reason);
+                this.disableAudioFeatures();
+            }
+        } catch (error) {
+            console.error('Audio initialization failed:', error);
+            this.disableAudioFeatures();
+        }
+    }
+
+    async checkServerAudioSupport() {
+        try {
+            const response = await fetch('/api/audio/support');
+            const data = await response.json();
+            
+            if (!data.supported) {
+                console.warn('Server audio processing not available:', data.error);
+                this.disableAudioFeatures();
+            }
+        } catch (error) {
+            console.error('Failed to check server audio support:', error);
+        }
+    }
+
+    disableAudioFeatures() {
+        const micButton = document.getElementById('micButton');
+        if (micButton) {
+            micButton.disabled = true;
+            micButton.title = 'Voice input not available';
+            micButton.classList.add('disabled');
+        }
+        document.getElementById('audioSupport').style.display = 'none';
+    }
+
+    // Audio Recording Methods
+    async toggleRecording() {
+        if (!this.audioSupported || !this.audioRecorder) {
+            this.showError('Voice input is not available');
+            return;
+        }
+
+        if (this.isRecording) {
+            this.stopRecording();
+        } else {
+            await this.startRecording();
+        }
+    }
+
+    async startRecording() {
+        try {
+            this.clearAudioStates();
+            const success = await this.audioRecorder.startRecording();
+            
+            if (success) {
+                this.isRecording = true;
+                this.showRecordingState();
+                this.startRecordingTimer();
+            }
+        } catch (error) {
+            console.error('Failed to start recording:', error);
+            
+            if (error.name === 'NotAllowedError') {
+                this.showMicrophonePermissionModal();
+            } else {
+                this.showError('Failed to start recording: ' + error.message);
+            }
+        }
+    }
+
+    stopRecording() {
+        if (this.audioRecorder && this.isRecording) {
+            this.audioRecorder.stopRecording();
+            this.isRecording = false;
+            this.stopRecordingTimer();
+        }
+    }
+
+    handleRecordingStart() {
+        console.log('Recording started');
+    }
+
+    handleRecordingStop(audioBlob, duration) {
+        this.recordedAudioBlob = audioBlob;
+        this.hideRecordingState();
+        this.showAudioPreview(audioBlob);
+        console.log(`Recording stopped. Duration: ${duration}s, Size: ${audioBlob.size} bytes`);
+    }
+
+    handleRecordingError(error) {
+        this.hideRecordingState();
+        this.showError('Recording error: ' + error);
+        this.isRecording = false;
+        this.stopRecordingTimer();
+    }
+
+    async sendAudioMessage() {
+        if (!this.recordedAudioBlob || !this.currentSession) {
+            return;
+        }
+
+        this.hideAudioPreview();
+        this.showTypingIndicator();
+
+        try {
+            const context = this.buildConversationContext();
+            const formData = new FormData();
+            formData.append('audio_file', this.recordedAudioBlob, 'recording.webm');
+            formData.append('context', JSON.stringify(context));
+
+            const response = await fetch('/api/chat/audio', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.hideTypingIndicator();
+
+                if (data.success) {
+                    // Add transcription as user message
+                    const userMessage = `🎤 "${data.transcription}"`;
+                    this.addMessage(userMessage, 'user');
+                    this.addMessageToSession(this.currentSession, 'user', userMessage, { 
+                        isAudio: true, 
+                        transcription: data.transcription 
+                    });
+                    
+                    // Add assistant response
+                    this.addMessage(data.response, 'bot');
+                    this.addMessageToSession(this.currentSession, 'assistant', data.response);
+                    
+                    // Play TTS if available and enabled
+                    if (this.ttsEnabled && data.tts_audio) {
+                        await this.playTTSAudio(data.tts_audio, data.tts_format || 'wav');
+                    }
+                    
+                    // Update session list
+                    this.renderSessions();
+                } else {
+                    this.showError(data.error || 'Audio processing failed');
+                }
+            } else {
+                throw new Error('Failed to send audio message');
+            }
+        } catch (error) {
+            this.hideTypingIndicator();
+            this.showError('Failed to send audio message: ' + error.message);
+        } finally {
+            this.clearAudioStates();
+        }
+    }
+
     discardAudio() {
         this.clearAudioStates();
     }
@@ -482,226 +827,54 @@ class ExamBotApp {
         this.disableAudioFeatures();
     }
 
-    // Existing methods remain unchanged...
-    checkUserSession() {
-        const savedUser = localStorage.getItem('exambot_user');
-        const ttsEnabled = localStorage.getItem('exambot_tts_enabled') === 'true';
-        if (savedUser) {
-            this.currentUser = JSON.parse(savedUser);
-            this.ttsEnabled = ttsEnabled;
-            this.hideNameModal();
-            
-            this.loadUserData();
-        } else {
-            this.showNameModal();
-        }
-    }
+    // ===== EVENT BINDING =====
 
-    showNameModal() {
-        document.getElementById('nameModal').style.display = 'flex';
-        document.getElementById('nameInput').focus();
-    }
+    bindEvents() {
+        // Name submission events
+        document.getElementById('submitName').addEventListener('click', () => this.handleNameSubmit());
+        document.getElementById('nameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.handleNameSubmit();
+        });
 
-    hideNameModal() {
-        document.getElementById('nameModal').style.display = 'none';
-        document.getElementById('userName').textContent = this.currentUser.name;
-    }
-
-    async handleNameSubmit() {
-        const name = document.getElementById('nameInput').value.trim();
-        if (!name) {
-            this.showError('Please enter your name');
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/users', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name: name })
-            });
-
-            if (response.ok) {
-                this.currentUser = await response.json();
-                localStorage.setItem('exambot_user', JSON.stringify(this.currentUser));
-                this.hideNameModal();
-                this.loadUserData();
-            } else {
-                throw new Error('Failed to create user');
+        // Message sending events
+        document.getElementById('sendButton').addEventListener('click', () => this.sendMessage());
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                this.sendMessage();
             }
-        } catch (error) {
-            this.showError('Failed to create user. Please try again.');
-            console.error('Error creating user:', error);
-        }
-    }
+        });
+        
+        // UI events
+        document.getElementById('messageInput').addEventListener('input', () => this.updateCharCount());
+        document.getElementById('newChatBtn').addEventListener('click', () => this.createNewSession());
+        document.getElementById('sidebarToggle').addEventListener('click', () => this.toggleSidebar());
 
-    async loadUserData() {
-        await this.loadSessions();
-        if (this.sessions.length === 0) {
-            await this.createNewSession();
-        } else {
-            await this.loadSession(this.sessions[0]._id);
-        }
-    }
+        // Audio events
+        document.getElementById('micButton')?.addEventListener('click', () => this.toggleRecording());
+        document.getElementById('stopRecordingBtn')?.addEventListener('click', () => this.stopRecording());
+        document.getElementById('sendAudioBtn')?.addEventListener('click', () => this.sendAudioMessage());
+        document.getElementById('discardAudioBtn')?.addEventListener('click', () => this.discardAudio());
+        document.getElementById('sendTranscriptionBtn')?.addEventListener('click', () => this.sendTranscriptionMessage());
+        document.getElementById('editTranscriptionBtn')?.addEventListener('click', () => this.editTranscription());
 
-    async loadSessions() {
-        try {
-            const response = await fetch(`/api/users/${this.currentUser.user_id}/sessions`);
-            if (response.ok) {
-                const data = await response.json();
-                this.sessions = data.sessions;
-                this.renderSessions();
+        // Audio permission modal events
+        document.getElementById('requestMicPermission')?.addEventListener('click', () => this.requestMicrophonePermission());
+        document.getElementById('skipMicPermission')?.addEventListener('click', () => this.skipMicrophonePermission());
+
+        // Click outside sidebar to close on mobile
+        document.addEventListener('click', (e) => {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.getElementById('sidebarToggle');
+            if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                }
             }
-        } catch (error) {
-            console.error('Error loading sessions:', error);
-        }
-    }
-
-    renderSessions() {
-        const sessionsList = document.getElementById('sessionsList');
-        sessionsList.innerHTML = '';
-
-        this.sessions.forEach(session => {
-            const sessionElement = this.createSessionElement(session);
-            sessionsList.appendChild(sessionElement);
         });
     }
 
-    createSessionElement(session) {
-        const div = document.createElement('div');
-        div.className = `session-item ${session._id === this.currentSession ? 'active' : ''}`;
-        
-        const createdDate = new Date(session.created_at).toLocaleDateString();
-        
-        div.innerHTML = `
-            <div class="session-content">
-                <div class="session-name">${session.session_name}</div>
-                <div class="session-date">${createdDate}</div>
-            </div>
-            <div class="session-actions">
-                <button onclick="app.editSessionName('${session._id}')" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button onclick="app.deleteSession('${session._id}')" title="Delete">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `;
-
-        div.addEventListener('click', (e) => {
-            if (!e.target.closest('.session-actions')) {
-                this.loadSession(session._id);
-            }
-        });
-
-        return div;
-    }
-
-    async createNewSession() {
-        try {
-            const response = await fetch(`/api/users/${this.currentUser.user_id}/sessions`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({})
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                await this.loadSessions();
-                await this.loadSession(data.session_id);
-            }
-        } catch (error) {
-            this.showError('Failed to create new session');
-            console.error('Error creating session:', error);
-        }
-    }
-
-    async loadSession(sessionId) {
-        try {
-            this.currentSession = sessionId;
-            this.updateActiveSession();
-            
-            const response = await fetch(`/api/sessions/${sessionId}`);
-            if (response.ok) {
-                const data = await response.json();
-                this.renderChatHistory(data.context);
-            }
-        } catch (error) {
-            this.showError('Failed to load session');
-            console.error('Error loading session:', error);
-        }
-    }
-
-    updateActiveSession() {
-        document.querySelectorAll('.session-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        
-        const activeSession = document.querySelector(`.session-item[data-session-id="${this.currentSession}"]`);
-        if (activeSession) {
-            activeSession.classList.add('active');
-        }
-    }
-
-    renderChatHistory(context) {
-        const chatMessages = document.getElementById('chatMessages');
-        
-        const welcomeMessage = chatMessages.querySelector('.welcome-message');
-        chatMessages.innerHTML = '';
-        if (context.length === 0) {
-            chatMessages.appendChild(welcomeMessage);
-        }
-
-        context.forEach(entry => {
-            if (entry.user_query) {
-                this.addMessage(entry.user_query, 'user');
-            }
-            if (entry.agent_response) {
-                this.addMessage(entry.agent_response, 'bot');
-            }
-        });
-
-        this.scrollToBottom();
-    }
-
-    async sendMessage() {
-        const input = document.getElementById('messageInput');
-        const message = input.value.trim();
-        
-        if (!message || !this.currentSession) return;
-
-        this.addMessage(message, 'user');
-        input.value = '';
-        this.updateCharCount();
-
-        this.showTypingIndicator();
-
-        try {
-            const response = await fetch(`/api/sessions/${this.currentSession}/messages`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ message: message })
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                this.hideTypingIndicator();
-                this.addMessage(data.response, 'bot');
-            } else {
-                throw new Error('Failed to send message');
-            }
-        } catch (error) {
-            this.hideTypingIndicator();
-            this.showError('Failed to send message. Please try again.');
-            console.error('Error sending message:', error);
-        }
-    }
+    // ===== UI HELPER METHODS =====
 
     addMessage(content, type) {
         const chatMessages = document.getElementById('chatMessages');
@@ -780,58 +953,6 @@ class ExamBotApp {
 
     toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('open');
-    }
-
-    async editSessionName(sessionId) {
-        const currentSession = this.sessions.find(s => s._id === sessionId);
-        const newName = prompt('Enter new session name:', currentSession.session_name);
-        
-        if (newName && newName.trim() !== currentSession.session_name) {
-            try {
-                const response = await fetch(`/api/sessions/${sessionId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ name: newName.trim() })
-                });
-
-                if (response.ok) {
-                    await this.loadSessions();
-                } else {
-                    throw new Error('Failed to update session name');
-                }
-            } catch (error) {
-                this.showError('Failed to update session name');
-                console.error('Error updating session:', error);
-            }
-        }
-    }
-
-    async deleteSession(sessionId) {
-        if (confirm('Are you sure you want to delete this chat session?')) {
-            try {
-                const response = await fetch(`/api/sessions/${sessionId}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    await this.loadSessions();
-                    if (this.currentSession === sessionId) {
-                        if (this.sessions.length > 0) {
-                            await this.loadSession(this.sessions[0]._id);
-                        } else {
-                            await this.createNewSession();
-                        }
-                    }
-                } else {
-                    throw new Error('Failed to delete session');
-                }
-            } catch (error) {
-                this.showError('Failed to delete session');
-                console.error('Error deleting session:', error);
-            }
-        }
     }
 
     showError(message) {
