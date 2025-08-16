@@ -235,11 +235,22 @@ class ExamBotApp {
         // Return last 20 messages to avoid oversized requests
         const recentMessages = messages.slice(-20);
         
-        return recentMessages.map(msg => ({
-            type: msg.type,
-            content: msg.content,
-            timestamp: msg.timestamp
-        }));
+        return recentMessages.map(msg => {
+            const context = {
+                type: msg.type,
+                content: msg.content,
+                timestamp: msg.timestamp
+            };
+            
+            // Include tool call data if present
+            if (msg.type === 'tool_calls') {
+                context.tool_calls = msg.tool_calls;
+                context.tool_responses = msg.tool_responses;
+                context.assistant_content = msg.assistant_content;
+            }
+            
+            return context;
+        });
     }
 
     async sendMessage() {
@@ -247,7 +258,7 @@ class ExamBotApp {
         const message = input.value.trim();
         
         if (!message || !this.currentSession) return;
-
+    
         // Add user message to UI and storage
         this.addMessage(message, 'user');
         this.addMessageToSession(this.currentSession, 'user', message);
@@ -255,7 +266,7 @@ class ExamBotApp {
         input.value = '';
         this.updateCharCount();
         this.showTypingIndicator();
-
+    
         try {
             const context = this.buildConversationContext();
             
@@ -269,13 +280,28 @@ class ExamBotApp {
                     context: context
                 })
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
                 this.hideTypingIndicator();
                 
                 // Add assistant response to UI and storage
                 this.addMessage(data.response, 'bot');
+                
+                // Store the complete response including tool calls/responses
+                const assistantMessage = {
+                    content: data.response
+                };
+    
+                // If there were tool calls, store them as a separate entry
+                if (data.tool_calls && data.tool_responses) {
+                    this.addMessageToSession(this.currentSession, 'tool_calls', '', {
+                        tool_calls: data.tool_calls,
+                        tool_responses: data.tool_responses,
+                        assistant_content: data.assistant_content
+                    });
+                }
+                
                 this.addMessageToSession(this.currentSession, 'assistant', data.response);
                 
                 // Update session list to reflect new activity
@@ -656,25 +682,25 @@ class ExamBotApp {
         if (!this.recordedAudioBlob || !this.currentSession) {
             return;
         }
-
+    
         this.hideAudioPreview();
         this.showTypingIndicator();
-
+    
         try {
             const context = this.buildConversationContext();
             const formData = new FormData();
             formData.append('audio_file', this.recordedAudioBlob, 'recording.webm');
             formData.append('context', JSON.stringify(context));
-
+    
             const response = await fetch('/api/chat/audio', {
                 method: 'POST',
                 body: formData
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
                 this.hideTypingIndicator();
-
+    
                 if (data.success) {
                     // Add transcription as user message
                     const userMessage = `🎤 "${data.transcription}"`;
@@ -683,6 +709,15 @@ class ExamBotApp {
                         isAudio: true, 
                         transcription: data.transcription 
                     });
+                    
+                    // Store tool calls if present
+                    if (data.tool_calls && data.tool_responses) {
+                        this.addMessageToSession(this.currentSession, 'tool_calls', '', {
+                            tool_calls: data.tool_calls,
+                            tool_responses: data.tool_responses,
+                            assistant_content: data.assistant_content
+                        });
+                    }
                     
                     // Add assistant response
                     this.addMessage(data.response, 'bot');
