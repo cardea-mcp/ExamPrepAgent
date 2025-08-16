@@ -262,7 +262,7 @@ async def process_message_with_context(user_input: str, conversation_context: li
         elif entry.get("type") == "assistant" and entry.get("content"):
             messages.append({"role": "assistant", "content": entry["content"]})
         elif entry.get("type") == "tool_calls":
-            # Handle tool calls if present in context
+            # Reconstruct tool calls from stored context
             if entry.get("tool_calls") and entry.get("tool_responses"):
                 messages.append({
                     "role": "assistant",
@@ -308,7 +308,13 @@ async def process_message_with_context(user_input: str, conversation_context: li
     else:
         response_text = assistant_message["content"]
     
-    return response_text
+    # Return comprehensive response data
+    return {
+        "response_text": response_text,
+        "tool_calls": tool_calls,
+        "tool_responses": tool_responses
+    }
+
 
 async def process_audio_message_with_context(audio_data_wav, filename_wav, conversation_context, language=None):
     """Process an audio message with provided conversation context"""
@@ -340,13 +346,16 @@ async def process_audio_message_with_context(audio_data_wav, filename_wav, conve
         logger.info(f"Transcription successful: '{transcribed_text[:100]}...' (Language: {detected_language})")
 
         if transcribed_text.strip():
-            response_text = await process_message_with_context(transcribed_text, conversation_context)
+            response_data = await process_message_with_context(transcribed_text, conversation_context)
             
             return {
                 "success": True,
                 "transcription": transcribed_text,
                 "detected_language": detected_language,
-                "response": response_text,
+                "response": response_data["response_text"],
+                "tool_calls": response_data.get("tool_calls"),
+                "tool_responses": response_data.get("tool_responses"),
+                "assistant_content": response_data.get("assistant_content"),
                 "error": None
             }
         else:

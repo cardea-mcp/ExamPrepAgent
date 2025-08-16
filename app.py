@@ -131,11 +131,14 @@ async def process_chat_message(request: dict):
             raise HTTPException(status_code=400, detail="Message is required")
         
         # Process the message with the provided context
-        response = await process_message_with_context(user_message, conversation_context)
+        response_data = await process_message_with_context(user_message, conversation_context)
         
         return {
             "success": True,
-            "response": response,
+            "response": response_data["response_text"],
+            "tool_calls": response_data.get("tool_calls"),
+            "tool_responses": response_data.get("tool_responses"),
+            "assistant_content": response_data.get("assistant_content"),
             "timestamp": time.time()
         }
     except Exception as e:
