@@ -40,7 +40,9 @@ class TiDBConnection:
         
         try:
             self.pool = pooling.MySQLConnectionPool(**self.config)
-            self.qa_table = 'k8_qa_pairs'
+            self.users_table = "users"
+            self.sessions_table = 'chat_sessions'
+            self.qa_table = 'kubernetes_qa_pairs'
             print("✅ TiDB connection pool created successfully")
         except Exception as e:
             print(f"❌ Failed to create TiDB connection pool: {str(e)}")
@@ -128,9 +130,9 @@ class TiDBConnection:
                 print(f"🔍 Full-text searching content for topic: '{topic}'")
                 
                 search_sql = """
-                SELECT id, question, answer,
+                SELECT id, question, answer, topic, type, difficulty,
                     fts_match_word(%s, content) as _score
-                FROM k8_qa_pairs 
+                FROM kubernetes_qa_pairs 
                 WHERE fts_match_word(%s, content)
                 ORDER BY _score DESC 
                 LIMIT 3
@@ -151,8 +153,8 @@ class TiDBConnection:
                 print("🎲 No topic specified, randomly selecting from all questions")
                 
                 random_sql = """
-                SELECT id, question, answer
-                FROM k8_qa_pairs 
+                SELECT id, question, answer, topic, type, difficulty
+                FROM kubernetes_qa_pairs 
                 ORDER BY RAND()
                 LIMIT 1
                 """
@@ -185,9 +187,9 @@ class TiDBConnection:
             print(f"🔍 Searching content for: '{query_text}'")
             
             search_sql = """
-            SELECT id, question, answer,
+            SELECT id, question, answer, topic, type, difficulty,
                 fts_match_word(%s, content) as _score
-            FROM k8_qa_pairs 
+            FROM kubernetes_qa_pairs 
             WHERE fts_match_word(%s, content)
             ORDER BY _score DESC 
             LIMIT %s
@@ -199,7 +201,12 @@ class TiDBConnection:
             for result in results:
                 qa_dict = {
                     "question": result['question'],
-                    "answer": result['answer']
+                    "answer": result['answer'],
+                    "topic": result['topic'],
+                    "type": result['type'],
+                    "difficulty": result['difficulty'],
+                    "score": result.get('_score', 1.0),
+                    "match_type": "content"
                 }
                 qa_list.append(qa_dict)
             
