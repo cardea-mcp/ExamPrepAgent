@@ -1,187 +1,341 @@
-import fitz  # PyMuPDF
-import google.generativeai as genai
+import requests
+from bs4 import BeautifulSoup
+import openai
+import json
+import time
 import os
+import csv
+from urllib.parse import urlparse
+import argparse
+from typing import List, Dict, Optional
 from dotenv import load_dotenv
-import io
-from PIL import Image
-
-# Load environment variables
 load_dotenv()
 
-# Configure Google Generative AI with your API key
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
-if not GOOGLE_API_KEY:
-    raise ValueError("GOOGLE_API_KEY not found in .env file. Please create one.")
-genai.configure(api_key=GOOGLE_API_KEY)
+class URLScraper:
+    """Handles web scraping with proper error handling and content extraction"""
+    
+    def __init__(self):
+        self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        })
+    
+    def scrape_url(self, url: str) -> Dict[str, str]:
+        """
+        Scrape content from a given URL
+        
+        Args:
+            url (str): URL to scrape
+            
+        Returns:
+            Dict containing title, content, and metadata
+        """
+        try:
+            print(f"Scraping URL: {url}")
+            response = self.session.get(url, timeout=30)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.content, 'html.parser')
 
-# --- Configuration ---
-PDF_PATH = "/home/kayden/Desktop/python_projects/ExamBOT/metal-mining/lec4_underground_mine_development.pdf"  # <--- REPLACE WITH YOUR PDF FILE PATH
-OUTPUT_DIR = "qna_output"     # Directory to save Q&A if needed
-MODEL_NAME = "gemini-1.5-flash"
-PROMPT = """Generate 5 distinct and informative question and answer pairs from the content of this page. 
-Focus on key facts, concepts, and relationships.
-Format each pair clearly as:
-Q: <question text>
-A: <answer text>
+            for script in soup(["script", "style", "nav", "footer", "header"]):
+                script.decompose()
+            
+            title = soup.find('title')
+            title_text = title.get_text().strip() if title else "No title found"
 
-If there is only image in the page, you don't have to generate 5 question and answer pairs. You can generate fewer question and answer pairs which are most relevant to the image.
-"""
+            content_selectors = [
+                'main', 
+                'article', 
+                '.content', 
+                '#content',
+                '.post-content',
+                '.entry-content',
+                'body'
+            ]
+            
+            content_text = ""
+            for selector in content_selectors:
+                content_element = soup.select_one(selector)
+                if content_element:
+                    content_text = content_element.get_text(separator='\n', strip=True)
+                    break
+            
+            if not content_text:
+                content_text = soup.get_text(separator='\n', strip=True)
+            
 
-# --- Helper Functions (same as before) ---
+            content_lines = [line.strip() for line in content_text.split('\n') if line.strip()]
+            content_text = '\n'.join(content_lines)
+            
 
-def pdf_page_to_image(pdf_path, page_num, dpi=300):
-    """
-    Converts a specific page of a PDF into a PIL Image object.
-    Args:
-        pdf_path (str): Path to the PDF file.
-        page_num (int): The 0-indexed page number to convert.
-        dpi (int): Dots per inch for rendering (higher = better quality, larger image).
-    Returns:
-        PIL.Image.Image: The rendered page as a PIL Image.
-    """
-    try:
-        doc = fitz.open(pdf_path)
-        page = doc.load_page(page_num)
-
-        zoom = dpi / 72
-        mat = fitz.Matrix(zoom, zoom)
-        pix = page.get_pixmap(matrix=mat)
-
-        img = Image.open(io.BytesIO(pix.tobytes("png")))
-        doc.close()
-        return img
-    except Exception as e:
-        print(f"Error converting PDF page {page_num} to image: {e}")
-        return None
-
-def send_image_to_gemini(image_data, prompt, model_name=MODEL_NAME):
-    """
-    Sends an image and a prompt to the Gemini Vision model and returns its response.
-    Args:
-        image_data (bytes or PIL.Image.Image): The image data (PNG bytes or PIL Image object).
-        prompt (str): The prompt to send to the model.
-        model_name (str): The name of the Gemini model to use.
-    Returns:
-        str: The generated text response from the model, or None if an error occurs.
-    """
-    try:
-        model = genai.GenerativeModel(model_name)
-
-        if isinstance(image_data, Image.Image):
-            byte_arr = io.BytesIO()
-            image_data.save(byte_arr, format='PNG')
-            image_data = byte_arr.getvalue()
-
-        content = [
-            prompt,
-            {
-                'mime_type': 'image/png',
-                'data': image_data
+            if len(content_text) > 8000:
+                content_text = content_text[:8000] + "..."
+            
+            return {
+                'url': url,
+                'title': title_text,
+                'content': content_text,
+                'domain': urlparse(url).netloc,
+                'length': len(content_text)
             }
-        ]
+            
+        except requests.RequestException as e:
+            raise Exception(f"Error scraping URL {url}: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Error processing content from {url}: {str(e)}")
 
-        print(f"Sending request to Gemini model {model_name}...")
-        response = model.generate_content(content)
+class OpenAIQAGenerator:
+    """Handles OpenAI API interaction for Q&A generation"""
+    
+    def __init__(self, api_key: str, model: str = "gpt-4"):
+        """
+        Initialize OpenAI client
+        
+        Args:
+            api_key (str): OpenAI API key
+            model (str): OpenAI model to use (default: gpt-4.1-mini)
+        """
+        self.client = openai.OpenAI(api_key=api_key)
+        self.model = model
+    
+    def generate_qa_pairs(self, content_data: Dict[str, str]) -> List[Dict[str, str]]:
+        """
+        Generate Kubernetes certification Q&A pairs from scraped content
+        
+        Args:
+            content_data (Dict): Scraped content with title, content, etc.
+            
+        Returns:
+            List of Q&A dictionaries
+        """
+        system_prompt, user_prompt = self._create_prompts(content_data)
+        
+        try:
+            print("Generating Kubernetes Q&A pairs with OpenAI...")
+            
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=4000
+            )
+            
+            if not response.choices[0].message.content:
+                raise Exception("Empty response from OpenAI")
+            
+            qa_pairs = self._parse_openai_response(response.choices[0].message.content, content_data)
+            
+            print(f"Generated {len(qa_pairs)} Q&A pairs")
+            return qa_pairs
+            
+        except Exception as e:
+            raise Exception(f"Error generating Q&A pairs: {str(e)}")
+    
+    def _create_prompts(self, content_data: Dict[str, str]) -> tuple:
+        """Create system and user prompts for OpenAI"""
+        
+        system_prompt = """You are an expert Kubernetes instructor who creates high-quality certification exam questions. You specialize in creating questions suitable for KCNA, CKA, and CKAD certifications.
 
-        if response.prompt_feedback and response.prompt_feedback.block_reason:
-            print(f"Gemini blocked content due to: {response.prompt_feedback.block_reason}")
-            return None
+Your task is to generate Kubernetes certification-style questions with detailed explanations that help students learn.
 
-        return response.text
-    except Exception as e:
-        print(f"Error sending to Gemini: {e}")
-        return None
+Create TWO types of questions:
 
-# --- Main Logic ---
+A) MULTIPLE CHOICE QUESTIONS (MCQs):
+- Include 4 options (A, B, C, D) in the question field
+- Answer should contain the correct option letter and the option text
+- Explanation should explain why the correct answer is right AND why each incorrect option is wrong
 
-def process_pdf_for_qna(pdf_path, output_dir=OUTPUT_DIR, prompt=PROMPT):
-    """
-    Processes specific pages of a PDF, converts them to images, sends to Gemini Vision,
-    and collects Q&A pairs. Skips the first page and the last two pages.
-    Args:
-        pdf_path (str): Path to the input PDF file.
-        output_dir (str): Directory to save output files (optional).
-        prompt (str): The prompt for Gemini Vision.
-    Returns:
-        list: A list of dictionaries, where each dictionary contains
-              'page_num' and 'qna_text' for that page.
-    """
-    if not os.path.exists(pdf_path):
-        print(f"Error: PDF file not found at '{pdf_path}'")
-        return []
+B) PRACTICAL COMMAND QUESTIONS:
+- Task-based questions asking to create/configure Kubernetes resources
+- Answer should be the exact kubectl command(s)
+- Explanation should explain what the command does, why each flag is used, and any important notes
 
-    if output_dir and not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+Requirements:
+- Focus on real Kubernetes certification exam topics
+- Mix both MCQ and practical command questions
+- Make explanations educational and helpful for learning
+- Ensure technical accuracy and use proper Kubernetes terminology
 
-    all_qna_results = []
+Return ONLY a valid JSON array with the specified format."""
+
+        user_prompt = f"""Based on the following Kubernetes-related content, generate up to 6 high-quality questions suitable for Kubernetes certification exams.
+
+Source Information:
+- Title: {content_data['title']}
+- URL: {content_data['url']}
+- Domain: {content_data['domain']}
+
+Content:
+{content_data['content']}
+
+Generate a maximum of 6 questions (generate fewer if content does not support 6 well-formed questions).
+
+Format your response as a JSON array with this exact structure:
+
+[
+  {{
+    "question": "What is the default restart policy for a Pod in Kubernetes?\\n\\nA) Always\\nB) OnFailure\\nC) Never\\nD) RestartAlways",
+    "answer": "A) Always",
+    "explanation": "The correct answer is A) Always. This is the default restart policy for Pods in Kubernetes, meaning containers will be restarted whenever they exit, regardless of the exit code. Option B) OnFailure is incorrect because this policy only restarts containers when they exit with a non-zero status code. Option C) Never is incorrect as this policy never restarts containers once they exit. Option D) RestartAlways is incorrect because this is not a valid Kubernetes restart policy name."
+  }},
+  {{
+    "question": "Create a Deployment named 'nginx-deploy' with 3 replicas using the nginx:1.20 image in the default namespace.",
+    "answer": "kubectl create deployment nginx-deploy --image=nginx:1.20 --replicas=3",
+    "explanation": "This command creates a Deployment resource using the 'kubectl create deployment' command. The '--image=nginx:1.20' flag specifies the container image to use for the pods. The '--replicas=3' flag sets the desired number of pod replicas to 3, ensuring high availability. Since no namespace is specified with '-n' or '--namespace', it will be created in the default namespace. The Deployment will automatically create a ReplicaSet to manage the pods."
+  }}
+]
+
+Important: Return ONLY the JSON array, no additional text or markdown formatting."""
+
+        return system_prompt, user_prompt
+
+    def _parse_openai_response(self, response_text: str, content_data: Dict[str, str]) -> List[Dict[str, str]]:
+        """Parse OpenAI response and return clean Q&A pairs with explanations"""
+        try:
+            response_text = response_text.strip()
+            
+            if response_text.startswith('```json'):
+                response_text = response_text[7:]
+            if response_text.startswith('```'):
+                response_text = response_text[3:]
+            if response_text.endswith('```'):
+                response_text = response_text[:-3]
+            
+            response_text = response_text.strip()
+
+            qa_pairs = json.loads(response_text)
+            
+            if not isinstance(qa_pairs, list):
+                raise ValueError("Response is not a list")
+            
+            # Clean and validate Q&A pairs
+            cleaned_pairs = []
+            for qa in qa_pairs:
+                if 'question' in qa and 'answer' in qa and 'explanation' in qa:
+                    cleaned_pairs.append({
+                        'question': qa['question'].strip(),
+                        'answer': qa['answer'].strip(),
+                        'explanation': qa['explanation'].strip()
+                    })
+            
+            return cleaned_pairs
+            
+        except json.JSONDecodeError as e:
+            raise Exception(f"Invalid JSON response from OpenAI: {str(e)}")
+        except Exception as e:
+            raise Exception(f"Error parsing OpenAI response: {str(e)}")
+
+class CSVWriter:
+    """Handles writing Q&A pairs to CSV file"""
+    
+    @staticmethod
+    def write_to_csv(qa_pairs: List[Dict[str, str]], filename: str = "kubernetes_qa.csv"):
+        """
+        Write Q&A pairs to a CSV file (append mode)
+        
+        Args:
+            qa_pairs (List): List of Q&A dictionaries
+            filename (str): Output CSV filename
+        """
+        try:
+            print(f"Appending {len(qa_pairs)} Q&A pairs to {filename}")
+            
+            # Check if file exists to determine if we need headers
+            file_exists = os.path.exists(filename)
+            
+            with open(filename, 'a', newline='', encoding='utf-8') as csvfile:
+                fieldnames = ['question', 'answer', 'explanation']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                if not file_exists:
+                    writer.writeheader()
+                    print(f"Created new CSV file: {filename}")
+
+                for qa in qa_pairs:
+                    writer.writerow({
+                        'question': qa['question'],
+                        'answer': qa['answer'],
+                        'explanation': qa['explanation']
+                    })
+            
+            print(f"Successfully appended {len(qa_pairs)} Q&A pairs to {filename}")
+            
+            total_count = CSVWriter.count_rows_in_csv(filename)
+            print(f"Total questions in {filename}: {total_count}")
+                    
+        except Exception as e:
+            raise Exception(f"Error writing to CSV file {filename}: {str(e)}")
+    
+    @staticmethod
+    def count_rows_in_csv(filename: str) -> int:
+        """Count total rows in CSV file (excluding header)"""
+        try:
+            if not os.path.exists(filename):
+                return 0
+            
+            with open(filename, 'r', encoding='utf-8') as csvfile:
+                reader = csv.reader(csvfile)
+                row_count = sum(1 for row in reader) - 1
+                return max(0, row_count)  # Ensure non-negative
+        except Exception:
+            return 0
+
+def main():
+    """Main function to orchestrate the scraping and Q&A generation"""
+    parser = argparse.ArgumentParser(description='Generate Kubernetes certification Q&A pairs from URL content using OpenAI')
+    parser.add_argument('url', help='URL to scrape for content')
+    parser.add_argument('--api-key', help='OpenAI API key (or set OPENAI_API_KEY env var)')
+    parser.add_argument('--model', default='gpt-4.1-mini', help='OpenAI model to use (default: gpt-4)')
+    parser.add_argument('--output', default='kubernetes_qa_output.csv', help='Output CSV filename')
+    
+    args = parser.parse_args()
+    
+    api_key = args.api_key or os.getenv('API_KEY')
+    if not api_key:
+        print("Error: OpenAI API key is required.")
+        print("Either pass --api-key or set OPENAI_API_KEY environment variable")
+        return 1
     
     try:
-        doc = fitz.open(pdf_path)
-        total_pages = doc.page_count
-        print(f"Processing PDF: '{pdf_path}' with {total_pages} pages...")
+        scraper = URLScraper()
+        generator = OpenAIQAGenerator(api_key, args.model)
+        writer = CSVWriter()
 
-        # Determine the range of pages to process
-        # We skip the first page (index 0)
-        # And skip the last two pages (indices total_pages-1 and total_pages-2)
-        start_page_index = 1
-        end_page_index = total_pages - 2 # range's end is exclusive, so this means pages up to total_pages-3
+        print("Step 1: Scraping URL content...")
+        content_data = scraper.scrape_url(args.url)
+        print("Scraping complete.")
+        print(f"Scraped {content_data['length']} characters from {content_data['domain']}")
+        
 
-        # Check if there are enough pages to process after skipping
-        if end_page_index <= start_page_index: # means total_pages <= 3
-            print(f"PDF has {total_pages} page(s). Skipping the first page and the last two pages leaves no pages to process.")
-            print("No pages will be processed based on the skip criteria.")
-            doc.close()
-            return []
+        print(f"\nStep 2: Generating Kubernetes Q&A pairs using {args.model}...")
+        qa_pairs = generator.generate_qa_pairs(content_data)
+        
+        if not qa_pairs:
+            print("Warning: No Q&A pairs were generated")
+            return 1
+        
 
-        # Modified loop range
-        for page_num in range(start_page_index, end_page_index):
-            print(f"\n--- Processing Page {page_num + 1}/{total_pages} (Actual PDF Page) ---")
-            
-            # 1. Convert PDF page to image
-            pil_image = pdf_page_to_image(pdf_path, page_num)
-            if pil_image is None:
-                print(f"Skipping page {page_num + 1} due to image conversion error.")
-                continue
-
-            # 2. Send image to Gemini Vision
-            qna_text_from_gemini = send_image_to_gemini(pil_image, prompt)
-
-            if qna_text_from_gemini:
-                print(f"Generated Q&A for Page {page_num + 1}:\n{qna_text_from_gemini}")
-                all_qna_results.append({
-                    'page_num': page_num + 1,
-                    'qna_text': qna_text_from_gemini
-                })
-                
-                # Optional: Save Q&A to a file per page
-                if output_dir:
-                    output_file_path = os.path.join(output_dir, f"page_{page_num + 1}_qna.txt")
-                    with open(output_file_path, "w", encoding="utf-8") as f:
-                        f.write(f"--- Q&A for Page {page_num + 1} ---\n\n")
-                        f.write(qna_text_from_gemini)
-                    print(f"Saved Q&A for page {page_num + 1} to {output_file_path}")
-            else:
-                print(f"No Q&A generated for Page {page_num + 1}.")
-                all_qna_results.append({
-                    'page_num': page_num + 1,
-                    'qna_text': "N/A - No response or error from Gemini."
-                })
-
-        doc.close()
-        print("\n--- PDF Processing Complete ---")
-        return all_qna_results
-
+        print(f"\nStep 3: Writing to {args.output}...")
+        writer.write_to_csv(qa_pairs, args.output)
+        
+        print(f"\n✅ Successfully generated {len(qa_pairs)} Q&A pairs!")
+        print(f"📁 Questions appended to: {args.output}")
+        
+        print(f"\n📋 Sample questions generated:")
+        for i, qa in enumerate(qa_pairs[:2], 1):
+            print(f"\nQuestion {i}:")
+            print(f"Q: {qa['question'][:100]}...")
+            print(f"A: {qa['answer'][:50]}...")
+            print(f"E: {qa['explanation'][:100]}...")
+        
+        return 0
+        
     except Exception as e:
-        print(f"An unexpected error occurred during PDF processing: {e}")
-        return []
+        print(f"❌ Error: {str(e)}")
+        return 1
 
 if __name__ == "__main__":
-    results = process_pdf_for_qna(PDF_PATH)
-
-    print("\n\n--- Summary of All Generated Q&A ---")
-    if results:
-        for res in results:
-            print(f"\n===== Page {res['page_num']} =====")
-            print(res['qna_text'])
-    else:
-        print("No Q&A pairs were generated. Check for errors or if all pages were skipped.")
+    exit(main())

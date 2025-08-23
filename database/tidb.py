@@ -40,7 +40,7 @@ class TiDBConnection:
         
         try:
             self.pool = pooling.MySQLConnectionPool(**self.config)
-            self.qa_table = 'k8_qa_pairs'
+            self.qa_table = 'k8_qa_pairs_llm'
             print("✅ TiDB connection pool created successfully")
         except Exception as e:
             print(f"❌ Failed to create TiDB connection pool: {str(e)}")
@@ -130,7 +130,7 @@ class TiDBConnection:
                 search_sql = """
                 SELECT id, question, answer,
                     fts_match_word(%s, content) as _score
-                FROM k8_qa_pairs 
+                FROM k8_qa_pairs_llm 
                 WHERE fts_match_word(%s, content)
                 ORDER BY _score DESC 
                 LIMIT 3
@@ -151,8 +151,8 @@ class TiDBConnection:
                 print("🎲 No topic specified, randomly selecting from all questions")
                 
                 random_sql = """
-                SELECT id, question, answer
-                FROM k8_qa_pairs 
+                SELECT id, question, answer,explanation
+                FROM k8_qa_pairs_llm 
                 ORDER BY RAND()
                 LIMIT 1
                 """
@@ -168,7 +168,8 @@ class TiDBConnection:
             
             question_answer_chosen = [{
                 "question": selected_qa['question'],
-                "answer": selected_qa['answer']
+                "answer": selected_qa['answer'],
+                "explanation": selected_qa['explanation']
             }]
             
             return question_answer_chosen
@@ -187,7 +188,7 @@ class TiDBConnection:
             search_sql = """
             SELECT id, question, answer,
                 fts_match_word(%s, content) as _score
-            FROM k8_qa_pairs 
+            FROM k8_qa_pairs_llm 
             WHERE fts_match_word(%s, content)
             ORDER BY _score DESC 
             LIMIT %s
@@ -199,7 +200,8 @@ class TiDBConnection:
             for result in results:
                 qa_dict = {
                     "question": result['question'],
-                    "answer": result['answer']
+                    "answer": result['answer'],
+                    "explanation": result['explanation']
                 }
                 qa_list.append(qa_dict)
             
