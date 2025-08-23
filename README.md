@@ -65,7 +65,7 @@ ScreenShots of the bot in action
 We have created two datasets for the QA knowledge base for you to experiment with. The Kubernetes QA is the default dataset used in our scripts.
 
 - **Kubernetes-Q&A** - A collection of Q&A pairs focused on Kubernetes and cloud native concepts. It is uploaded to my hugging face id. 
-here is the link to the dataset. https://huggingface.co/datasets/ItshMoh/kubernetes_qa_pairs . It contains 497 Q&A pairs. It has also crossed **45 downloads** on hugging face.
+here is the link to the dataset. https://huggingface.co/datasets/ItshMoh/k8_qa_pairs . It contains 445 Q&A pairs.
 It is made for KCNA exam. Contents are taken from the kubernetes.io licensed under CC BY 4.0
 
 - **Metal-mining-Q&A** - A collection of Q&A pairs focused on metal mining methods. The link to the dataset https://huggingface.co/datasets/ItshMoh/metal-mining-qa-pairs . It has also more than 31 downloads on hugging face.
@@ -142,7 +142,6 @@ The system is composed of several core components:
 ---
 ## 📁 Project Structure
 ```
-
 └── ExamPrepAgent/
     ├── README.md
     ├── app.py
@@ -152,24 +151,17 @@ The system is composed of several core components:
     ├── main.py
     ├── requirements.txt
     ├── setup_dataset.sh
-    ├── url_scrap.py
     ├── .env.example
     ├── audio_processing/
     │   ├── audio_utils.py
     │   ├── tts_handler.py
     │   └── whisper_handler.py
     ├── database/
-    │   ├── csv_loader.py
     │   ├── dataloader.py
     │   └── tidb.py
     ├── dataset/
     │   ├── csv_loader.py
-    │   ├── dataPrep.py
-    │   ├── file.json
-    │   ├── kubernetes_basic.json
-    │   ├── playwright_scrap.py
-    │   ├── url_data_fit.py
-    │   └── url_scrap.py
+    │   └── dataPrep.py
     ├── static/
     │   ├── audio_recorder.js
     │   ├── index.html
@@ -195,9 +187,9 @@ The system is composed of several core components:
 
 The dataset has been created using the [kubernetes.io](https://kubernetes.io) documentation. It is available under CC BY 4.0. license. 
 
-Here is the link to the [dataset](https://huggingface.co/datasets/ItshMoh/kubernetes_qa_pairs)
+Here is the link to the [dataset](https://huggingface.co/datasets/ItshMoh/k8_qa_pairs)
 
-The dataset has been generated using this [script](https://github.com/cardea-mcp/ExamPrepAgent/blob/master/url_scrap.py)
+The dataset has been generated using this [script](https://github.com/cardea-mcp/ExamPrepAgent/blob/master/dataset/dataPrep.py)
 
 ## 🤝 Contributing
 
