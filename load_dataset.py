@@ -2,7 +2,7 @@ import os
 import requests
 
 # Target URL of the raw CSV file
-csv_url = "https://huggingface.co/datasets/ItshMoh/kubernetes_qa_pairs/resolve/main/kubernetes_qa.csv"
+csv_url = "https://huggingface.co/datasets/ItshMoh/k8_qa_pairs/resolve/main/kubernetes_qa_output.csv"
 
 # Directory to save the dataset
 save_dir = os.path.join(os.getcwd(), "dataset")
