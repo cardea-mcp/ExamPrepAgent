@@ -923,9 +923,13 @@ class ExamBotApp {
                 </div>
                 <div class="message-content">${this.formatMessage(content)}</div>
             `;
-        } else {
+        } else if (type === 'assistant') {
             messageDiv.innerHTML = `
-                <div class="message-content">${this.escapeHtml(content)}</div>
+                <div class="message-content">${this.formatMessage(content)}</div>
+            `;
+        } else{
+            messageDiv.innerHTML = `
+                <div class="message-content">${this.formatMessage(content)}</div>
             `;
         }
 

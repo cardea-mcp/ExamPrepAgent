@@ -302,6 +302,31 @@ body {
     font-size: 13px;
 }
 
+.message.assistant .message-content {
+    background: #f8fafc;
+    color: #1f2937;
+    border-bottom-left-radius: 4px;
+    border-left: 3px solid #667eea; /* This is your blue border */
+}
+
+.message.assistant .message-content pre {
+    background: #1f2937;
+    color: #f8fafc;
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 10px 0;
+    font-size: 13px;
+}
+
+.message.assistant .message-content code {
+    background: #e5e7eb;
+    color: #1f2937;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
 .typing-indicator {
     display: flex;
     align-items: center;
