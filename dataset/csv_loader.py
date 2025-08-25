@@ -10,9 +10,7 @@ class KnowledgeBaseLoader:
     def __init__(self):
         # Create connection with SSL for TiDB Cloud
         connection_string = (
-            f"mysql+pymysql://{os.getenv('TIDB_USERNAME')}:{os.getenv('TIDB_PASSWORD')}@"
-            f"{os.getenv('TIDB_HOST')}:{os.getenv('TIDB_PORT', 4000)}/{os.getenv('TIDB_DATABASE')}"
-            f"?ssl_verify_cert=true&ssl_verify_identity=true"
+            f"{os.getenv('TIDB_CONNECTION')}"
         )
         
         self.engine = create_engine(
