@@ -133,7 +133,7 @@ def make_chat_completion_request(messages, tools=None, tool_choice="auto"):
     payload = {
         "model": os.getenv('LLM_MODEL'),
         "messages": messages,
-        "temperature": 0.7,
+        "temperature": int(os.getenv('TEMPERATURE')),
         "tool_choice": "auto" 
     }
     
