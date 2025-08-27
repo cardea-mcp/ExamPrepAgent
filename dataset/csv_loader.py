@@ -23,7 +23,7 @@ class KnowledgeBaseLoader:
             'charset': 'utf8mb4',
             'use_unicode': True,
             'get_warnings': True,
-            
+
             # Connection timeout settings
             'connection_timeout': 60,  # 60 seconds to establish connection
             
@@ -35,6 +35,7 @@ class KnowledgeBaseLoader:
         
         try:
             self.pool = pooling.MySQLConnectionPool(**self.config)
+            self.table_name = os.getenv("TIDB_TABLE_NAME")
             print("✅ TiDB connection pool created successfully for KnowledgeBaseLoader")
         except Exception as e:
             print(f"❌ Failed to create TiDB connection pool: {str(e)}")
@@ -116,16 +117,16 @@ class KnowledgeBaseLoader:
         
         raise Exception("Failed to execute query after retries")
     
-    def create_k8_qa_pairs_table(self):
-        """Create k8_qa_pairs_llm table with larger text fields"""
+    def create_table(self):
+        f"""Create {self.table_name} table with larger text fields"""
         try:
             # Drop table if exists
-            drop_sql = "DROP TABLE IF EXISTS k8_qa_pairs_llm"
+            drop_sql = f"DROP TABLE IF EXISTS {self.table_name}"
             self.execute_query(drop_sql)
             
             # Create table with larger text fields
-            create_table_sql = """
-            CREATE TABLE k8_qa_pairs_llm (
+            create_table_sql = f"""
+            CREATE TABLE {self.table_name} (
                 id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                 content LONGTEXT NOT NULL,
                 question TEXT NOT NULL,
@@ -135,14 +136,14 @@ class KnowledgeBaseLoader:
             )
             """
             self.execute_query(create_table_sql)
-            print("✅ Created k8_qa_pairs table with large text fields")
+            print(f"✅ Created {self.table_name} table with large text fields")
             
         except Exception as e:
             print(f"❌ Error creating table: {str(e)}")
             raise e
     
     def load_csv_data(self, csv_file_path: str):
-        """Load CSV data directly into k8_qa_pairs table"""
+        f"""Load CSV data directly into {self.table_name} table"""
         try:
             if not os.path.exists(csv_file_path):
                 print(f"❌ CSV file not found: {csv_file_path}")
@@ -153,8 +154,8 @@ class KnowledgeBaseLoader:
             with open(csv_file_path, "r", encoding="utf-8") as f:
                 csv_reader = csv.DictReader(f)
                 
-                insert_sql = """
-                    INSERT INTO k8_qa_pairs_llm 
+                insert_sql = f"""
+                    INSERT INTO {self.table_name}
                     (content, question, answer, explanation)
                     VALUES (%s, %s, %s, %s)
                 """
@@ -233,14 +234,14 @@ class KnowledgeBaseLoader:
     def verify_data(self):
         """Verify the data was loaded correctly"""
         try:
-            count_sql = "SELECT COUNT(*) as total FROM k8_qa_pairs_llm"
+            count_sql = f"SELECT COUNT(*) as total FROM {self.table_name}"
             result = self.execute_query(count_sql, fetch_type='one')
             total_count = result['total'] if result else 0
             
             print(f"📊 Total records loaded: {total_count}")
             
             if total_count > 0:
-                sample_sql = "SELECT question, answer FROM k8_qa_pairs_llm LIMIT 1"
+                sample_sql = f"SELECT question, answer FROM {self.table_name} LIMIT 1"
                 sample = self.execute_query(sample_sql, fetch_type='one')
                 if sample:
                     print(f"📄 Sample record:")
@@ -252,10 +253,10 @@ class KnowledgeBaseLoader:
             
     def run_complete_setup(self, csv_file_path: str):
         """Run complete setup: create table and load data"""
-        print("🚀 Setting up kubernetes_qa_pairs from CSV...")
+        print(f"🚀 Setting up {self.table_name} from CSV...")
         
         try:
-            self.create_k8_qa_pairs_table()
+            self.create_table()
 
             if self.load_csv_data(csv_file_path):
                 self.verify_data()
@@ -270,7 +271,7 @@ class KnowledgeBaseLoader:
             return False
 
 if __name__ == "__main__":
-    csv_path = "./kubernetes_qa_pairs.csv" 
+    csv_path = "./qa.csv" 
     
     try:
         loader = KnowledgeBaseLoader()

@@ -40,7 +40,7 @@ class TiDBConnection:
         
         try:
             self.pool = pooling.MySQLConnectionPool(**self.config)
-            self.qa_table = 'k8_qa_pairs_llm'
+            self.qa_table = os.getenv("TIDB_TABLE_NAME")
             print("✅ TiDB connection pool created successfully")
         except Exception as e:
             print(f"❌ Failed to create TiDB connection pool: {str(e)}")
@@ -127,10 +127,10 @@ class TiDBConnection:
             if topic:
                 print(f"🔍 Full-text searching content for topic: '{topic}'")
                 
-                search_sql = """
+                search_sql = f"""
                 SELECT id, question, answer,
                     fts_match_word(%s, content) as _score
-                FROM k8_qa_pairs_llm 
+                FROM {self.qa_table} 
                 WHERE fts_match_word(%s, content)
                 ORDER BY _score DESC 
                 LIMIT 3
@@ -150,9 +150,9 @@ class TiDBConnection:
             else:
                 print("🎲 No topic specified, randomly selecting from all questions")
                 
-                random_sql = """
+                random_sql = f"""
                 SELECT id, question, answer,explanation
-                FROM k8_qa_pairs_llm 
+                FROM {self.qa_table} 
                 ORDER BY RAND()
                 LIMIT 1
                 """
@@ -185,10 +185,10 @@ class TiDBConnection:
         try:
             print(f"🔍 Searching content for: '{query_text}'")
             
-            search_sql = """
+            search_sql = f"""
             SELECT id, question, answer,
                 fts_match_word(%s, content) as _score
-            FROM k8_qa_pairs_llm 
+            FROM {self.qa_table} 
             WHERE fts_match_word(%s, content)
             ORDER BY _score DESC 
             LIMIT %s
