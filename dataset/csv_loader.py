@@ -151,7 +151,7 @@ class KnowledgeBaseLoader:
             
             records_loaded = 0
             
-            with open(csv_file_path, "r", encoding="utf-8") as f:
+            with open(csv_file_path, "r", encoding="utf-8-sig") as f:
                 csv_reader = csv.DictReader(f)
                 
                 insert_sql = f"""
