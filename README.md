@@ -38,9 +38,17 @@ You will need API endpoints for an LLM service, and the system prompt for the co
 
 6. Set up the question and answer database.
 
+First download a CSV file for the QA knowledge base. The CSV file contains 3 columns: the question, the answer, and an explanation of the answer. The CSV file must be saved as `dataset/qa.csv`. 
 
 ```
-bash setup_dataset.sh
+cd dataset
+curl -L -o qa.csv https://huggingface.co/datasets/ItshMoh/k8_qa_pairs/resolve/main/kubernetes_qa_output.csv
+```
+
+Run the script to load the CSV file into a database. The database connection URL and table name are configured in the `.env` file.
+
+```
+python csv_loader.py
 ```
 
 5. Start the MCP server.
