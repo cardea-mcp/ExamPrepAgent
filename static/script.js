@@ -436,6 +436,7 @@ class ExamBotApp {
 
     addTTSControls() {
         // Add TTS toggle to input footer
+	/*
         const inputFooter = document.getElementById('inputWrapper');
         if (inputFooter) {
             const ttsToggle = document.createElement('button');
@@ -448,6 +449,7 @@ class ExamBotApp {
             const inputButtons = inputFooter.querySelector('.input-buttons');
             inputButtons.insertBefore(ttsToggle, inputButtons.firstChild);
         }
+	*/
     }
 
     toggleTTS() {

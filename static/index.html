@@ -63,7 +63,7 @@
                             <li>📚 Provide practice questions</li>
                             <li>🔍 Take your answer and determine if it is correct</li>
                             <li>💡 Explain the answer</li>
-                            <li>🎤 Talk to you in voice (click the mic button!)</li>
+			    <!--<li>🎤 Talk to you in voice (click the mic button!)</li>-->
                         </ul>
                         <p>What would you like to study today?</p>
                     </div>
@@ -73,6 +73,7 @@
             <!-- Input Area - UPDATED -->
             <div class="input-container">
                 <!-- Audio Recording Status -->
+		<!--
                 <div class="audio-status" id="audioStatus" style="display: none;">
                     <div class="recording-indicator">
                         <div class="recording-dot"></div>
@@ -85,8 +86,10 @@
                         </button>
                     </div>
                 </div>
+		-->
  
                 <!-- Audio Preview -->
+		<!--
                 <div class="audio-preview" id="audioPreview" style="display: none;">
                     <div class="preview-header">
                         <span>Recorded Audio:</span>
@@ -104,8 +107,10 @@
                         </div>
                     </div>
                 </div>
+		-->
  
                 <!-- Transcription Preview -->
+		<!--
                 <div class="transcription-preview" id="transcriptionPreview" style="display: none;">
                     <div class="preview-header">
                         <span>Transcription:</span>
@@ -122,14 +127,17 @@
                         </button>
                     </div>
                 </div>
+		-->
  
                 <!-- Regular Input -->
                 <div class="input-wrapper" id="inputWrapper">
-                    <input type="text" id="messageInput" placeholder="Ask me anything about Kubernetes, or click the mic to speak..." maxlength="1000">
+                    <input type="text" id="messageInput" placeholder="Try: ask me" maxlength="1000">
                     <div class="input-buttons">
+			<!--
                         <button id="micButton" class="mic-button" title="Voice Input">
                             <i class="fas fa-microphone"></i>
                         </button>
+			-->
                         <button id="sendButton" class="send-button">
                             <i class="fas fa-paper-plane"></i>
                         </button>
@@ -150,7 +158,7 @@
     <div class="modal" id="nameModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Welcome to ExamBOT!</h2>
+                <h2>Welcome!</h2>
                 <p>Enter your name to get started</p>
             </div>
             <div class="modal-body">
@@ -163,6 +171,7 @@
     </div>
  
     <!-- Audio Permission Modal -->
+    <!--
     <div class="modal" id="audioPermissionModal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -178,6 +187,7 @@
             </div>
         </div>
     </div>
+    -->
  
     <script src="/static/audio_recorder.js"></script>
     <script src="/static/script.js"></script>
