@@ -259,9 +259,8 @@ class ExamBotApp {
         
         if (!message || !this.currentSession) return;
     
-        // Add user message to UI and storage
+        // Add user message to the UI
         this.addMessage(message, 'user');
-        this.addMessageToSession(this.currentSession, 'user', message);
         
         input.value = '';
         this.updateCharCount();
@@ -280,6 +279,9 @@ class ExamBotApp {
                     context: context
                 })
             });
+
+			// The user message is added to session storage after it is sent to avoid duplication.
+			this.addMessageToSession(this.currentSession, 'user', message);
     
             if (response.ok) {
                 const data = await response.json();
