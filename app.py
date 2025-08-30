@@ -24,14 +24,8 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="ExamBOT API")
-
-
-
 atexit.register(cleanup_server)
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
-
 
 def transcode_to_wav(input_file_path: str, output_file_path: str) -> bool:
     """
@@ -132,6 +126,12 @@ async def process_chat_message(request: dict):
         
         # Process the message with the provided context
         response_data = await process_message_with_context(user_message, conversation_context)
+        # Retry if we get an occasional empty response from LLM
+        if response_data["response_text"] is None or response_data["response_text"].strip() == ""
+            response_data = await process_message_with_context(user_message, conversation_context)
+        # Cannot fix by retrying ...
+        if response_data["response_text"] is None or response_data["response_text"].strip() == ""
+            response_data["response_text"] = "Hmm, please say 'Next question' to get a new question!"
         
         return {
             "success": True,
