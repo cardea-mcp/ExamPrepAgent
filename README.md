@@ -13,8 +13,9 @@ It consists of two major components.
 
 ---
 
-Here is the demo video of bot in action: 
-https://www.loom.com/share/e11263ab6c3e4a4da33e5e2b726cfd80?sid=173cf35a-8447-4666-b374-a78f5c5193d4
+Live demo: http://k8s.cardea.cc/
+
+Video demo: https://x.com/realwasmedge/status/1964435649534316809
 
 ---
 
